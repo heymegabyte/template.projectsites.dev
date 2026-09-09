@@ -95,20 +95,25 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
         scrolled ? 'site-header--scrolled glass-strong shadow-md' : 'bg-transparent'
       }`}
     >
-      <nav className="max-w-container-wide mx-auto px-6 py-4 flex justify-between items-center" aria-label="Primary">
+      <nav className="max-w-container-wide mx-auto px-6 py-3 flex justify-between items-center" aria-label="Primary">
         <Link to="/" className="site-brand group flex items-center gap-2.5" aria-label={`${business} — home`}>
           {logoOk ? (
+            // Icon mark: the TRANSPARENT android-chrome PNG (alpha via the favicon
+            // pipeline's rounded-rect mask) — NOT apple-touch-icon.png, which is opaque
+            // by PWA/Apple convention (a baked background). No border / shadow / rounded
+            // box and `object-contain` (never crop) so a transparent logo reads clean;
+            // sized to fill the navbar height (big) while the row stays compact.
             <img
-              src="/apple-touch-icon.png"
+              src="/android-chrome-192x192.png"
               alt=""
-              width={36}
-              height={36}
-              className="site-logo h-9 w-9 rounded-lg object-cover border border-border shadow-sm shrink-0"
+              width={44}
+              height={44}
+              className="site-logo h-11 w-11 object-contain shrink-0"
               onError={() => setLogoOk(false)}
             />
           ) : (
             <span
-              className="site-logo h-9 w-9 rounded-lg grid place-items-center bg-accent text-[var(--color-on-accent)] font-heading font-extrabold text-sm shadow-sm shrink-0"
+              className="site-logo h-11 w-11 rounded-lg grid place-items-center bg-accent text-[var(--color-on-accent)] font-heading font-extrabold text-base shadow-sm shrink-0"
               aria-hidden="true"
             >
               {initials}
@@ -121,7 +126,7 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
             <img
               src="/logo-wordmark.png"
               alt={business}
-              className="site-wordmark h-8 w-auto max-w-[190px] object-contain"
+              className="site-wordmark h-10 w-auto max-w-[240px] object-contain"
               onError={() => setWordmarkOk(false)}
             />
           ) : (
