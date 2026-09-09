@@ -6,7 +6,7 @@
   "description": "Cinematic React + Vite + Tailwind website template with DTCG brand tokens, 15 universal routes, kinetic typography, bento grid, command palette, full PWA kit, Zod-validated brand schema, Vitest + Playwright tests. Built for AI customization (bolt.diy, Claude, Cursor).",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/generate-favicons.mjs && (node scripts/og-image.mjs --png || true)",
+    "prebuild": "(node scripts/strip-logo-bg.mjs || true) && node scripts/generate-favicons.mjs && (node scripts/og-image.mjs --png || true)",
     "build": "tsc -b && vite build",
     "postbuild": "node scripts/build-feeds.mjs && (cp public/feed.xml public/atom.xml public/feed.json public/sitemap.xml dist/ 2>/dev/null || true) && node scripts/fix-empty-meta.mjs && node scripts/validate-site.mjs && node scripts/async-css.mjs",
     "preview": "vite preview",

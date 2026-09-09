@@ -53,7 +53,13 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
   // /apple-touch-icon.png (produced by the mandatory favicon pipeline from the
   // extracted / Ideogram / DALL-E logo), falling back to a branded monogram badge
   // if that asset ever fails to load.
-  const [logoOk, setLogoOk] = useState(true);
+  // Icon-mark source fallback chain: prefer a TRANSPARENT icon-only logo
+  // (`/logo-icon.png`, produced by the container's bg-strip step when available), fall
+  // back to the real (opaque) apple-touch-icon logo, then to a branded monogram badge.
+  // We deliberately do NOT use android-chrome-*.png here — that asset is a small solid
+  // brand-color square from the favicon pipeline, not the real logo.
+  const iconSrcs = ['/logo-icon.png', '/apple-touch-icon.png'];
+  const [iconIdx, setIconIdx] = useState(0);
   const [wordmarkOk, setWordmarkOk] = useState(true);
   const { pathname } = useLocation();
 
@@ -97,19 +103,19 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
     >
       <nav className="max-w-container-wide mx-auto px-6 py-3 flex justify-between items-center" aria-label="Primary">
         <Link to="/" className="site-brand group flex items-center gap-2.5" aria-label={`${business} — home`}>
-          {logoOk ? (
-            // Icon mark: the TRANSPARENT android-chrome PNG (alpha via the favicon
-            // pipeline's rounded-rect mask) — NOT apple-touch-icon.png, which is opaque
-            // by PWA/Apple convention (a baked background). No border / shadow / rounded
-            // box and `object-contain` (never crop) so a transparent logo reads clean;
-            // sized to fill the navbar height (big) while the row stays compact.
+          {iconIdx < iconSrcs.length ? (
+            // Icon mark: the REAL brand logo (transparent `logo-icon.png` first, then the
+            // opaque apple-touch-icon). No border / shadow / rounded box and
+            // `object-contain` (never crop) so a transparent mark reads clean over the
+            // glass header; sized to fill the navbar height (big) while the row stays
+            // compact. On error, advance the source; exhausting the chain shows the monogram.
             <img
-              src="/android-chrome-192x192.png"
+              src={iconSrcs[iconIdx]}
               alt=""
               width={44}
               height={44}
               className="site-logo h-11 w-11 object-contain shrink-0"
-              onError={() => setLogoOk(false)}
+              onError={() => setIconIdx((i) => i + 1)}
             />
           ) : (
             <span
