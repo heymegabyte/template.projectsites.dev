@@ -114,7 +114,10 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
               alt=""
               width={44}
               height={44}
-              className="site-logo h-11 w-11 object-contain shrink-0"
+              // drop-shadow halo (not a box): keeps the mark TRANSPARENT while staying
+              // legible over a busy/low-contrast hero when the header is transparent
+              // (unscrolled) — per the logo-contrast rule.
+              className="site-logo h-11 w-11 object-contain shrink-0 drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]"
               onError={() => setIconIdx((i) => i + 1)}
             />
           ) : (
@@ -132,7 +135,7 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
             <img
               src="/logo-wordmark.png"
               alt={business}
-              className="site-wordmark h-10 w-auto max-w-[240px] object-contain"
+              className="site-wordmark h-10 w-auto max-w-[240px] object-contain drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]"
               onError={() => setWordmarkOk(false)}
             />
           ) : (
