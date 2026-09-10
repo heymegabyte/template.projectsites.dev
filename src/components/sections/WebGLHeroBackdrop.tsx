@@ -27,7 +27,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
  */
 
 /** The visual character of the backdrop — pick per industry. */
-export type HeroBackdropVariant = 'aurora' | 'waves' | 'mesh';
+export type HeroBackdropVariant = 'aurora' | 'waves' | 'mesh' | 'ember';
 
 /** Shader parameters per variant (pure data — unit-tested). */
 export interface HeroBackdropConfig {
@@ -46,12 +46,15 @@ export interface HeroBackdropConfig {
 /**
  * Per-variant shader configs. `aurora` = soft flowing ribbons (wellness/creative);
  * `waves` = broad horizontal swells (finance/professional, calmer); `mesh` = tighter
- * cellular shimmer (tech/AI). All stay dark + low-intensity for text legibility.
+ * cellular shimmer (tech/AI); `ember` = a warm glow that RISES from a hearth floor
+ * (food/hospitality/artisan — the one variant with vertical, not diagonal, motion).
+ * All stay dark + low-intensity so foreground text stays legible.
  */
 export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConfig> = {
   aurora: { scale: 2.5, speed: 1.0, sharpness: 0.7, hueSpread: 0.08, intensity: 0.9 },
   waves: { scale: 1.6, speed: 0.6, sharpness: 0.5, hueSpread: 0.04, intensity: 0.8 },
   mesh: { scale: 4.0, speed: 1.3, sharpness: 0.85, hueSpread: 0.12, intensity: 0.85 },
+  ember: { scale: 2.0, speed: 0.8, sharpness: 0.58, hueSpread: 0.06, intensity: 0.82 },
 };
 
 /**
@@ -59,15 +62,18 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
  * MOTION matches that personality — so every generated site gets a fitting
  * animated hero automatically (no per-build opt-in):
  *   - `aurora` — soft flowing ribbons → welcoming / organic / creative
- *     (botanical, warm, scholarly, boutique, classic);
+ *     (botanical, scholarly, boutique, classic);
  *   - `waves`  — broad calm swells → authoritative / professional / trusted
- *     (editorial, heritage, luxe);
+ *     (editorial, luxe);
  *   - `mesh`   — tight cellular shimmer → technical / energetic / precise
- *     (futuristic, bold, precision, rugged, brutalist).
+ *     (futuristic, bold, precision, rugged, brutalist);
+ *   - `ember`  — warm glow rising from a hearth floor → food / hospitality / artisan
+ *     (warm, heritage) — the ONLY variant with upward (not diagonal) motion.
  * Pure + total (unknown/blank → `aurora`) so it unit-tests in isolation.
  *
  * @example backdropForPreset('luxe')       // → 'waves'
  * @example backdropForPreset('futuristic') // → 'mesh'
+ * @example backdropForPreset('warm')       // → 'ember'
  * @example backdropForPreset(undefined)    // → 'aurora'
  */
 // MUST carry an explicit entry for EVERY `THEME_PRESETS` key — a preset with no entry
@@ -77,9 +83,10 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
 // commits), so the coverage is drift-GUARDED by a test (WebGLHeroBackdrop.test.ts asserts
 // every PRESET_NAMES entry is a key here) — add the mapping in the SAME change as a new preset.
 export const PRESET_BACKDROP: Record<string, HeroBackdropVariant> = {
-  botanical: 'aurora', warm: 'aurora', scholarly: 'aurora', boutique: 'aurora', classic: 'aurora',
-  editorial: 'waves', heritage: 'waves', luxe: 'waves',
+  botanical: 'aurora', scholarly: 'aurora', boutique: 'aurora', classic: 'aurora',
+  editorial: 'waves', luxe: 'waves',
   futuristic: 'mesh', bold: 'mesh', precision: 'mesh', rugged: 'mesh', brutalist: 'mesh',
+  warm: 'ember', heritage: 'ember',
 };
 export function backdropForPreset(preset: string | null | undefined): HeroBackdropVariant {
   return PRESET_BACKDROP[(preset ?? '').trim().toLowerCase()] ?? 'aurora';
@@ -122,6 +129,7 @@ uniform float uScale;
 uniform float uSharp;
 uniform float uSpread;
 uniform float uIntensity;
+uniform float uMode;      // 0 = flowing field (aurora/waves/mesh); 1 = ember (warm upward rise)
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
 float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
   return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),f.x), mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),f.x), f.y); }
@@ -131,11 +139,17 @@ void main(){
   vec2 uv = gl_FragCoord.xy / uRes.xy;
   vec2 p = uv * vec2(uRes.x/uRes.y, 1.0);
   float t = uTime * 0.05;
-  float f = fbm(p*uScale + vec2(t, t*0.6));
-  f += 0.5 * fbm(p*uScale*2.0 - vec2(t*0.8, t));
+  bool ember = uMode > 0.5;
+  // ember RISES vertically (embers/steam over a hearth); the others drift diagonally.
+  vec2 drift  = ember ? vec2(0.03*sin(t*1.7), -t*1.5) : vec2(t, t*0.6);
+  vec2 drift2 = ember ? vec2(-0.02*sin(t*1.3), -t*1.1) : vec2(-t*0.8, -t);
+  float f = fbm(p*uScale + drift);
+  f += 0.5 * fbm(p*uScale*2.0 + drift2);
   float band = smoothstep(1.0-uSharp, 0.95, f);
-  float hue = uHue + uSpread * sin(f*3.14159 + t);
-  vec3 col = hsl2rgb(hue, 0.7, 0.13 + 0.30*band);
+  float hue = uHue + (ember ? -0.02 : 0.0) + uSpread * sin(f*3.14159 + t);  // ember nudges warm
+  // ember adds a soft warm glow floor rising from the bottom edge (uv.y→0 = hearth).
+  float glow = ember ? 0.07 * (1.0 - smoothstep(0.0, 0.65, uv.y)) : 0.0;
+  vec3 col = hsl2rgb(hue, 0.7, 0.13 + 0.30*band + glow);
   col *= smoothstep(1.25, 0.2, length(uv-0.5));   // vignette → keeps center text legible
   gl_FragColor = vec4(col * uIntensity, 1.0);
 }`;
@@ -210,7 +224,9 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       sharp: gl.getUniformLocation(prog, 'uSharp'),
       spread: gl.getUniformLocation(prog, 'uSpread'),
       intensity: gl.getUniformLocation(prog, 'uIntensity'),
+      mode: gl.getUniformLocation(prog, 'uMode'),
     };
+    const modeFlag = variant === 'ember' ? 1 : 0;
     const hue = parseBrandHue(
       getComputedStyle(document.documentElement).getPropertyValue('--brand-hue'),
     );
@@ -243,6 +259,7 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       gl.uniform1f(u.sharp, cfg.sharpness);
       gl.uniform1f(u.spread, cfg.hueSpread);
       gl.uniform1f(u.intensity, cfg.intensity);
+      gl.uniform1f(u.mode, modeFlag);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       raf = requestAnimationFrame(frame);
     };

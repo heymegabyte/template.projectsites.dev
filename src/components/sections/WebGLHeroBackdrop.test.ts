@@ -48,8 +48,8 @@ describe('resolveBackdropMode', () => {
 });
 
 describe('HERO_BACKDROP_CONFIGS', () => {
-  const variants: HeroBackdropVariant[] = ['aurora', 'waves', 'mesh'];
-  it('defines all three variants with sane, text-legible params', () => {
+  const variants: HeroBackdropVariant[] = ['aurora', 'waves', 'mesh', 'ember'];
+  it('defines all four variants with sane, text-legible params', () => {
     for (const v of variants) {
       const c = HERO_BACKDROP_CONFIGS[v];
       expect(c).toBeDefined();
@@ -80,9 +80,9 @@ describe('backdropForPreset (per-industry hero motion)', () => {
   });
   it('matches motion character to personality', () => {
     expect(backdropForPreset('botanical')).toBe('aurora'); // organic, calm
-    expect(backdropForPreset('warm')).toBe('aurora');
+    expect(backdropForPreset('warm')).toBe('ember'); // food/hospitality — warm rising glow
+    expect(backdropForPreset('heritage')).toBe('ember'); // artisan/legacy — warm rising glow
     expect(backdropForPreset('luxe')).toBe('waves'); // premium, measured
-    expect(backdropForPreset('heritage')).toBe('waves');
     expect(backdropForPreset('editorial')).toBe('waves');
     expect(backdropForPreset('futuristic')).toBe('mesh'); // technical, energetic
     expect(backdropForPreset('bold')).toBe('mesh');
