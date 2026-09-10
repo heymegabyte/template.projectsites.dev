@@ -738,8 +738,15 @@ main#main { view-transition-name: ps-main; }
       animation-timeline: view();
       animation-range: entry calc(2% + var(--role-i, 0) * 8%) cover 32%;
     }
+    /* Reveal by SLIDE, not a fade-to-zero: a scroll-timeline `opacity: 0→1` composites
+       the card's muted body copy at partial alpha, and axe measures that mid-`entry`
+       state as a contrast FAIL — muted oklch(0.42) rendered at ~0.70α over cream reads
+       as #89817c = 3.4:1 @375/390 on every team-bearing site (§C.3 reopened, AL-213/140).
+       Floor the reveal opacity at 0.9 so the body copy holds ≥4.5:1 at EVERY frame while
+       keeping a soft fade+slide. (generated-site-accent-text-contrast / opacity-on-muted-
+       token class — the fade never drops legibility below AA.) */
     @keyframes team-role-rise {
-      from { opacity: 0; transform: translateY(18px); }
+      from { opacity: 0.9; transform: translateY(18px); }
       to   { opacity: 1; transform: translateY(0); }
     }
   }

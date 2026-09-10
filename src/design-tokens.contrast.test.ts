@@ -162,3 +162,48 @@ describe('--color-text-subtle clears WCAG AA on the worst-case surface (all 3 so
     }
   });
 });
+
+/**
+ * §C.3 (reopened AL-213/140, surfed live on char-bar + harborline): a scroll-timeline
+ * reveal that fades `opacity: 0→1` composites the card's MUTED body copy at partial alpha,
+ * and axe measures the EFFECTIVE (composited) color at the mid-`entry` frame. Muted
+ * oklch(0.42) at ~0.70α over the cream card surface reads #89817c = 3.4:1 @375/390px on
+ * EVERY team-bearing site — the reopened violation. Fix (index.css `team-role-rise`): floor
+ * the reveal opacity at 0.9 so the body copy holds ≥4.5:1 at every animation frame while
+ * keeping a soft fade+slide. This locks it: the OLD 0.70 fails, the NEW 0.9 clears, and the
+ * shipped keyframe carries opacity ≥0.9. (generated-site-accent-text-contrast / opacity-on-
+ * muted-token class — the reveal can never drop legibility below AA.)
+ */
+describe('scroll-reveal opacity floor keeps muted body copy AA (§C.3 team-role-rise)', () => {
+  const composite = (
+    fg: [number, number, number],
+    bg: [number, number, number],
+    alpha: number,
+  ): [number, number, number] =>
+    [0, 1, 2].map((i) => Math.round(alpha * fg[i] + (1 - alpha) * bg[i])) as [number, number, number];
+  const MUTED_L = 0.42; // index.css light --color-text-muted lightness
+  const CREAM_L = 0.93; // the axe-measured card surface (#fcf0e3) — the tightest light bg
+
+  it('OLD 0.70 mid-fade FAILED AA on cream (documents the reopened bug)', () => {
+    for (const hue of HUES) {
+      const muted = oklchToRgb255(MUTED_L, 0.01, hue);
+      const cream = oklchToRgb255(CREAM_L, 0.02, hue);
+      expect(contrast(composite(muted, cream, 0.7), cream), `hue ${hue}`).toBeLessThan(AA);
+    }
+  });
+  it('NEW 0.9 reveal floor CLEARS 4.5:1 on cream across every brand hue', () => {
+    for (const hue of HUES) {
+      const muted = oklchToRgb255(MUTED_L, 0.01, hue);
+      const cream = oklchToRgb255(CREAM_L, 0.02, hue);
+      expect(contrast(composite(muted, cream, 0.9), cream), `hue ${hue}`).toBeGreaterThanOrEqual(AA);
+    }
+  });
+  it('index.css team-role-rise ships from{opacity} ≥ 0.9 (never fades text to transparent)', () => {
+    const css = read('./index.css');
+    const kf = css.slice(css.indexOf('@keyframes team-role-rise'));
+    const from = kf.slice(0, kf.indexOf('}'));
+    const m = from.match(/opacity:\s*([\d.]+)/);
+    expect(m, 'team-role-rise from{opacity} present').toBeTruthy();
+    expect(parseFloat(m![1]), 'reveal opacity floor ≥0.9').toBeGreaterThanOrEqual(0.9);
+  });
+});
