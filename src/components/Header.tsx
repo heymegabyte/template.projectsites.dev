@@ -102,7 +102,7 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
       }`}
     >
       <nav className="max-w-container-wide mx-auto px-6 py-3 flex justify-between items-center" aria-label="Primary">
-        <Link to="/" className="site-brand group flex items-center gap-2.5" aria-label={`${business} — home`}>
+        <Link to="/" className="site-brand group flex items-center gap-2.5 min-w-0 mr-3" aria-label={`${business} — home`}>
           {iconIdx < iconSrcs.length ? (
             // Icon mark: the REAL brand logo (transparent `logo-icon.png` first, then the
             // opaque apple-touch-icon). No border / shadow / rounded box and
@@ -135,11 +135,11 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
             <img
               src="/logo-wordmark.png"
               alt={business}
-              className="site-wordmark h-10 w-auto max-w-[240px] object-contain drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]"
+              className="site-wordmark h-9 sm:h-10 w-auto max-w-[180px] sm:max-w-[280px] object-contain drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]"
               onError={() => setWordmarkOk(false)}
             />
           ) : (
-            <span className="text-text font-bold text-xl font-heading tracking-tight group-hover:text-accent transition-colors">
+            <span className="site-wordmark-text min-w-0 truncate text-text font-extrabold font-heading tracking-tight text-[clamp(1.125rem,4.5vw,1.5rem)] [text-shadow:0_1px_3px_rgba(0,0,0,0.55)] group-hover:text-accent transition-colors">
               {business}
             </span>
           )}
