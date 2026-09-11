@@ -64,6 +64,19 @@ export function resolveTree(node: DtcgTree | DtcgNode, root: unknown, depth = 0)
   // at 32 (8× any legitimate brand depth) so real brands are untouched; a
   // too-deep branch degrades to the raw node instead of crashing the whole site.
   if (depth > 32) return node;
+  // Primitive / array passthrough (AL-352 — THE themeStyle root cause). A bare
+  // string/number/boolean (e.g. the top-level plain-string `themeStyle:"scholarly"`,
+  // or an array like `font.weights`) is NOT a DTCG token tree. Without this guard the
+  // `Object.entries(node)` loop below spreads a string into a char-indexed object
+  // ({0:'s',1:'c',…}) and an array into {0:…,1:…}. `brand.ts` then reads
+  // `r.themeStyle` off this RESOLVED tree; `typeof r.themeStyle === 'string'` is false
+  // for the char-object, so `explicitStyle` is null and EVERY site silently falls back
+  // to `presetForClass(businessClass)` — the vertical default. That is why the
+  // deterministic/sidecar themeStyle NEVER landed (proven via ps-build-diag.txt:
+  // `_brand.json.themeStyle=scholarly` yet the live site rendered `data-style=boutique`;
+  // steakhouse luxe→warm, record-store retro→boutique — all the vertical fallback).
+  // Return primitives + arrays UNCHANGED so an explicit themeStyle survives resolution.
+  if (node === null || typeof node !== 'object' || Array.isArray(node)) return node;
   if (isLeaf(node)) {
     const v = node.$value;
     return typeof v === 'string' ? resolveString(v, root, 0) : v;

@@ -53,3 +53,46 @@ describe('resolveTree depth guard (AL-338)', () => {
     expect(out.$description).toBeUndefined();
   });
 });
+
+/**
+ * Regression for AL-352 — THE themeStyle root cause (proven via ps-build-diag.txt:
+ * `_brand.json.themeStyle=scholarly` yet the live site rendered `data-style=boutique`).
+ *
+ * A top-level plain-string value (`themeStyle:"scholarly"`) is NOT a DTCG leaf, so the
+ * old resolveTree hit `Object.entries("scholarly")` → spread it into a char-indexed
+ * object `{0:'s',1:'c',…}`. brand.ts reads `r.themeStyle` off the RESOLVED tree and
+ * gates on `typeof r.themeStyle === 'string'`; the char-object failed that check, so
+ * `explicitStyle` was always null and EVERY site fell back to
+ * presetForClass(businessClass) — the deterministic/sidecar themeStyle never landed.
+ */
+describe('resolveTree primitive/array passthrough (AL-352 — themeStyle survives)', () => {
+  it('keeps a top-level plain-string themeStyle a STRING (was char-mangled to {0:…})', () => {
+    const tree = {
+      themeStyle: 'scholarly',
+      business: { name: { $value: 'Powell’s' } },
+      color: { brand: { $value: '#00e5ff' } },
+    };
+    const out = resolveTree(tree, tree) as Record<string, unknown>;
+    expect(typeof out.themeStyle).toBe('string'); // the exact brand.ts gate
+    expect(out.themeStyle).toBe('scholarly'); // not {0:'s',1:'c',…}
+    // sibling DTCG tokens still resolve (no regression)
+    expect(((out.business as Record<string, unknown>).name as unknown)).toBe('Powell’s');
+  });
+
+  it('keeps an array value an ARRAY (font.weights was mangled to {0:…})', () => {
+    const tree = { font: { weights: [400, 600, 700], heading: { $value: 'Inter' } } };
+    const out = resolveTree(tree, tree) as Record<string, Record<string, unknown>>;
+    expect(Array.isArray(out.font.weights)).toBe(true);
+    expect(out.font.weights).toEqual([400, 600, 700]);
+    expect((out.font.heading as unknown)).toBe('Inter');
+  });
+
+  it('passes primitives through unchanged (number, boolean, null)', () => {
+    const tree = { n: 42, b: true, z: null, s: 'plain' };
+    const out = resolveTree(tree, tree) as Record<string, unknown>;
+    expect(out.n).toBe(42);
+    expect(out.b).toBe(true);
+    expect(out.z).toBeNull();
+    expect(out.s).toBe('plain');
+  });
+});
