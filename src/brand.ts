@@ -50,7 +50,20 @@ function resolveString(value: string, root: unknown, depth = 0): string {
   });
 }
 
-function resolveTree(node: DtcgTree | DtcgNode, root: unknown): unknown {
+// Exported for the depth-guard regression test (AL-338); otherwise module-internal.
+export function resolveTree(node: DtcgTree | DtcgNode, root: unknown, depth = 0): unknown {
+  // Depth guard (AL-338) — mirrors resolveString's `depth > 8` discipline. Real
+  // brand token trees are SHALLOW (~3-4 levels: business/color/font/radius/…),
+  // but the AI build occasionally emits a MALFORMED `_brand.json` with runaway
+  // nesting. This fn runs at MODULE LOAD (`resolveTree(raw, raw)` below, top-level,
+  // BEFORE React + BEFORE applyBrand), so a deep tree recursing past the JS stack
+  // limit throws an UNCAUGHT RangeError during bundle eval → the app never mounts,
+  // hydration dies to a prerender-only shell, `data-style` never applies, and the
+  // ErrorBoundary can't catch it (the throw is outside the React tree). Root cause
+  // of the studio-q/methodical `fh→mh→mh…` crashes (crash ⟺ data-style:null). Cap
+  // at 32 (8× any legitimate brand depth) so real brands are untouched; a
+  // too-deep branch degrades to the raw node instead of crashing the whole site.
+  if (depth > 32) return node;
   if (isLeaf(node)) {
     const v = node.$value;
     return typeof v === 'string' ? resolveString(v, root, 0) : v;
@@ -58,7 +71,7 @@ function resolveTree(node: DtcgTree | DtcgNode, root: unknown): unknown {
   const out: Record<string, unknown> = {};
   for (const [k, child] of Object.entries(node)) {
     if (k.startsWith('$')) continue;
-    out[k] = resolveTree(child as DtcgTree | DtcgNode, root);
+    out[k] = resolveTree(child as DtcgTree | DtcgNode, root, depth + 1);
   }
   return out;
 }
