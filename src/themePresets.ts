@@ -261,6 +261,51 @@ export const THEME_PRESETS = {
     },
     motion: { easing: 'cubic-bezier(0.34, 1.4, 0.5, 1)', duration: { fast: '150ms', base: '300ms', slow: '480ms', scroll: '1200ms' } },
   },
+
+  /** Cinematic display serif, razor radii, deep vignette + warm glow, slow theatrical motion — intimate + after-dark. steakhouse · cocktail bar · lounge · nightlife · tattoo · dark-luxe hospitality. */
+  noir: {
+    label: 'Noir',
+    when: 'steakhouse, cocktail bar, lounge, nightlife, speakeasy, tattoo, dark-luxe hospitality — cinematic, intimate, after-dark',
+    font: { heading: 'Cinzel', body: 'Manrope', mono: MONO },
+    radius: { sm: '0.125rem', md: '0.1875rem', lg: '0.25rem', xl: '0.375rem', '2xl': '0.5rem', full: '9999px' },
+    shadow: {
+      sm: '0 2px 8px -2px rgb(0 0 0 / 0.60)',
+      md: '0 14px 40px -14px rgb(0 0 0 / 0.70)',
+      lg: '0 34px 80px -28px rgb(0 0 0 / 0.80)',
+      glow: '0 0 60px -14px oklch(0.82 0.12 var(--brand-hue) / 0.40)',
+    },
+    motion: { easing: 'cubic-bezier(0.16, 1, 0.3, 1)', duration: { fast: '220ms', base: '440ms', slow: '760ms', scroll: '1700ms' } },
+  },
+
+  /** Chunky grotesque display, rounded radii, hard offset color shadows, bouncy spring motion — playful + joyfully vintage. diner · barbershop · record store · arcade · ice-cream · nostalgia brands. */
+  retro: {
+    label: 'Retro',
+    when: 'diner, barbershop, record store, arcade, ice-cream, vintage/nostalgia brands — playful, nostalgic, joyfully vintage',
+    font: { heading: 'Bricolage Grotesque', body: 'DM Sans', mono: MONO },
+    radius: { sm: '0.5rem', md: '0.875rem', lg: '1.125rem', xl: '1.5rem', '2xl': '2rem', full: '9999px' },
+    shadow: {
+      sm: '3px 3px 0 0 oklch(0.55 0.15 var(--brand-hue) / 0.45)',
+      md: '5px 5px 0 0 oklch(0.55 0.15 var(--brand-hue) / 0.45)',
+      lg: '8px 8px 0 0 oklch(0.55 0.15 var(--brand-hue) / 0.45)',
+      glow: '0 0 48px -8px oklch(0.78 0.18 var(--brand-hue) / 0.45)',
+    },
+    motion: { easing: 'cubic-bezier(0.34, 1.56, 0.5, 1)', duration: { fast: '140ms', base: '300ms', slow: '460ms', scroll: '1100ms' } },
+  },
+
+  /** Warm literary serif + humanist body, soft radii, quiet paper-shadow layering, gentle motion — handmade + earthy. bakery · coffee roaster · brewery · ceramics · woodwork · craft makers. */
+  artisan: {
+    label: 'Artisan',
+    when: 'bakery, coffee roaster, brewery, ceramics, woodwork, handmade/craft/small-batch makers — handmade, earthy, honest',
+    font: { heading: 'Spectral', body: 'Karla', mono: MONO },
+    radius: { sm: '0.375rem', md: '0.875rem', lg: '1.125rem', xl: '1.375rem', '2xl': '1.75rem', full: '9999px' },
+    shadow: {
+      sm: '0 2px 6px -2px rgb(0 0 0 / 0.16)',
+      md: '0 10px 28px -10px rgb(0 0 0 / 0.24)',
+      lg: '0 24px 56px -20px rgb(0 0 0 / 0.30)',
+      glow: '0 0 40px -12px oklch(0.80 0.10 var(--brand-hue) / 0.28)',
+    },
+    motion: { easing: 'cubic-bezier(0.22, 1, 0.36, 1)', duration: { fast: '180ms', base: '450ms', slow: '640ms', scroll: '1500ms' } },
+  },
 } as const satisfies Record<string, ThemePreset>;
 
 /** Union of valid preset names. */

@@ -4009,3 +4009,145 @@ main#main { view-transition-name: ps-main; }
 :root[data-style='scholarly'] .glass-strong {
   box-shadow: 0 20px 50px -18px color-mix(in oklch, var(--color-accent) 30%, transparent);
 }
+
+/* noir — cinematic, intimate, after-dark (steakhouse · cocktail bar · nightlife · tattoo).
+   Wide-tracked uppercase Cinzel heads · MAX-tracked uppercase brass mono · deep vignette
+   card shadow + a single warm accent glow. Reads like a title card in a dim room. */
+:root[data-style='noir'] h1,
+:root[data-style='noir'] h2,
+:root[data-style='noir'] h3 { letter-spacing: 0.04em; font-weight: 600; text-transform: uppercase; }
+:root[data-style='noir'] .font-mono { letter-spacing: 0.3em; text-transform: uppercase; }
+:root[data-style='noir'] .card-tactile,
+:root[data-style='noir'] .glass,
+:root[data-style='noir'] .glass-strong {
+  border-color: color-mix(in oklch, var(--color-accent) 26%, transparent);
+  box-shadow:
+    0 30px 70px -30px rgb(0 0 0 / 0.75),
+    0 0 40px -18px color-mix(in oklch, var(--color-accent) 40%, transparent);
+}
+
+/* retro — playful, nostalgic, joyfully vintage (diner · barbershop · record store · arcade).
+   Chunky tight Bricolage heads · uppercase chunky mono · a hard OFFSET color shadow + thick
+   flat outline, no blur — a joyful sticker layered on the page. */
+:root[data-style='retro'] h1,
+:root[data-style='retro'] h2,
+:root[data-style='retro'] h3 { letter-spacing: -0.02em; font-weight: 700; }
+:root[data-style='retro'] .font-mono { letter-spacing: 0.1em; font-weight: 600; text-transform: uppercase; }
+:root[data-style='retro'] .card-tactile,
+:root[data-style='retro'] .glass,
+:root[data-style='retro'] .glass-strong {
+  backdrop-filter: none;
+  border: 2px solid color-mix(in oklch, var(--color-text) 40%, transparent);
+  box-shadow: 5px 5px 0 0 color-mix(in oklch, var(--color-accent) 55%, transparent);
+}
+
+/* artisan — handmade, earthy, honest (bakery · roaster · brewery · ceramics · woodwork).
+   Literary Spectral heads with ligatures · softly-tracked mono · a quiet paper-shadow float
+   with a warm hairline. Elements sit like pressed prints on kraft stock. */
+:root[data-style='artisan'] h1,
+:root[data-style='artisan'] h2,
+:root[data-style='artisan'] h3 {
+  letter-spacing: -0.005em;
+  font-feature-settings: 'liga' 1, 'kern' 1, 'ss01' 1;
+}
+:root[data-style='artisan'] .font-mono { letter-spacing: 0.14em; }
+:root[data-style='artisan'] .card-tactile,
+:root[data-style='artisan'] .glass,
+:root[data-style='artisan'] .glass-strong {
+  border-color: color-mix(in oklch, var(--color-primary) 20%, transparent);
+  box-shadow: 0 20px 50px -22px color-mix(in oklch, var(--color-primary) 26%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   AMBIENT ATMOSPHERE per personality (AL-334) — the biggest same-y-ness fix.
+   Until now presets varied TYPE + CARD surface but every theme shared the same
+   flat background, so sites still felt alike. This adds ONE fixed, behind-content
+   decorative layer (`body::before`, z-index:-1, pointer-events:none) that gives
+   each personality a distinct ATMOSPHERE. Brand-hue-aware via `color-mix` so it
+   tints to each business's palette. Every gradient is EDGE/CORNER-weighted + low-
+   alpha (≤12%) so the centered content column sits over near-transparent pixels —
+   text contrast (WCAG AA) is never harmed. Static (zero animation ⇒ zero INP cost,
+   GPU-composited fixed layer ⇒ zero reflow). `classic` is intentionally EXEMPT so
+   the historical default look is byte-identical. Honors prefers-reduced-data. */
+:root[data-style]:not([data-style='classic']) body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+@media (prefers-reduced-data: reduce) {
+  :root[data-style] body::before { display: none; }
+}
+
+:root[data-style='editorial'] body::before {
+  background: radial-gradient(120% 55% at 50% 0%, color-mix(in oklch, var(--color-accent) 5%, transparent), transparent 60%);
+}
+:root[data-style='warm'] body::before {
+  background:
+    radial-gradient(52% 46% at 10% 6%, color-mix(in oklch, var(--color-primary) 9%, transparent), transparent 72%),
+    radial-gradient(56% 50% at 94% 98%, color-mix(in oklch, var(--color-accent) 8%, transparent), transparent 74%);
+}
+:root[data-style='luxe'] body::before {
+  background: radial-gradient(80% 48% at 50% -8%, color-mix(in oklch, var(--color-accent) 8%, transparent), transparent 55%);
+}
+:root[data-style='brutalist'] body::before {
+  background:
+    repeating-linear-gradient(0deg, color-mix(in oklch, var(--color-text) 4%, transparent) 0 1px, transparent 1px 52px),
+    repeating-linear-gradient(90deg, color-mix(in oklch, var(--color-text) 4%, transparent) 0 1px, transparent 1px 52px);
+}
+:root[data-style='bold'] body::before {
+  background:
+    radial-gradient(46% 42% at 4% -2%, color-mix(in oklch, var(--color-accent) 12%, transparent), transparent 66%),
+    radial-gradient(50% 46% at 100% 102%, color-mix(in oklch, var(--color-primary) 10%, transparent), transparent 68%);
+}
+:root[data-style='futuristic'] body::before {
+  background:
+    radial-gradient(52% 50% at 86% 8%, color-mix(in oklch, var(--color-accent) 10%, transparent), transparent 70%),
+    radial-gradient(46% 46% at 6% 92%, color-mix(in oklch, var(--color-info) 9%, transparent), transparent 72%);
+}
+:root[data-style='rugged'] body::before {
+  background:
+    linear-gradient(0deg, color-mix(in oklch, var(--color-text) 7%, transparent), transparent 26%),
+    repeating-linear-gradient(135deg, color-mix(in oklch, var(--color-text) 3%, transparent) 0 2px, transparent 2px 16px);
+}
+:root[data-style='botanical'] body::before {
+  background:
+    radial-gradient(40% 40% at 14% 10%, color-mix(in oklch, var(--color-accent) 8%, transparent), transparent 72%),
+    radial-gradient(44% 44% at 88% 18%, color-mix(in oklch, var(--color-primary) 7%, transparent), transparent 74%),
+    radial-gradient(52% 42% at 50% 102%, color-mix(in oklch, var(--color-accent) 6%, transparent), transparent 72%);
+}
+:root[data-style='boutique'] body::before {
+  background:
+    radial-gradient(70% 40% at 50% 0%, color-mix(in oklch, var(--color-accent) 6%, transparent), transparent 60%),
+    radial-gradient(40% 42% at 100% 0%, color-mix(in oklch, var(--color-primary) 6%, transparent), transparent 72%);
+}
+:root[data-style='precision'] body::before {
+  background:
+    linear-gradient(180deg, color-mix(in oklch, var(--color-accent) 6%, transparent), transparent 22%),
+    repeating-linear-gradient(90deg, color-mix(in oklch, var(--color-accent) 4%, transparent) 0 1px, transparent 1px 44px);
+}
+:root[data-style='heritage'] body::before {
+  background: radial-gradient(90% 42% at 50% -6%, color-mix(in oklch, var(--color-accent) 5%, transparent), transparent 55%);
+}
+:root[data-style='scholarly'] body::before {
+  background:
+    radial-gradient(42% 40% at 8% 4%, color-mix(in oklch, var(--color-accent) 9%, transparent), transparent 72%),
+    radial-gradient(42% 40% at 94% 8%, color-mix(in oklch, var(--color-primary) 8%, transparent), transparent 74%);
+}
+:root[data-style='noir'] body::before {
+  background:
+    radial-gradient(78% 55% at 50% -4%, color-mix(in oklch, var(--color-accent) 11%, transparent), transparent 55%),
+    radial-gradient(150% 130% at 50% 40%, transparent 52%, rgb(0 0 0 / 0.5) 100%);
+}
+:root[data-style='retro'] body::before {
+  background:
+    radial-gradient(color-mix(in oklch, var(--color-accent) 7%, transparent) 1px, transparent 1.6px) 0 0 / 22px 22px,
+    conic-gradient(from 208deg at 50% -12%, color-mix(in oklch, var(--color-accent) 7%, transparent), transparent 34%);
+}
+:root[data-style='artisan'] body::before {
+  background:
+    radial-gradient(46% 40% at 16% 10%, color-mix(in oklch, var(--color-accent) 7%, transparent), transparent 74%),
+    radial-gradient(46% 40% at 86% 90%, color-mix(in oklch, var(--color-primary) 6%, transparent), transparent 76%),
+    repeating-linear-gradient(90deg, color-mix(in oklch, var(--color-text) 3%, transparent) 0 1px, transparent 1px 7px);
+}

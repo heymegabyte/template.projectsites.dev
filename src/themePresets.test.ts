@@ -56,6 +56,9 @@ describe('themePresets', () => {
         'precision',
         'heritage',
         'scholarly',
+        'noir',
+        'retro',
+        'artisan',
       ]),
     );
   });
@@ -66,6 +69,9 @@ describe('themePresets', () => {
     expect(resolvePreset('precision').font.heading).toBe('Rajdhani');
     expect(resolvePreset('heritage').font.heading).toBe('Libre Baskerville');
     expect(resolvePreset('scholarly').font.heading).toBe('Quicksand');
+    expect(resolvePreset('noir').font.heading).toBe('Cinzel');
+    expect(resolvePreset('retro').font.heading).toBe('Bricolage Grotesque');
+    expect(resolvePreset('artisan').font.heading).toBe('Spectral');
   });
 
   it('resolvePreset never throws and falls back to classic on bad input', () => {
