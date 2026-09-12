@@ -168,7 +168,14 @@ void main(){
   float sheen = uWarp > 0.0 ? 0.06 * pow(band, 3.0) : 0.0;
   vec3 col = hsl2rgb(hue, 0.7, 0.13 + 0.30*band + glow + sheen);
   col *= smoothstep(1.25, 0.2, length(uv-0.5));   // vignette → keeps center text legible
-  gl_FragColor = vec4(col * uIntensity, 1.0);
+  // PER-HUE PERCEPTUAL-LUMINANCE COMPENSATION — at the same lightness a green/amber brand reads
+  // ~3× brighter than a blue one (measured: green 95 vs blue 33), so bright-hue brands shipped an
+  // over-bright, content-competing backdrop while blue brands stayed subtle. Normalize toward the
+  // blue baseline so EVERY brand hue yields a uniformly subtle atmosphere (text legible regardless).
+  vec3 hueRgb = hsl2rgb(hue, 0.7, 0.5);
+  float hueLuma = dot(hueRgb, vec3(0.2126, 0.7152, 0.0722));
+  float lumaComp = clamp(0.38 / max(hueLuma, 0.05), 0.45, 1.0);
+  gl_FragColor = vec4(col * uIntensity * lumaComp, 1.0);
 }`;
 
 const VERT_SRC = `attribute vec2 aPos; void main(){ gl_Position = vec4(aPos,0.0,1.0); }`;
