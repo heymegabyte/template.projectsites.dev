@@ -61,14 +61,16 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
  * Map a `themeStyle` preset (the 13 site personalities) to the backdrop whose
  * MOTION matches that personality — so every generated site gets a fitting
  * animated hero automatically (no per-build opt-in):
- *   - `aurora` — soft flowing ribbons → welcoming / organic / creative
- *     (botanical, scholarly, boutique, classic);
+ *   - `aurora` — soft flowing ribbons → welcoming / organic / creative / nostalgic
+ *     (botanical, scholarly, boutique, classic, retro — retro's playful vibrant nostalgia
+ *     reads as synthwave flowing color, not a techy shimmer);
  *   - `waves`  — broad calm swells → authoritative / professional / trusted
  *     (editorial, luxe);
  *   - `mesh`   — tight cellular shimmer → technical / energetic / precise
  *     (futuristic, bold, precision, rugged, brutalist);
- *   - `ember`  — warm glow rising from a hearth floor → food / hospitality / artisan
- *     (warm, heritage) — the ONLY variant with upward (not diagonal) motion.
+ *   - `ember`  — warm glow rising from a hearth floor → food / hospitality / artisan / after-dark
+ *     (warm, heritage, artisan, noir — noir's after-dark steakhouse/lounge wants ember's
+ *     intimate warm-glow-in-a-dark-room, not cool ribbons) — the ONLY upward-motion variant.
  * Pure + total (unknown/blank → `aurora`) so it unit-tests in isolation.
  *
  * @example backdropForPreset('luxe')       // → 'waves'
@@ -83,10 +85,10 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
 // commits), so the coverage is drift-GUARDED by a test (WebGLHeroBackdrop.test.ts asserts
 // every PRESET_NAMES entry is a key here) — add the mapping in the SAME change as a new preset.
 export const PRESET_BACKDROP: Record<string, HeroBackdropVariant> = {
-  botanical: 'aurora', scholarly: 'aurora', boutique: 'aurora', classic: 'aurora',
+  botanical: 'aurora', scholarly: 'aurora', boutique: 'aurora', classic: 'aurora', retro: 'aurora',
   editorial: 'waves', luxe: 'waves',
   futuristic: 'mesh', bold: 'mesh', precision: 'mesh', rugged: 'mesh', brutalist: 'mesh',
-  warm: 'ember', heritage: 'ember',
+  warm: 'ember', heritage: 'ember', noir: 'ember', artisan: 'ember',
 };
 export function backdropForPreset(preset: string | null | undefined): HeroBackdropVariant {
   return PRESET_BACKDROP[(preset ?? '').trim().toLowerCase()] ?? 'aurora';
