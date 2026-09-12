@@ -191,7 +191,10 @@ Lighthouse / axe-core / Playwright are run by the projectsites.dev deploy pipeli
 | Console errors | 0 |
 | `{PLACEHOLDER}` strings in production | 0 |
 | JSON-LD blocks per page | ≥ 5 |
+| Homepage real content | ≥ 800 words (aim 900–1100); sub-pages ≥ 400 |
 | JS bundle (gzip) per route | ≤ 250 KB |
+
+**Content density is a quality gate, not a nicety.** A thin ~600-word homepage of one-line sections LOSES the beat-the-source density dimension. Every section carries 2–4 real sentences (a genuine description under each service, a real About story, a Why-Us block, a 3–5 Q&A FAQ, a local-context paragraph) — grounded in the business's actual story/services/reviews, never filler or repetition.
 
 ## What this repo does NOT do
 
