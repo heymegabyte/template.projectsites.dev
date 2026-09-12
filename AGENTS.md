@@ -119,6 +119,18 @@ Always go through `_brand.json`. The resolver in `src/brand.ts` handles aliasing
 
 To let the chosen preset SUPPLY the font pairing + radii, **omit the `font` and `radius` groups** from `_brand.json` (keep only colors/values you genuinely extracted from the source brand — those still win per-key). Full reference: `src/themePresets.ts` + `docs/BRAND.md`.
 
+### Conversion intent — the CTAs must match how the business is patronized
+
+`themeStyle` sets the LOOK; **conversion intent** sets the primary CTAs. Getting it wrong is a wrong-vertical defect just like a wrong-vertical H1 — it makes the delivered site read as a generic retail template instead of the real business. Pick the mode by how a customer actually converts, then use its CTAs (never a shopping cart unless the mode is `retail`):
+
+- **retail** (jewelry, florist, bookstore, hardware, clothing, gift, furniture) — SELLS products → *Shop / Browse the collection / Add to cart / Buy* + store hours. **The only mode where cart / "Free shipping" / "Shop now" language is on-brand.**
+- **hospitality** (restaurant, bar, brewery, **distillery, winery, cidery**, cafe, hotel, tasting room) — people VISIT / TASTE / DINE / BOOK → *Reserve a table / Book a tour / View the menu / Visit us / Order for pickup*. Present offerings as a **menu or collection to explore**, never a store to check out. ❌ NEVER "Shop now / Add to cart / Free shipping / 30-day returns" as the hero CTA (a small "where to buy our bottles" link is fine as a secondary).
+- **service** (plumbing, HVAC, salon, spa, clinic, dental, auto, gym) — customers BOOK / REQUEST → *Book now / Schedule service / Request a free quote / Call us*. ❌ no cart.
+- **professional** (legal, accounting, financial, real-estate, consulting, agency) — clients CONSULT / RETAIN → *Book a consultation / Contact us / Request a proposal*. ❌ no cart.
+- **nonprofit** (soup kitchen, food bank, charity, church) — supporters DONATE / VOLUNTEER → *Donate / Volunteer / Get involved*. ❌ no retail cart as the primary CTA.
+
+Match the **hero image** to the same intent — a tasting room / dining room / job-site / consultation / community photo, never a generic retail storefront or product-rack stock image on a non-retail business.
+
 ### When to add a new section vs reuse
 
 Reuse `src/components/sections/*` whenever possible. Adding a new section is a last resort — most layout needs are covered by composing existing ones with different `eyebrow` / `headline` / `tiles` props.
