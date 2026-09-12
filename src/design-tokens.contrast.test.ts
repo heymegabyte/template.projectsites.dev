@@ -181,7 +181,12 @@ describe('scroll-reveal opacity floor keeps muted body copy AA (§C.3 team-role-
     alpha: number,
   ): [number, number, number] =>
     [0, 1, 2].map((i) => Math.round(alpha * fg[i] + (1 - alpha) * bg[i])) as [number, number, number];
-  const MUTED_L = 0.42; // index.css light --color-text-muted lightness
+  // Read the light muted L from index.css (was hardcoded 0.42 → a token lightening would slip
+  // past this lock). Now a regression that lightens --color-text-muted fails the test. (AL-434)
+  const MUTED_L = (() => {
+    const c = read('./index.css');
+    return tokenIn(c.slice(c.indexOf("[data-theme='light']")), '--color-text-muted').L;
+  })();
   const CREAM_L = 0.93; // the axe-measured card surface (#fcf0e3) — the tightest light bg
 
   it('OLD 0.70 mid-fade FAILED AA on cream (documents the reopened bug)', () => {
@@ -205,5 +210,43 @@ describe('scroll-reveal opacity floor keeps muted body copy AA (§C.3 team-role-
     const m = from.match(/opacity:\s*([\d.]+)/);
     expect(m, 'team-role-rise from{opacity} present').toBeTruthy();
     expect(parseFloat(m![1]), 'reveal opacity floor ≥0.9').toBeGreaterThanOrEqual(0.9);
+  });
+});
+
+/**
+ * §C.3 accent-AS-TEXT lock (reopened AL-213, fixed AL-417, LOCKED AL-434): eyebrows, labels,
+ * contact links and directory cards (`.lm-dir`) that colour TEXT with the accent route through
+ * `--color-accent-readable`, which FORCES a dark lightness (keeping the brand accent's chroma/
+ * hue) so a light/warm accent (gold ~1.6:1 raw) stays legible on the cream light surface.
+ * harborline shipped the OLD forced L=0.44 → `.lm-dir` = 4.47:1 (a hair under AA); AL-417
+ * dropped it to 0.38 (≈8–10:1). Nothing locked that L against a future lightening — this does,
+ * reading the forced L from index.css and checking worst-case (vivid) accent chroma × hue.
+ */
+describe('§C.3 accent-as-text (--color-accent-readable) clears AA on cream (AL-434)', () => {
+  const light = (() => {
+    const c = read('./index.css');
+    return c.slice(c.indexOf("[data-theme='light']"));
+  })();
+  const accReadableL = Number(
+    (light.match(/--color-accent-readable:\s*oklch\(from var\(--color-accent\)\s*([\d.]+)/) || [])[1],
+  );
+  const cream = tokenIn(light, '--color-background');
+
+  it('the forced accent-readable lightness is present + dark enough to matter', () => {
+    expect(accReadableL, '--color-accent-readable forced L parsed from index.css light block').toBeGreaterThan(0);
+    expect(accReadableL, 'forced L stays dark (a light forced-L defeats the purpose)').toBeLessThanOrEqual(0.45);
+  });
+  it('accent-as-text clears 4.5:1 on cream at worst-case chroma, every brand hue', () => {
+    for (const hue of HUES) {
+      const creamRgb = oklchToRgb255(cream.L, cream.C, cream.H ?? hue);
+      for (const C of [0.06, 0.12, 0.18]) {
+        // vivid accents are the hard case at a fixed dark L — assert even those clear AA.
+        const acc = oklchToRgb255(accReadableL, C, hue);
+        expect(
+          contrast(acc, creamRgb),
+          `accent-readable L${accReadableL} C${C} hue${hue} on cream`,
+        ).toBeGreaterThanOrEqual(AA);
+      }
+    }
   });
 });
