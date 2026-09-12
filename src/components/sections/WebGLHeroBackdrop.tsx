@@ -27,7 +27,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
  */
 
 /** The visual character of the backdrop — pick per industry. */
-export type HeroBackdropVariant = 'aurora' | 'waves' | 'mesh' | 'ember';
+export type HeroBackdropVariant = 'aurora' | 'waves' | 'mesh' | 'ember' | 'grid';
 
 /** Shader parameters per variant (pure data — unit-tested). */
 export interface HeroBackdropConfig {
@@ -53,37 +53,43 @@ export interface HeroBackdropConfig {
  * Per-variant shader configs. `aurora` = soft flowing ribbons (wellness/creative);
  * `waves` = broad horizontal swells (finance/professional, calmer); `mesh` = tighter
  * cellular shimmer (tech/AI); `ember` = a warm glow that RISES from a hearth floor
- * (food/hospitality/artisan — the one variant with vertical, not diagonal, motion).
+ * (food/hospitality/artisan — vertical, not diagonal, motion); `grid` = a neon
+ * perspective floor receding to a horizon sun-glow (retro/synthwave — the iconic
+ * scrolling-toward-you grid, distinct from every noise-field variant).
  * All stay dark + low-intensity so foreground text stays legible.
  */
 export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConfig> = {
   // warp: aurora highest (flowing ribbons), ember turbulent, waves silky-gentle, mesh subtle
-  // (keep the tight cellular tech read — just less flat).
+  // (keep the tight cellular tech read — just less flat). grid ignores warp (no fbm field) but
+  // carries a small positive value for config uniformity; its scale=grid density, sharp=line crispness.
   aurora: { scale: 2.5, speed: 1.0, sharpness: 0.7, hueSpread: 0.08, intensity: 0.9, warp: 0.9 },
   waves: { scale: 1.6, speed: 0.6, sharpness: 0.5, hueSpread: 0.04, intensity: 0.8, warp: 0.5 },
   mesh: { scale: 4.0, speed: 1.3, sharpness: 0.85, hueSpread: 0.12, intensity: 0.85, warp: 0.35 },
   ember: { scale: 2.0, speed: 0.8, sharpness: 0.58, hueSpread: 0.06, intensity: 0.82, warp: 0.7 },
+  grid: { scale: 7.0, speed: 1.0, sharpness: 0.7, hueSpread: 0.05, intensity: 0.8, warp: 0.3 },
 };
 
 /**
  * Map a `themeStyle` preset (the 13 site personalities) to the backdrop whose
  * MOTION matches that personality — so every generated site gets a fitting
  * animated hero automatically (no per-build opt-in):
- *   - `aurora` — soft flowing ribbons → welcoming / organic / creative / nostalgic
- *     (botanical, scholarly, boutique, classic, retro — retro's playful vibrant nostalgia
- *     reads as synthwave flowing color, not a techy shimmer);
+ *   - `aurora` — soft flowing ribbons → welcoming / organic / creative
+ *     (botanical, scholarly, boutique, classic);
  *   - `waves`  — broad calm swells → authoritative / professional / trusted
  *     (editorial, luxe);
  *   - `mesh`   — tight cellular shimmer → technical / energetic / precise
  *     (futuristic, bold, precision, rugged, brutalist);
  *   - `ember`  — warm glow rising from a hearth floor → food / hospitality / artisan / after-dark
  *     (warm, heritage, artisan, noir — noir's after-dark steakhouse/lounge wants ember's
- *     intimate warm-glow-in-a-dark-room, not cool ribbons) — the ONLY upward-motion variant.
+ *     intimate warm-glow-in-a-dark-room, not cool ribbons);
+ *   - `grid`   — neon perspective floor scrolling to a horizon sun-glow → retro / synthwave
+ *     (retro — the iconic scrolling grid IS the retro identity; a soft aurora field undersold it).
  * Pure + total (unknown/blank → `aurora`) so it unit-tests in isolation.
  *
  * @example backdropForPreset('luxe')       // → 'waves'
  * @example backdropForPreset('futuristic') // → 'mesh'
  * @example backdropForPreset('warm')       // → 'ember'
+ * @example backdropForPreset('retro')      // → 'grid'
  * @example backdropForPreset(undefined)    // → 'aurora'
  */
 // MUST carry an explicit entry for EVERY `THEME_PRESETS` key — a preset with no entry
@@ -93,10 +99,11 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
 // commits), so the coverage is drift-GUARDED by a test (WebGLHeroBackdrop.test.ts asserts
 // every PRESET_NAMES entry is a key here) — add the mapping in the SAME change as a new preset.
 export const PRESET_BACKDROP: Record<string, HeroBackdropVariant> = {
-  botanical: 'aurora', scholarly: 'aurora', boutique: 'aurora', classic: 'aurora', retro: 'aurora',
+  botanical: 'aurora', scholarly: 'aurora', boutique: 'aurora', classic: 'aurora',
   editorial: 'waves', luxe: 'waves',
   futuristic: 'mesh', bold: 'mesh', precision: 'mesh', rugged: 'mesh', brutalist: 'mesh',
   warm: 'ember', heritage: 'ember', noir: 'ember', artisan: 'ember',
+  retro: 'grid', // synthwave neon perspective grid — retro's iconic aesthetic, not a soft ribbon field
 };
 export function backdropForPreset(preset: string | null | undefined): HeroBackdropVariant {
   return PRESET_BACKDROP[(preset ?? '').trim().toLowerCase()] ?? 'aurora';
@@ -150,29 +157,56 @@ void main(){
   vec2 uv = gl_FragCoord.xy / uRes.xy;
   vec2 p = uv * vec2(uRes.x/uRes.y, 1.0);
   float t = uTime * 0.05;
-  bool ember = uMode > 0.5;
-  // ember RISES vertically (embers/steam over a hearth); the others drift diagonally.
-  vec2 drift  = ember ? vec2(0.03*sin(t*1.7), -t*1.5) : vec2(t, t*0.6);
-  vec2 drift2 = ember ? vec2(-0.02*sin(t*1.3), -t*1.1) : vec2(-t*0.8, -t);
-  // DOMAIN WARP — flow the sample coords through a low-freq fbm field so the flat noise
-  // becomes marbled, swirling ribbons (organic + premium; ~+20% structural variance measured).
-  // uWarp=0 makes the warp term vanish → byte-identical to the pre-warp field.
-  vec2 q = vec2(fbm(p*uScale + drift), fbm(p*uScale + drift2 + 5.2));
-  float f = fbm(p*uScale + uWarp*q + drift);
-  f += 0.5 * fbm(p*uScale*2.0 + uWarp*0.6*q + drift2);
-  float band = smoothstep(1.0-uSharp, 0.95, f);
-  float hue = uHue + (ember ? -0.02 : 0.0) + uSpread * sin(f*3.14159 + t);  // ember nudges warm
-  // ember adds a soft warm glow floor rising from the bottom edge (uv.y→0 = hearth).
-  float glow = ember ? 0.07 * (1.0 - smoothstep(0.0, 0.65, uv.y)) : 0.0;
-  // premium silk highlight along the warped ribbon crests (only when warping).
-  float sheen = uWarp > 0.0 ? 0.06 * pow(band, 3.0) : 0.0;
-  vec3 col = hsl2rgb(hue, 0.7, 0.13 + 0.30*band + glow + sheen);
+  vec3 col;
+  if (uMode > 1.5) {
+    // ---- SYNTHWAVE GRID (uMode==2): a neon perspective floor receding to a horizon sun-glow.
+    // The iconic retro/synthwave scene — rows scroll TOWARD the viewer. Distinct from every
+    // noise-field variant. The horizon sits LOW (bottom third) so the grid floor + neon sun
+    // occupy the bottom, and the hero H1 (vertical center) rests in the calm DARK SKY above
+    // them — text stays legible without the sun-glow competing behind the headline.
+    float H = 0.40;                                    // horizon height in screen space (low → sky-dominant)
+    if (uv.y < H) {
+      float fade = (H - uv.y) / H;                     // 0 at horizon → 1 at bottom edge
+      float persp = 1.0 / max(1.0 - fade, 0.04);       // depth explodes toward the horizon
+      float gx = (uv.x - 0.5) * persp * uScale;        // perspective-widened columns (uScale = density)
+      float gz = persp * 2.4 - t * 8.0;                // rows flow toward the viewer
+      float lw = mix(0.06, 0.02, uSharp);              // line half-width (sharper preset = thinner)
+      float lines = (1.0 - smoothstep(0.0, lw, abs(fract(gx) - 0.5)))
+                  + (1.0 - smoothstep(0.0, lw, abs(fract(gz) - 0.5)));
+      lines = clamp(lines, 0.0, 1.0) * smoothstep(0.0, 0.12, fade);  // AA the far rows at the horizon
+      col = hsl2rgb(uHue, 0.85, 0.5) * lines;
+    } else {
+      float sky = (uv.y - H) / (1.0 - H);              // 0 at horizon → 1 at top
+      float sun = 1.0 - smoothstep(0.0, 0.30, length(vec2((uv.x - 0.5) * 1.5, (uv.y - H) * 2.4)));
+      col  = hsl2rgb(uHue + uSpread, 0.75, 0.15) * (1.0 - sky) * 0.5;  // faint sky gradient
+      col += hsl2rgb(uHue, 0.9, 0.5) * sun * 0.5;                      // neon horizon sun disc
+    }
+  } else {
+    bool ember = abs(uMode - 1.0) < 0.5;   // uMode==1 (grid=2 handled above, flowing=0)
+    // ember RISES vertically (embers/steam over a hearth); the others drift diagonally.
+    vec2 drift  = ember ? vec2(0.03*sin(t*1.7), -t*1.5) : vec2(t, t*0.6);
+    vec2 drift2 = ember ? vec2(-0.02*sin(t*1.3), -t*1.1) : vec2(-t*0.8, -t);
+    // DOMAIN WARP — flow the sample coords through a low-freq fbm field so the flat noise
+    // becomes marbled, swirling ribbons (organic + premium; ~+20% structural variance measured).
+    // uWarp=0 makes the warp term vanish → byte-identical to the pre-warp field.
+    vec2 q = vec2(fbm(p*uScale + drift), fbm(p*uScale + drift2 + 5.2));
+    float f = fbm(p*uScale + uWarp*q + drift);
+    f += 0.5 * fbm(p*uScale*2.0 + uWarp*0.6*q + drift2);
+    float band = smoothstep(1.0-uSharp, 0.95, f);
+    float hue = uHue + (ember ? -0.02 : 0.0) + uSpread * sin(f*3.14159 + t);  // ember nudges warm
+    // ember adds a soft warm glow floor rising from the bottom edge (uv.y→0 = hearth).
+    float glow = ember ? 0.07 * (1.0 - smoothstep(0.0, 0.65, uv.y)) : 0.0;
+    // premium silk highlight along the warped ribbon crests (only when warping).
+    float sheen = uWarp > 0.0 ? 0.06 * pow(band, 3.0) : 0.0;
+    col = hsl2rgb(hue, 0.7, 0.13 + 0.30*band + glow + sheen);
+  }
   col *= smoothstep(1.25, 0.2, length(uv-0.5));   // vignette → keeps center text legible
   // PER-HUE PERCEPTUAL-LUMINANCE COMPENSATION — at the same lightness a green/amber brand reads
   // ~3× brighter than a blue one (measured: green 95 vs blue 33), so bright-hue brands shipped an
   // over-bright, content-competing backdrop while blue brands stayed subtle. Normalize toward the
   // blue baseline so EVERY brand hue yields a uniformly subtle atmosphere (text legible regardless).
-  vec3 hueRgb = hsl2rgb(hue, 0.7, 0.5);
+  // Keyed off uHue (the brand hue) so it's identical for every mode incl. grid.
+  vec3 hueRgb = hsl2rgb(uHue, 0.7, 0.5);
   float hueLuma = dot(hueRgb, vec3(0.2126, 0.7152, 0.0722));
   float lumaComp = clamp(0.38 / max(hueLuma, 0.05), 0.45, 1.0);
   vec3 lit = col * uIntensity * lumaComp;
@@ -260,7 +294,7 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       mode: gl.getUniformLocation(prog, 'uMode'),
       warp: gl.getUniformLocation(prog, 'uWarp'),
     };
-    const modeFlag = variant === 'ember' ? 1 : 0;
+    const modeFlag = variant === 'grid' ? 2 : variant === 'ember' ? 1 : 0;
     const hue = parseBrandHue(
       getComputedStyle(document.documentElement).getPropertyValue('--brand-hue'),
     );

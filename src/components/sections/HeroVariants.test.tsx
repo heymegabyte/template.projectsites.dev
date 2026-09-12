@@ -44,6 +44,6 @@ describe('HeroVariants — per-industry WebGL backdrop wired ON by default', () 
   });
 
   it('backdropForPreset(brand.themeStyle) always resolves to a real variant', () => {
-    expect(['aurora', 'waves', 'mesh']).toContain(backdropForPreset(brand.themeStyle));
+    expect(['aurora', 'waves', 'mesh', 'ember', 'grid']).toContain(backdropForPreset(brand.themeStyle));
   });
 });

@@ -48,8 +48,8 @@ describe('resolveBackdropMode', () => {
 });
 
 describe('HERO_BACKDROP_CONFIGS', () => {
-  const variants: HeroBackdropVariant[] = ['aurora', 'waves', 'mesh', 'ember'];
-  it('defines all four variants with sane, text-legible params', () => {
+  const variants: HeroBackdropVariant[] = ['aurora', 'waves', 'mesh', 'ember', 'grid'];
+  it('defines all five variants with sane, text-legible params', () => {
     for (const v of variants) {
       const c = HERO_BACKDROP_CONFIGS[v];
       expect(c).toBeDefined();
@@ -76,6 +76,7 @@ describe('backdropForPreset (per-industry hero motion)', () => {
   const ALL_PRESETS = [
     'classic', 'editorial', 'warm', 'luxe', 'brutalist', 'bold', 'futuristic',
     'rugged', 'botanical', 'boutique', 'precision', 'heritage', 'scholarly',
+    'noir', 'retro', 'artisan',
   ];
   it('maps every preset to a configured variant', () => {
     for (const p of ALL_PRESETS) {
@@ -92,6 +93,7 @@ describe('backdropForPreset (per-industry hero motion)', () => {
     expect(backdropForPreset('futuristic')).toBe('mesh'); // technical, energetic
     expect(backdropForPreset('bold')).toBe('mesh');
     expect(backdropForPreset('precision')).toBe('mesh');
+    expect(backdropForPreset('retro')).toBe('grid'); // synthwave neon perspective grid
   });
   it('is case-insensitive + total (blank / unknown / nullish → aurora)', () => {
     expect(backdropForPreset('LUXE')).toBe('waves');
