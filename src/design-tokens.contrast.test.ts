@@ -262,3 +262,25 @@ describe('§C.3 accent-as-text (--color-accent-readable) clears AA on cream (AL-
     }
   });
 });
+
+/**
+ * Drift guard: the stat-tile caption must NOT double-dim (a muted/subtle token PLUS an
+ * `opacity:` dim) on the glass `.pst-tile`. That composited the text below 4.5:1 —
+ * tailwind-opacity-on-muted-token-fails-aa-contrast + text-subtle-on-elevated. The caption
+ * recedes via the AA-safe muted token + smaller font ALONE; re-adding an opacity dim (or
+ * routing it back through text-subtle) reintroduces the latent AA failure. (AL-444.)
+ */
+describe('stat caption does not opacity-double-dim on the glass tile (§C.3)', () => {
+  it('index.css .pst-caption carries NO opacity dim', () => {
+    const css = read('./index.css');
+    const at = css.indexOf('.pst-caption {');
+    expect(at, '.pst-caption rule present').toBeGreaterThan(-1);
+    const rule = css.slice(at, css.indexOf('}', at));
+    expect(/opacity\s*:/.test(rule), '.pst-caption must not dim a muted token with opacity').toBe(false);
+  });
+  it('Stats.tsx caption uses the AA-safe muted token, not the borderline subtle one', () => {
+    const tsx = read('./components/sections/Stats.tsx');
+    expect(tsx).toContain('pst-caption text-text-muted');
+    expect(tsx, 'caption must not use text-subtle on the glass tile').not.toContain('pst-caption text-text-subtle');
+  });
+});

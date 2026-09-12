@@ -2742,7 +2742,11 @@ main#main { view-transition-name: ps-main; }
 }
 /* text-wrap: balance keeps labels from ragging into one-word orphan lines. */
 .pst-label { display: block; margin-top: 0.5rem; font-weight: 500; text-wrap: balance; }
-.pst-caption { display: block; margin-top: 0.25rem; font-size: 0.875rem; opacity: 0.72; text-wrap: balance; }
+/* Caption recedes via the AA-safe muted token + smaller size — NOT an opacity dim on top
+   of a muted token (double-dim). On the glass .pst-tile (white 5% over the page) the old
+   `text-subtle × opacity:0.72` composited below 4.5:1 (tailwind-opacity-on-muted-token-fails-
+   aa-contrast + text-subtle-on-elevated). muted (L0.65 dark / 0.42 light) holds AA at full alpha. */
+.pst-caption { display: block; margin-top: 0.25rem; font-size: 0.875rem; text-wrap: balance; }
 
 /* Screen-reader value is always in the DOM; the animated overlay is aria-hidden
    so assistive tech always announces the correct FINAL number. */

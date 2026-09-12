@@ -174,7 +174,7 @@ export function Stats({ stats, eyebrow, headline, columns, className }: Props) {
               <StatFigure value={s.value} suffix={s.suffix} />
               <span aria-hidden="true" className="pst-underline" />
               <span className="pst-label text-text">{s.label}</span>
-              {s.caption && <span className="pst-caption text-text-subtle">{s.caption}</span>}
+              {s.caption && <span className="pst-caption text-text-muted">{s.caption}</span>}
             </dd>
           </div>
         ))}
