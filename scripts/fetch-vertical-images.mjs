@@ -21,7 +21,7 @@ const QUERIES = {
   restaurant: ['warm restaurant interior dining', 'chef plating gourmet food'],
   'local-service': ['plumber repairing pipes', 'service technician tools'],
   nonprofit: ['community volunteers helping', 'group of volunteers smiling'],
-  retail: ['modern boutique retail store', 'stylish clothing display'],
+  retail: ['cozy independent shop interior shelves', 'shopkeeper arranging products on shelves'],
   saas: ['software team working laptops office', 'modern tech startup workspace'],
   agency: ['creative agency team meeting', 'designer workspace desk'],
   portfolio: ['creative photographer workspace', 'artist working studio'],
