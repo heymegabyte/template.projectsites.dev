@@ -102,7 +102,7 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
       }`}
     >
       <nav className="max-w-container-wide mx-auto px-6 py-3 flex justify-between items-center" aria-label="Primary">
-        <Link to="/" className="site-brand group flex items-center gap-2.5 min-w-0 mr-3" aria-label={`${business} — home`}>
+        <Link to="/" className="site-brand group flex items-center gap-3 min-w-0 mr-3" aria-label={`${business} — home`}>
           {iconIdx < iconSrcs.length ? (
             // Icon mark: the REAL brand logo (transparent `logo-icon.png` first, then the
             // opaque apple-touch-icon). No border / shadow / rounded box and
@@ -112,17 +112,19 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
             <img
               src={iconSrcs[iconIdx]}
               alt=""
-              width={44}
-              height={44}
+              width={56}
+              height={56}
               // drop-shadow halo (not a box): keeps the mark TRANSPARENT while staying
               // legible over a busy/low-contrast hero when the header is transparent
-              // (unscrolled) — per the logo-contrast rule.
-              className="site-logo h-11 w-11 object-contain shrink-0 drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]"
+              // (unscrolled) — per the logo-contrast rule. Sized BIG (h-12→h-14, 48→56px)
+              // so the brand mark is PROMINENT + easy to see — never a tiny 44px afterthought
+              // (cafe-dim-sum shipped a 44px icon lost against the hero; AL-392).
+              className="site-logo h-12 w-12 sm:h-14 sm:w-14 object-contain shrink-0 drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]"
               onError={() => setIconIdx((i) => i + 1)}
             />
           ) : (
             <span
-              className="site-logo h-11 w-11 rounded-lg grid place-items-center bg-accent text-[var(--color-on-accent)] font-heading font-extrabold text-base shadow-sm shrink-0"
+              className="site-logo h-12 w-12 sm:h-14 sm:w-14 rounded-lg grid place-items-center bg-accent text-[var(--color-on-accent)] font-heading font-extrabold text-lg shadow-sm shrink-0"
               aria-hidden="true"
             >
               {initials}
@@ -135,11 +137,11 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
             <img
               src="/logo-wordmark.png"
               alt={business}
-              className="site-wordmark h-9 sm:h-10 w-auto max-w-[180px] sm:max-w-[280px] object-contain drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]"
+              className="site-wordmark h-10 sm:h-12 w-auto max-w-[220px] sm:max-w-[340px] object-contain drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]"
               onError={() => setWordmarkOk(false)}
             />
           ) : (
-            <span className="site-wordmark-text min-w-0 truncate text-text font-extrabold font-heading tracking-tight text-[clamp(1.125rem,4.5vw,1.5rem)] [text-shadow:0_1px_3px_rgba(0,0,0,0.55)] group-hover:text-accent transition-colors">
+            <span className="site-wordmark-text min-w-0 truncate text-text font-extrabold font-heading tracking-tight text-[clamp(1.25rem,5vw,1.75rem)] [text-shadow:0_1px_3px_rgba(0,0,0,0.55)] group-hover:text-accent transition-colors">
               {business}
             </span>
           )}

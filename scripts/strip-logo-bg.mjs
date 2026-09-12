@@ -120,6 +120,36 @@ async function stripBg(sharp, srcPath, destPath) {
   }
 }
 
+/**
+ * Crop the transparent/near-solid margins off the wordmark so its text FILLS the image.
+ * A generated wordmark is often a padded near-square canvas (cafe-dim-sum shipped a
+ * 1312×736 wordmark whose "Cafe Dim Sum" text rendered a tiny 71×40 once the Header
+ * height-constrained it — AL-392). Trimming to the ink turns it into a tight horizontal
+ * wordmark that renders large + legible at any height. Fail-soft + guarded: any error, or
+ * a trim that erased almost everything, keeps the untrimmed file.
+ */
+async function trimWordmark(sharp, path) {
+  try {
+    const src = await sharp(path).metadata();
+    const trimmed = await sharp(path).trim({ threshold: 12 }).png().toBuffer();
+    const out = await sharp(trimmed).metadata();
+    const okSize = (out.width ?? 0) >= 24 && (out.height ?? 0) >= 12;
+    // Guard against an over-aggressive trim (bad alpha detection) collapsing it to a sliver.
+    const shrankTooFar =
+      (out.width ?? 0) < (src.width ?? 1) * 0.05 || (out.height ?? 0) < (src.height ?? 1) * 0.05;
+    if (okSize && !shrankTooFar) {
+      await sharp(trimmed).toFile(path);
+      console.warn(
+        `[strip-logo-bg] logo-wordmark.png trimmed ${src.width}×${src.height} → ${out.width}×${out.height}`,
+      );
+    } else {
+      console.warn('[strip-logo-bg] wordmark trim skipped (too aggressive) → kept untrimmed');
+    }
+  } catch (e) {
+    console.warn(`[strip-logo-bg] wordmark trim failed (${String(e).slice(0, 50)}) → kept untrimmed`);
+  }
+}
+
 const sharp = await loadSharp();
 if (!sharp) {
   process.exit(0);
@@ -153,10 +183,13 @@ if (existsSync(apple) && statSync(apple).size > 2000) {
   console.warn('[strip-logo-bg] no real apple-touch-icon (or monogram) → no logo-icon.png');
 }
 
-// Wordmark: strip in place (Header renders it directly; a transparent wordmark drops cleanly).
+// Wordmark: strip bg → transparent, THEN trim the padding so the text FILLS the image
+// (a padded near-square wordmark renders as tiny illegible text once the Header
+// height-constrains it — AL-392). Trim → tight horizontal wordmark → large + legible.
 if (existsSync(wordmark) && statSync(wordmark).size > 2000) {
   const r = await stripBg(sharp, wordmark, wordmark);
   console.warn(`[strip-logo-bg] logo-wordmark.png (in place): ${r}`);
+  await trimWordmark(sharp, wordmark);
 }
 
 process.exit(0);
