@@ -134,6 +134,21 @@ const iconOut = resolve(DIR, 'logo-icon.png');
 if (existsSync(apple) && statSync(apple).size > 2000) {
   const r = await stripBg(sharp, apple, iconOut);
   console.warn(`[strip-logo-bg] apple-touch-icon → logo-icon.png: ${r}`);
+  // ALWAYS emit logo-icon.png (AL-386). stripBg only WRITES iconOut on 'stripped' /
+  // 'already-transparent'; on 'no-solid-bg' (photo/gradient logo or disagreeing corners),
+  // 'too-aggressive', or 'error' it returns WITHOUT writing → Header.tsx's primary
+  // `/logo-icon.png` ref 404s on EVERY such delivered site (a real console error confirmed
+  // live on Tartine/Kabuki/Spa Radiance). Fall back to the opaque apple-touch so the mark is
+  // PRESENT (no 404) — same visual as the old onError→apple-touch chain, minus the console
+  // error; the transparent strip stays preferred whenever it succeeds.
+  if (!existsSync(iconOut)) {
+    try {
+      copyFileSync(apple, iconOut);
+      console.warn('[strip-logo-bg] logo-icon.png absent after strip → copied apple-touch (no-404 fallback)');
+    } catch (e) {
+      console.warn(`[strip-logo-bg] logo-icon fallback copy failed (${String(e).slice(0, 50)})`);
+    }
+  }
 } else {
   console.warn('[strip-logo-bg] no real apple-touch-icon (or monogram) → no logo-icon.png');
 }
