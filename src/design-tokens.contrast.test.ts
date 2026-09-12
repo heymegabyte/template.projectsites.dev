@@ -203,13 +203,25 @@ describe('scroll-reveal opacity floor keeps muted body copy AA (§C.3 team-role-
       expect(contrast(composite(muted, cream, 0.9), cream), `hue ${hue}`).toBeGreaterThanOrEqual(AA);
     }
   });
-  it('index.css team-role-rise ships from{opacity} ≥ 0.9 (never fades text to transparent)', () => {
+  // EVERY text-container scroll-reveal must floor from{opacity} ≥ 0.9 — not just team-role-rise.
+  // The mid-entry composite failed on `.mt-2` (rise-in) + `.team-role-card` (rise-in) too: axe caught
+  // #7b8185/#17211b=4.19 (dark) + #89817c/cream=3.4 (light) — the SAME AL-290 class on the sibling
+  // keyframes AL-290 didn't cover. Generalized (AL-440): drift guard fails if any of these fades text
+  // from below 0.9. Decorative pops with NO body text (process-node-pop dot) are intentionally exempt.
+  const TEXT_REVEAL_KEYFRAMES = [
+    'team-role-rise', 'rise-in', 'trust-chip-rise',
+    'stat-rollup-rise', 'stat-tile-rise', 'process-card-rise', 'team-card-rise',
+  ];
+  it('index.css: EVERY text-container reveal keyframe floors from{opacity} ≥ 0.9', () => {
     const css = read('./index.css');
-    const kf = css.slice(css.indexOf('@keyframes team-role-rise'));
-    const from = kf.slice(0, kf.indexOf('}'));
-    const m = from.match(/opacity:\s*([\d.]+)/);
-    expect(m, 'team-role-rise from{opacity} present').toBeTruthy();
-    expect(parseFloat(m![1]), 'reveal opacity floor ≥0.9').toBeGreaterThanOrEqual(0.9);
+    for (const name of TEXT_REVEAL_KEYFRAMES) {
+      const at = css.indexOf(`@keyframes ${name}`);
+      expect(at, `${name} keyframe present`).toBeGreaterThan(-1);
+      const from = css.slice(at, css.indexOf('}', at));
+      const m = from.match(/opacity:\s*([\d.]+)/);
+      expect(m, `${name} from{opacity} present`).toBeTruthy();
+      expect(parseFloat(m![1]), `${name} reveal opacity floor ≥0.9`).toBeGreaterThanOrEqual(0.9);
+    }
   });
 });
 

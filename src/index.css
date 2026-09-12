@@ -402,8 +402,13 @@ main#main { view-transition-name: ps-main; }
       animation-timeline: view();
       animation-range: entry 0% cover 35%;
     }
+    /* Reveal by SLIDE, not fade-to-zero: a view() opacity 0→1 composites any MUTED body
+       copy below AA at the mid-entry frame (axe measures the composited color) — the
+       team-role-rise class, generalized here (AL-290 → all text-container reveals). Floor
+       the opacity at 0.9 so text holds its settled AA at every frame; the translateY carries
+       the motion. */
     @keyframes rise-in {
-      from { opacity: 0; transform: translateY(24px); }
+      from { opacity: 0.9; transform: translateY(24px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
@@ -430,7 +435,7 @@ main#main { view-transition-name: ps-main; }
       animation-range: entry calc(0% + var(--trust-i, 0) * 6%) cover 30%;
     }
     @keyframes trust-chip-rise {
-      from { opacity: 0; transform: translateY(10px); }
+      from { opacity: 0.9; transform: translateY(10px); }
       to   { opacity: 1; transform: translateY(0); }
     }
     /* Icon ring gets a soft accent glow as it settles in. */
@@ -529,7 +534,7 @@ main#main { view-transition-name: ps-main; }
       animation-range: entry calc(0% + var(--stat-i, 0) * 7%) cover 30%;
     }
     @keyframes stat-rollup-rise {
-      from { opacity: 0; transform: translateY(16px); }
+      from { opacity: 0.9; transform: translateY(16px); }
       to   { opacity: 1; transform: translateY(0); }
     }
     .stat-rollup-tick {
@@ -576,7 +581,7 @@ main#main { view-transition-name: ps-main; }
       animation-range: entry calc(2% + var(--stat-i, 0) * 8%) cover 32%;
     }
     @keyframes stat-tile-rise {
-      from { opacity: 0; transform: translateY(18px); }
+      from { opacity: 0.9; transform: translateY(18px); }
       to   { opacity: 1; transform: translateY(0); }
     }
   }
@@ -666,7 +671,7 @@ main#main { view-transition-name: ps-main; }
       animation-range: entry calc(2% + var(--step-i, 0) * 6%) cover 32%;
     }
     @keyframes process-card-rise {
-      from { opacity: 0; transform: translateY(28px) scale(0.985); }
+      from { opacity: 0.9; transform: translateY(28px) scale(0.985); }
       to   { opacity: 1; transform: translateY(0) scale(1); }
     }
     .process-num {
@@ -857,7 +862,7 @@ main#main { view-transition-name: ps-main; }
       animation-range: entry calc(2% + var(--tm-i, 0) * 8%) cover 32%;
     }
     @keyframes team-card-rise {
-      from { opacity: 0; transform: translateY(18px); }
+      from { opacity: 0.9; transform: translateY(18px); }
       to   { opacity: 1; transform: translateY(0); }
     }
   }
