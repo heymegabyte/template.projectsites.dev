@@ -175,7 +175,16 @@ void main(){
   vec3 hueRgb = hsl2rgb(hue, 0.7, 0.5);
   float hueLuma = dot(hueRgb, vec3(0.2126, 0.7152, 0.0722));
   float lumaComp = clamp(0.38 / max(hueLuma, 0.05), 0.45, 1.0);
-  gl_FragColor = vec4(col * uIntensity * lumaComp, 1.0);
+  vec3 lit = col * uIntensity * lumaComp;
+  // FILM-GRAIN DITHER — a sub-perceptual per-frame grain that (a) breaks up 8-bit gradient
+  // BANDING on the smooth low-frequency field (an objective rendering artifact on flat WebGL
+  // gradients — quantization to 24-bit color leaves visible steps in a slow ramp) and (b) adds a
+  // faint cinematic film texture ("glass+grain"). Amplitude ~2/255: imperceptible as noise,
+  // decisive against banding. Animated via uTime so it reads as film grain, not a fixed pattern;
+  // only runs in the motion-allowed WebGL path (reduced-motion uses the static gradient below,
+  // unaffected). Reuses the existing hash(); a scalar added to a vec3 broadcasts to all channels.
+  float grain = (hash(gl_FragCoord.xy * 1.3 + fract(uTime * 24.0)) - 0.5) * 0.016;
+  gl_FragColor = vec4(lit + grain, 1.0);
 }`;
 
 const VERT_SRC = `attribute vec2 aPos; void main(){ gl_Position = vec4(aPos,0.0,1.0); }`;
