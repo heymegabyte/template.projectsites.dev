@@ -61,6 +61,11 @@ describe('HERO_BACKDROP_CONFIGS', () => {
       // Intensity stays < 1 so the backdrop never overpowers foreground text.
       expect(c.intensity).toBeGreaterThan(0);
       expect(c.intensity).toBeLessThan(1);
+      // Domain-warp strength: present + non-negative + bounded (0 = flat legacy field; a runaway
+      // warp would smear the field into mush). Every variant is warped (> 0) post-AL-403.
+      expect(c.warp, `${v}.warp defined`).toBeTypeOf('number');
+      expect(c.warp).toBeGreaterThan(0);
+      expect(c.warp).toBeLessThanOrEqual(1.5);
     }
   });
 });

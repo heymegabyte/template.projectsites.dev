@@ -41,6 +41,12 @@ export interface HeroBackdropConfig {
   hueSpread: number;
   /** Overall brightness (0..1). Kept low so foreground text stays legible. */
   intensity: number;
+  /**
+   * Domain-warp strength — flows the noise sample coords through a low-freq fbm field so the
+   * flat noise becomes marbled, swirling ribbons (organic + premium, +~20% structural variance).
+   * `0` = the legacy flat field (identical to the pre-warp shader). Tuned per variant.
+   */
+  warp: number;
 }
 
 /**
@@ -51,10 +57,12 @@ export interface HeroBackdropConfig {
  * All stay dark + low-intensity so foreground text stays legible.
  */
 export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConfig> = {
-  aurora: { scale: 2.5, speed: 1.0, sharpness: 0.7, hueSpread: 0.08, intensity: 0.9 },
-  waves: { scale: 1.6, speed: 0.6, sharpness: 0.5, hueSpread: 0.04, intensity: 0.8 },
-  mesh: { scale: 4.0, speed: 1.3, sharpness: 0.85, hueSpread: 0.12, intensity: 0.85 },
-  ember: { scale: 2.0, speed: 0.8, sharpness: 0.58, hueSpread: 0.06, intensity: 0.82 },
+  // warp: aurora highest (flowing ribbons), ember turbulent, waves silky-gentle, mesh subtle
+  // (keep the tight cellular tech read — just less flat).
+  aurora: { scale: 2.5, speed: 1.0, sharpness: 0.7, hueSpread: 0.08, intensity: 0.9, warp: 0.9 },
+  waves: { scale: 1.6, speed: 0.6, sharpness: 0.5, hueSpread: 0.04, intensity: 0.8, warp: 0.5 },
+  mesh: { scale: 4.0, speed: 1.3, sharpness: 0.85, hueSpread: 0.12, intensity: 0.85, warp: 0.35 },
+  ember: { scale: 2.0, speed: 0.8, sharpness: 0.58, hueSpread: 0.06, intensity: 0.82, warp: 0.7 },
 };
 
 /**
@@ -132,6 +140,7 @@ uniform float uSharp;
 uniform float uSpread;
 uniform float uIntensity;
 uniform float uMode;      // 0 = flowing field (aurora/waves/mesh); 1 = ember (warm upward rise)
+uniform float uWarp;      // domain-warp strength (0 = legacy flat field)
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
 float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
   return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),f.x), mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),f.x), f.y); }
@@ -145,13 +154,19 @@ void main(){
   // ember RISES vertically (embers/steam over a hearth); the others drift diagonally.
   vec2 drift  = ember ? vec2(0.03*sin(t*1.7), -t*1.5) : vec2(t, t*0.6);
   vec2 drift2 = ember ? vec2(-0.02*sin(t*1.3), -t*1.1) : vec2(-t*0.8, -t);
-  float f = fbm(p*uScale + drift);
-  f += 0.5 * fbm(p*uScale*2.0 + drift2);
+  // DOMAIN WARP — flow the sample coords through a low-freq fbm field so the flat noise
+  // becomes marbled, swirling ribbons (organic + premium; ~+20% structural variance measured).
+  // uWarp=0 makes the warp term vanish → byte-identical to the pre-warp field.
+  vec2 q = vec2(fbm(p*uScale + drift), fbm(p*uScale + drift2 + 5.2));
+  float f = fbm(p*uScale + uWarp*q + drift);
+  f += 0.5 * fbm(p*uScale*2.0 + uWarp*0.6*q + drift2);
   float band = smoothstep(1.0-uSharp, 0.95, f);
   float hue = uHue + (ember ? -0.02 : 0.0) + uSpread * sin(f*3.14159 + t);  // ember nudges warm
   // ember adds a soft warm glow floor rising from the bottom edge (uv.y→0 = hearth).
   float glow = ember ? 0.07 * (1.0 - smoothstep(0.0, 0.65, uv.y)) : 0.0;
-  vec3 col = hsl2rgb(hue, 0.7, 0.13 + 0.30*band + glow);
+  // premium silk highlight along the warped ribbon crests (only when warping).
+  float sheen = uWarp > 0.0 ? 0.06 * pow(band, 3.0) : 0.0;
+  vec3 col = hsl2rgb(hue, 0.7, 0.13 + 0.30*band + glow + sheen);
   col *= smoothstep(1.25, 0.2, length(uv-0.5));   // vignette → keeps center text legible
   gl_FragColor = vec4(col * uIntensity, 1.0);
 }`;
@@ -227,6 +242,7 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       spread: gl.getUniformLocation(prog, 'uSpread'),
       intensity: gl.getUniformLocation(prog, 'uIntensity'),
       mode: gl.getUniformLocation(prog, 'uMode'),
+      warp: gl.getUniformLocation(prog, 'uWarp'),
     };
     const modeFlag = variant === 'ember' ? 1 : 0;
     const hue = parseBrandHue(
@@ -262,6 +278,7 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       gl.uniform1f(u.spread, cfg.hueSpread);
       gl.uniform1f(u.intensity, cfg.intensity);
       gl.uniform1f(u.mode, modeFlag);
+      gl.uniform1f(u.warp, cfg.warp);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       raf = requestAnimationFrame(frame);
     };
@@ -303,7 +320,7 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       canvas.removeEventListener('webglcontextlost', onLost);
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
-  }, [variant, cfg.scale, cfg.sharpness, cfg.hueSpread, cfg.intensity]);
+  }, [variant, cfg.scale, cfg.sharpness, cfg.hueSpread, cfg.intensity, cfg.warp]);
 
   // Static brand gradient — the always-legible fallback (reduced-motion / no-WebGL /
   // SSR first paint). Uses the brand tokens so it matches the animated version's palette.
