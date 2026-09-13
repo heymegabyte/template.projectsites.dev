@@ -40,6 +40,9 @@ export default function HeroWithPhoto({
       <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/45 to-[var(--color-background)]" />
       {/* soft accent glow for depth */}
       <div className="hero-photo-glow" aria-hidden="true" />
+      {/* cinematic film grain (above photo/gradient, below the z-10 copy) — matches the
+          luxe/noir/artisan/heritage theme dossiers' "film grain" art direction */}
+      <div className="hero-photo-grain" aria-hidden="true" />
 
       <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
         {/* Rating badge */}

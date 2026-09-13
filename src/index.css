@@ -3486,6 +3486,20 @@ main#main { view-transition-name: ps-main; }
           position: absolute; inset: 0; pointer-events: none;
           background: radial-gradient(60% 45% at 50% 78%, color-mix(in oklch, var(--color-accent) 14%, transparent), transparent 70%);
         }
+        /* Cinematic film-grain over the hero photo — every theme dossier (luxe / noir /
+           artisan / heritage) calls for "film grain", but the hero shipped without it.
+           Sits ABOVE the photo + gradient + glow (z:0) and BELOW the z-10 copy, so it
+           textures the imagery without ever touching text legibility. Static (no motion),
+           pointer-transparent; dropped when the user reduces transparency (matches .grain). */
+        .hero-photo-grain {
+          position: absolute; inset: 0; z-index: 1; pointer-events: none;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+          opacity: 0.10;
+          mix-blend-mode: overlay;
+        }
+        @media (prefers-reduced-transparency: reduce) {
+          .hero-photo-grain { display: none; }
+        }
         @media (prefers-reduced-motion: no-preference) {
           .hero-photo-img { animation: heroKenBurns 22s ease-in-out infinite alternate; transform-origin: center; will-change: transform; }
           @keyframes heroKenBurns {
