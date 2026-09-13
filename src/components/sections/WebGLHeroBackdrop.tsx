@@ -123,18 +123,41 @@ export function parseBrandHue(cssValue: string | null | undefined, fallbackDeg =
 }
 
 /**
- * Decide how to render: the animated WebGL scene only when motion is allowed AND
- * WebGL is available; otherwise the static brand gradient. Pure → unit-tested.
+ * Decide how to render: the animated WebGL scene only when motion is allowed AND WebGL is
+ * available AND the page is NOT a light theme; otherwise the static brand gradient. Pure → unit-tested.
  *
- * @example resolveBackdropMode({ reducedMotion: true,  webglOk: true  }) // 'static'
- * @example resolveBackdropMode({ reducedMotion: false, webglOk: false }) // 'static'
- * @example resolveBackdropMode({ reducedMotion: false, webglOk: true  }) // 'webgl'
+ * WHY light themes get the static gradient (AL-448): the backdrop is a DARK-FIRST atmospheric
+ * field, so on a LIGHT theme it paints a dark, muddy field that (a) looks off-theme and (b) drops
+ * the LIGHT-theme (dark) hero eyebrow/subtitle/badge text to ~1.2:1 — dark-on-dark. axe is BLIND to
+ * it (the field is a `<canvas>`, not a CSS background), so it shipped unflagged (Verve coffee, hue 45).
+ * The static gradient is subtle + brand-tinted + keeps the light hero clean and the dark text legible.
+ *
+ * @example resolveBackdropMode({ reducedMotion: true,  webglOk: true,  lightTheme: false }) // 'static'
+ * @example resolveBackdropMode({ reducedMotion: false, webglOk: false, lightTheme: false }) // 'static'
+ * @example resolveBackdropMode({ reducedMotion: false, webglOk: true,  lightTheme: true  }) // 'static'
+ * @example resolveBackdropMode({ reducedMotion: false, webglOk: true,  lightTheme: false }) // 'webgl'
  */
 export function resolveBackdropMode(input: {
   reducedMotion: boolean;
   webglOk: boolean;
+  lightTheme: boolean;
 }): 'webgl' | 'static' {
-  return !input.reducedMotion && input.webglOk ? 'webgl' : 'static';
+  return !input.reducedMotion && input.webglOk && !input.lightTheme ? 'webgl' : 'static';
+}
+
+/**
+ * Is the page currently rendering the LIGHT theme? Reads the resolved theme: an explicit
+ * `data-theme` attribute wins; `auto`/unset falls back to the `prefers-color-scheme` media query.
+ * SSR-safe (returns false without `document`).
+ *
+ * @example isLightTheme() // true when <html data-theme="light"> or (auto + OS light)
+ */
+export function isLightTheme(): boolean {
+  if (typeof document === 'undefined') return false;
+  const attr = (document.documentElement.getAttribute('data-theme') || '').toLowerCase();
+  if (attr === 'light') return true;
+  if (attr === 'dark') return false;
+  return typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: light)').matches === true;
 }
 
 const FRAG_SRC = `
@@ -256,7 +279,7 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
     } catch {
       gl = null;
     }
-    const next = resolveBackdropMode({ reducedMotion, webglOk: !!gl });
+    const next = resolveBackdropMode({ reducedMotion, webglOk: !!gl, lightTheme: isLightTheme() });
     setMode(next);
     if (next === 'static' || !canvas || !gl) return;
 

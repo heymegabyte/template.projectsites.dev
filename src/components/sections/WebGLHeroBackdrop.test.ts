@@ -35,15 +35,21 @@ describe('parseBrandHue', () => {
 });
 
 describe('resolveBackdropMode', () => {
-  it('renders WebGL only when motion is allowed AND WebGL is available', () => {
-    expect(resolveBackdropMode({ reducedMotion: false, webglOk: true })).toBe('webgl');
+  it('renders WebGL only when motion is allowed AND WebGL is available AND theme is dark', () => {
+    expect(resolveBackdropMode({ reducedMotion: false, webglOk: true, lightTheme: false })).toBe('webgl');
   });
   it('falls back to static when reduced-motion is requested (accessibility)', () => {
-    expect(resolveBackdropMode({ reducedMotion: true, webglOk: true })).toBe('static');
+    expect(resolveBackdropMode({ reducedMotion: true, webglOk: true, lightTheme: false })).toBe('static');
   });
   it('falls back to static when WebGL is unavailable', () => {
-    expect(resolveBackdropMode({ reducedMotion: false, webglOk: false })).toBe('static');
-    expect(resolveBackdropMode({ reducedMotion: true, webglOk: false })).toBe('static');
+    expect(resolveBackdropMode({ reducedMotion: false, webglOk: false, lightTheme: false })).toBe('static');
+    expect(resolveBackdropMode({ reducedMotion: true, webglOk: false, lightTheme: false })).toBe('static');
+  });
+  // AL-448: the dark-first field turns a LIGHT theme muddy + drops the dark hero eyebrow/subtitle/
+  // badge text to ~1.2:1 (dark-on-dark; axe-blind — it's a <canvas>). Light themes get the static
+  // brand gradient so the hero stays clean + the dark text stays legible.
+  it('falls back to static on a LIGHT theme even when motion + WebGL are available', () => {
+    expect(resolveBackdropMode({ reducedMotion: false, webglOk: true, lightTheme: true })).toBe('static');
   });
 });
 
