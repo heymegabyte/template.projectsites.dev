@@ -81,20 +81,22 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
  * animated hero automatically (no per-build opt-in):
  *   - `aurora` — soft flowing ribbons → welcoming / organic / creative
  *     (botanical, scholarly, boutique, classic);
- *   - `waves`  — broad calm swells → authoritative / professional / trusted
- *     (editorial);
+ *   - `waves`  — broad calm swells → authoritative / professional / trusted / dignified
+ *     (editorial, heritage — a law / accounting / insurance / real-estate firm reads as steady +
+ *      trusted, NOT cozy-warm; ember's hearth glow was a mismatch for it);
  *   - `bokeh`  — soft drifting out-of-focus light-motes → refined / premium / elegant
  *     (luxe — fine dining / jewelry / hotels want their OWN premium field, not editorial's waves);
  *   - `mesh`   — tight cellular shimmer → technical / energetic / precise
  *     (futuristic, bold, precision, rugged, brutalist);
  *   - `ember`  — warm glow rising from a hearth floor → food / hospitality / artisan / after-dark
- *     (warm, heritage, artisan, noir — noir's after-dark steakhouse/lounge wants ember's
+ *     (warm, artisan, noir — noir's after-dark steakhouse/lounge wants ember's
  *     intimate warm-glow-in-a-dark-room, not cool ribbons);
  *   - `grid`   — neon perspective floor scrolling to a horizon sun-glow → retro / synthwave
  *     (retro — the iconic scrolling grid IS the retro identity; a soft aurora field undersold it).
  * Pure + total (unknown/blank → `aurora`) so it unit-tests in isolation.
  *
- * @example backdropForPreset('luxe')       // → 'waves'
+ * @example backdropForPreset('luxe')       // → 'bokeh'
+ * @example backdropForPreset('heritage')   // → 'waves'
  * @example backdropForPreset('futuristic') // → 'mesh'
  * @example backdropForPreset('warm')       // → 'ember'
  * @example backdropForPreset('retro')      // → 'grid'
@@ -109,9 +111,10 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
 export const PRESET_BACKDROP: Record<string, HeroBackdropVariant> = {
   botanical: 'aurora', scholarly: 'aurora', boutique: 'aurora', classic: 'aurora',
   editorial: 'waves',
+  heritage: 'waves', // dignified authoritative swells — financial/legal/insurance/real-estate; ember's cozy hearth glow was a MISMATCH for a law/accounting/insurance firm (AL-490)
   luxe: 'bokeh', // premium drifting light-motes — luxe's OWN refined scene, not editorial's waves
   futuristic: 'mesh', bold: 'mesh', precision: 'mesh', rugged: 'mesh', brutalist: 'mesh',
-  warm: 'ember', heritage: 'ember', noir: 'ember', artisan: 'ember',
+  warm: 'ember', noir: 'ember', artisan: 'ember',
   retro: 'grid', // synthwave neon perspective grid — retro's iconic aesthetic, not a soft ribbon field
 };
 export function backdropForPreset(preset: string | null | undefined): HeroBackdropVariant {

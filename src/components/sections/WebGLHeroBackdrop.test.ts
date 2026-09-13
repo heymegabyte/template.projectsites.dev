@@ -93,9 +93,9 @@ describe('backdropForPreset (per-industry hero motion)', () => {
   it('matches motion character to personality', () => {
     expect(backdropForPreset('botanical')).toBe('aurora'); // organic, calm
     expect(backdropForPreset('warm')).toBe('ember'); // food/hospitality — warm rising glow
-    expect(backdropForPreset('heritage')).toBe('ember'); // artisan/legacy — warm rising glow
     expect(backdropForPreset('luxe')).toBe('bokeh'); // premium — its OWN light-mote field, not editorial's waves
     expect(backdropForPreset('editorial')).toBe('waves'); // authoritative, measured
+    expect(backdropForPreset('heritage')).toBe('waves'); // AL-490: dignified/authoritative (financial/legal/insurance) — NOT ember's cozy hearth glow
     expect(backdropForPreset('futuristic')).toBe('mesh'); // technical, energetic
     expect(backdropForPreset('bold')).toBe('mesh');
     expect(backdropForPreset('precision')).toBe('mesh');
