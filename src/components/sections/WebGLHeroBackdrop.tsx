@@ -172,6 +172,20 @@ export function isLightTheme(): boolean {
   return typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: light)').matches === true;
 }
 
+/**
+ * A tiny inline SVG `feTurbulence` fractal-noise tile, as a `background-image` `url()`.
+ * Rendered as a low-opacity, `mix-blend-soft-light` overlay on the STATIC fallback so that
+ * light-theme / reduced-motion / no-WebGL / first-paint heroes get the SAME cinematic
+ * "glass+grain" texture the animated WebGL path carries in-shader (see FILM-GRAIN DITHER):
+ *   - it breaks up 8-bit gradient BANDING on the smooth radial fallback (an objective artifact
+ *     of quantizing a slow ramp to 24-bit color), and
+ *   - it adds a faint film-grain texture so the fallback reads premium, not flat.
+ * STATIC (no animation) → reduced-motion-safe. Inline data URI → zero network, LCP-safe.
+ * A large fraction of generated sites are LIGHT-theme (dark logo → light theme), and light
+ * themes ALWAYS take this fallback (resolveBackdropMode), so this lifts most delivered heroes.
+ */
+export const GRAIN_DATA_URI = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
+
 const FRAG_SRC = `
 precision mediump float;
 uniform vec2 uRes;
@@ -446,6 +460,16 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
         <>
           <canvas ref={canvasRef} className="absolute h-0 w-0 opacity-0" aria-hidden="true" />
           <div className="h-full w-full" style={staticStyle} />
+          {/* glass sheen — a soft top highlight so the flat fallback reads as a lit surface (depth). */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-1/3"
+            style={{ background: 'linear-gradient(to bottom, color-mix(in oklch, white 7%, transparent), transparent)' }}
+          />
+          {/* film grain — kills 8-bit banding + adds cinematic texture; STATIC (reduced-motion-safe). */}
+          <div
+            className="pointer-events-none absolute inset-0 mix-blend-soft-light opacity-[0.06]"
+            style={{ backgroundImage: GRAIN_DATA_URI, backgroundSize: '140px 140px' }}
+          />
         </>
       )}
     </div>

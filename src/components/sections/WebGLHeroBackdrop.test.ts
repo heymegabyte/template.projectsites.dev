@@ -5,6 +5,7 @@ import {
   backdropForPreset,
   HERO_BACKDROP_CONFIGS,
   PRESET_BACKDROP,
+  GRAIN_DATA_URI,
   type HeroBackdropVariant,
 } from './WebGLHeroBackdrop';
 import { PRESET_NAMES } from '../../themePresets';
@@ -134,5 +135,21 @@ describe('PRESET_BACKDROP coverage (drift guard vs themePresets)', () => {
     for (const [preset, variant] of Object.entries(PRESET_BACKDROP)) {
       expect(HERO_BACKDROP_CONFIGS[variant], `${preset} → ${variant}`).toBeDefined();
     }
+  });
+});
+
+describe('GRAIN_DATA_URI (static-fallback glass+grain)', () => {
+  // The static fallback (light-theme / reduced-motion / no-WebGL / first-paint) now carries the
+  // same cinematic grain the WebGL shader does. Guard the inline noise tile so it can't silently
+  // rot into a broken/networked URL (which would kill the LCP-safe, zero-network guarantee).
+  it('is an inline SVG feTurbulence data URI (no network, LCP-safe)', () => {
+    // starts with the inline data-URI scheme → self-contained, never a networked fetch
+    // (the only http here is the required SVG xmlns namespace, not an asset reference).
+    expect(GRAIN_DATA_URI.startsWith('url("data:image/svg+xml,')).toBe(true);
+    expect(GRAIN_DATA_URI).toContain('feTurbulence');
+    expect(GRAIN_DATA_URI).toContain('fractalNoise');
+    // no external asset fetch (an http(s) reference INSIDE a url() other than the data URI).
+    expect(GRAIN_DATA_URI).not.toContain('url(http');
+    expect(GRAIN_DATA_URI.trim().endsWith('")')).toBe(true);
   });
 });
