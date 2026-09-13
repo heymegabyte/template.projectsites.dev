@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { wordmarkTooSquare } from './Header';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SRC = readFileSync(resolve(__dirname, './Header.tsx'), 'utf8');
@@ -52,5 +53,40 @@ describe('Header navbar wordmark — single-line, legible, prominent', () => {
   it('the PNG wordmark also keeps the drop-shadow halo (contrast in both render paths)', () => {
     const imgAt = SRC.indexOf('site-wordmark ');
     expect(SRC.slice(imgAt, imgAt + 200)).toMatch(/drop-shadow/);
+  });
+});
+
+/**
+ * AL-454: a near-square wordmark asset LOADS fine (no onError) but squishes to an
+ * illegible smear at navbar height (Parnassus Books shipped a 1024×894 = 1.15:1
+ * wordmark that rendered as a ~55px blob). `wordmarkTooSquare` decides — on the real
+ * loaded dimensions — whether to fall back to the crisp styled text wordmark.
+ */
+describe('wordmarkTooSquare — fall back to text when the wordmark asset is too square', () => {
+  it('flags near-square / padded wordmarks (below 2:1) → fall back to legible text', () => {
+    expect(wordmarkTooSquare(1024, 894), '1.15:1 (Parnassus Books, untrimmed)').toBe(true);
+    expect(wordmarkTooSquare(1312, 736), '1.78:1 (Ideogram ASPECT_16_9 padded)').toBe(true);
+    expect(wordmarkTooSquare(512, 512), '1:1 square logo').toBe(true);
+    expect(wordmarkTooSquare(900, 500), '1.8:1 still too square for the navbar').toBe(true);
+  });
+  it('accepts genuine horizontal banners (2:1 and wider) → render the PNG', () => {
+    expect(wordmarkTooSquare(520, 150), '3.47:1 (AL-392 trimmed banner)').toBe(false);
+    expect(wordmarkTooSquare(1200, 400), '3:1 (ASPECT_3_1 target)').toBe(false);
+    expect(wordmarkTooSquare(1000, 500), 'exactly 2:1 is the accepted floor').toBe(false);
+  });
+  it('is safe on unmeasurable dims (0 / NaN) → trust the asset, onError still guards a broken one', () => {
+    expect(wordmarkTooSquare(0, 0)).toBe(false);
+    expect(wordmarkTooSquare(NaN, 100)).toBe(false);
+    expect(wordmarkTooSquare(100, 0)).toBe(false);
+  });
+});
+
+describe('Header wires the wordmark aspect guard to onLoad (not just onError)', () => {
+  it('the PNG wordmark img calls wordmarkTooSquare in onLoad', () => {
+    const imgAt = SRC.indexOf('src="/logo-wordmark.png"');
+    const block = imgAt >= 0 ? SRC.slice(imgAt, imgAt + 700) : '';
+    expect(block).toMatch(/onLoad=/);
+    expect(block).toMatch(/wordmarkTooSquare\(/);
+    expect(block).toMatch(/naturalWidth/);
   });
 });

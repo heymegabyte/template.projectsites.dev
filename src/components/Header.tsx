@@ -40,6 +40,23 @@ function defaultLinks(): NavLink[] {
   ];
 }
 
+/**
+ * A generated `/logo-wordmark.png` is only legible in the navbar when it's a genuine
+ * HORIZONTAL banner. Some generations emit a near-square / padded canvas (e.g. Ideogram
+ * ASPECT_16_9 → 1.78:1, or an untrimmed 1024×894 = 1.15:1); height-constrained to the
+ * navbar's ~48px it squishes the business name into an illegible ~55px-wide smear
+ * (the AL-392 cafe-dim-sum / AL-450 Parnassus-Books incident). A real wordmark trimmed
+ * to a tight banner is ≥3:1; anything below 2:1 is too square to render legibly, so we
+ * fall back to the always-legible styled HTML text wordmark instead of the smear.
+ * Pure so it's unit-testable (the imperative onLoad path can't run in jsdom).
+ */
+export function wordmarkTooSquare(naturalWidth: number, naturalHeight: number): boolean {
+  if (!Number.isFinite(naturalWidth) || !Number.isFinite(naturalHeight) || naturalWidth <= 0 || naturalHeight <= 0) {
+    return false; // can't measure → trust it (onError still guards a truly broken asset)
+  }
+  return naturalWidth / naturalHeight < 2;
+}
+
 export default function Header({ links, ctaLabel, ctaHref }: Props) {
   const navLinks = links ?? defaultLinks();
   // A single dominant, verb-first CTA converts best; for quote verticals it
@@ -139,6 +156,12 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
               alt={business}
               className="site-wordmark h-10 sm:h-12 w-auto max-w-[220px] sm:max-w-[340px] object-contain drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]"
               onError={() => setWordmarkOk(false)}
+              // A near-square wordmark loads fine (no onError) yet squishes to an illegible
+              // smear at navbar height — fall back to the crisp styled text wordmark instead.
+              onLoad={(e) => {
+                const img = e.currentTarget;
+                if (wordmarkTooSquare(img.naturalWidth, img.naturalHeight)) setWordmarkOk(false);
+              }}
             />
           ) : (
             <span className="site-wordmark-text min-w-0 truncate text-text font-extrabold font-heading tracking-tight text-[clamp(1.25rem,5vw,1.75rem)] [text-shadow:0_1px_3px_rgba(0,0,0,0.55)] group-hover:text-accent transition-colors">
