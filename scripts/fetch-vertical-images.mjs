@@ -18,7 +18,7 @@ const QUERIES = {
   medical: ['modern dental clinic interior', 'smiling dentist with patient'],
   wellness: ['serene yoga studio interior', 'woman practicing yoga'],
   legal: ['modern law office interior', 'professional lawyer portrait'],
-  restaurant: ['warm restaurant interior dining', 'chef plating gourmet food'],
+  restaurant: ['cozy warm neighborhood cafe interior', 'fresh food and coffee on a counter'],
   'local-service': ['plumber repairing pipes', 'service technician tools'],
   nonprofit: ['community volunteers helping', 'group of volunteers smiling'],
   retail: ['cozy independent shop interior shelves', 'shopkeeper arranging products on shelves'],

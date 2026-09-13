@@ -75,4 +75,19 @@ describe('restaurant content pack — core tokens are food-spectrum-neutral (qui
     expect(d.length).toBeLessThanOrEqual(156);
     expect(/food|menu|fresh|made-from-scratch/i.test(d), 'still reads as a food business').toBe(true);
   });
+
+  // AL-450: the fast-path hero IMAGE is the pack default (the worker doesn't seed HERO_IMAGE_URL),
+  // so a formal "restaurant dining room" hero shipped on every quickserve food site (Verve coffee
+  // got a full-service dining room). The hero must be food-spectrum-neutral — a warm cafe/counter
+  // scene that fits coffee/bakery/deli AND casual restaurants. Guards against regressing to the
+  // dining-room framing. (Image itself is Unsplash + visually inspected at bake time.)
+  it('hero image is food-spectrum-neutral (not a full-service dining room)', () => {
+    const alt = pack.HERO_IMAGE_ALT ?? '';
+    const url = pack.HERO_IMAGE_URL ?? '';
+    expect(alt, 'HERO_IMAGE_ALT present').toBeTruthy();
+    expect(url.startsWith('https://images.unsplash.com/'), 'hero is an Unsplash URL').toBe(true);
+    expect(/dining room|fine dining|restaurant interior/i.test(alt), `hero alt must not be full-service-only — got "${alt}"`).toBe(false);
+    // the retired dining-room photo must not sneak back into the baked URL
+    expect(url.includes('photo-1517248135467'), 'old dining-room hero photo is retired').toBe(false);
+  });
 });
