@@ -54,8 +54,8 @@ describe('resolveBackdropMode', () => {
 });
 
 describe('HERO_BACKDROP_CONFIGS', () => {
-  const variants: HeroBackdropVariant[] = ['aurora', 'waves', 'mesh', 'ember', 'grid'];
-  it('defines all five variants with sane, text-legible params', () => {
+  const variants: HeroBackdropVariant[] = ['aurora', 'waves', 'mesh', 'ember', 'grid', 'bokeh'];
+  it('defines all six variants with sane, text-legible params', () => {
     for (const v of variants) {
       const c = HERO_BACKDROP_CONFIGS[v];
       expect(c).toBeDefined();
@@ -94,15 +94,15 @@ describe('backdropForPreset (per-industry hero motion)', () => {
     expect(backdropForPreset('botanical')).toBe('aurora'); // organic, calm
     expect(backdropForPreset('warm')).toBe('ember'); // food/hospitality — warm rising glow
     expect(backdropForPreset('heritage')).toBe('ember'); // artisan/legacy — warm rising glow
-    expect(backdropForPreset('luxe')).toBe('waves'); // premium, measured
-    expect(backdropForPreset('editorial')).toBe('waves');
+    expect(backdropForPreset('luxe')).toBe('bokeh'); // premium — its OWN light-mote field, not editorial's waves
+    expect(backdropForPreset('editorial')).toBe('waves'); // authoritative, measured
     expect(backdropForPreset('futuristic')).toBe('mesh'); // technical, energetic
     expect(backdropForPreset('bold')).toBe('mesh');
     expect(backdropForPreset('precision')).toBe('mesh');
     expect(backdropForPreset('retro')).toBe('grid'); // synthwave neon perspective grid
   });
   it('is case-insensitive + total (blank / unknown / nullish → aurora)', () => {
-    expect(backdropForPreset('LUXE')).toBe('waves');
+    expect(backdropForPreset('LUXE')).toBe('bokeh');
     expect(backdropForPreset('  futuristic  ')).toBe('mesh');
     expect(backdropForPreset('')).toBe('aurora');
     expect(backdropForPreset('nope')).toBe('aurora');

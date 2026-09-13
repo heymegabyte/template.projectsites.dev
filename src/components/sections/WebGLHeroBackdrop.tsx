@@ -27,7 +27,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
  */
 
 /** The visual character of the backdrop — pick per industry. */
-export type HeroBackdropVariant = 'aurora' | 'waves' | 'mesh' | 'ember' | 'grid';
+export type HeroBackdropVariant = 'aurora' | 'waves' | 'mesh' | 'ember' | 'grid' | 'bokeh';
 
 /** Shader parameters per variant (pure data — unit-tested). */
 export interface HeroBackdropConfig {
@@ -56,17 +56,23 @@ export interface HeroBackdropConfig {
  * (food/hospitality/artisan — vertical, not diagonal, motion); `grid` = a neon
  * perspective floor receding to a horizon sun-glow (retro/synthwave — the iconic
  * scrolling-toward-you grid, distinct from every noise-field variant).
- * All stay dark + low-intensity so foreground text stays legible.
+ * `bokeh` = soft out-of-focus light discs drifting slowly upward, a refined "dust motes in a
+ * sunbeam" field (luxe — fine dining / jewelry / hotels; a distinct premium scene, not the shared
+ * `waves`). All stay dark + low-intensity so foreground text stays legible.
  */
 export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConfig> = {
   // warp: aurora highest (flowing ribbons), ember turbulent, waves silky-gentle, mesh subtle
-  // (keep the tight cellular tech read — just less flat). grid ignores warp (no fbm field) but
-  // carries a small positive value for config uniformity; its scale=grid density, sharp=line crispness.
+  // (keep the tight cellular tech read — just less flat). grid + bokeh ignore warp (no fbm field)
+  // but carry a small positive value for config uniformity; grid scale=density/sharp=line crispness,
+  // bokeh scale/sharp unused (disc radii are baked) — intensity + hueSpread DO drive bokeh.
   aurora: { scale: 2.5, speed: 1.0, sharpness: 0.7, hueSpread: 0.08, intensity: 0.9, warp: 0.9 },
   waves: { scale: 1.6, speed: 0.6, sharpness: 0.5, hueSpread: 0.04, intensity: 0.8, warp: 0.5 },
   mesh: { scale: 4.0, speed: 1.3, sharpness: 0.85, hueSpread: 0.12, intensity: 0.85, warp: 0.35 },
   ember: { scale: 2.0, speed: 0.8, sharpness: 0.58, hueSpread: 0.06, intensity: 0.82, warp: 0.7 },
   grid: { scale: 7.0, speed: 1.0, sharpness: 0.7, hueSpread: 0.05, intensity: 0.8, warp: 0.3 },
+  // bokeh: slow drift (premium restraint), gentle hue variation across discs, low intensity so the
+  // soft glows never compete with the hero H1. scale/sharpness/warp are inert for this mode.
+  bokeh: { scale: 1.0, speed: 0.4, sharpness: 0.5, hueSpread: 0.1, intensity: 0.8, warp: 0.3 },
 };
 
 /**
@@ -76,7 +82,9 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
  *   - `aurora` — soft flowing ribbons → welcoming / organic / creative
  *     (botanical, scholarly, boutique, classic);
  *   - `waves`  — broad calm swells → authoritative / professional / trusted
- *     (editorial, luxe);
+ *     (editorial);
+ *   - `bokeh`  — soft drifting out-of-focus light-motes → refined / premium / elegant
+ *     (luxe — fine dining / jewelry / hotels want their OWN premium field, not editorial's waves);
  *   - `mesh`   — tight cellular shimmer → technical / energetic / precise
  *     (futuristic, bold, precision, rugged, brutalist);
  *   - `ember`  — warm glow rising from a hearth floor → food / hospitality / artisan / after-dark
@@ -100,7 +108,8 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
 // every PRESET_NAMES entry is a key here) — add the mapping in the SAME change as a new preset.
 export const PRESET_BACKDROP: Record<string, HeroBackdropVariant> = {
   botanical: 'aurora', scholarly: 'aurora', boutique: 'aurora', classic: 'aurora',
-  editorial: 'waves', luxe: 'waves',
+  editorial: 'waves',
+  luxe: 'bokeh', // premium drifting light-motes — luxe's OWN refined scene, not editorial's waves
   futuristic: 'mesh', bold: 'mesh', precision: 'mesh', rugged: 'mesh', brutalist: 'mesh',
   warm: 'ember', heritage: 'ember', noir: 'ember', artisan: 'ember',
   retro: 'grid', // synthwave neon perspective grid — retro's iconic aesthetic, not a soft ribbon field
@@ -181,7 +190,24 @@ void main(){
   vec2 p = uv * vec2(uRes.x/uRes.y, 1.0);
   float t = uTime * 0.05;
   vec3 col;
-  if (uMode > 1.5) {
+  if (uMode > 2.5) {
+    // ---- BOKEH (uMode==3): soft out-of-focus light discs drifting slowly upward — a refined
+    // "dust motes in a sunbeam" field for luxe (fine dining / jewelry / hotels). Dark base; each
+    // disc a soft brand-tinted radial glow; slow motion = understated premium. The shared vignette
+    // + per-hue luma-comp + intensity below keep the center H1 legible on any brand hue.
+    col = vec3(0.0);
+    for (int i = 0; i < 8; i++) {
+      float fi = float(i);
+      float s1 = hash(vec2(fi, 3.7));
+      float s2 = hash(vec2(fi * 1.3, 9.1));
+      float rad = mix(0.05, 0.16, s1);                          // varied depth-of-field disc radii
+      float cy = fract(s2 - t * (0.6 + s1));                    // slow upward rise, wraps 0..1
+      float cx = fract(s1 + 0.06 * sin(t * (0.8 + s2) + fi));   // gentle lateral sway
+      float d = length((uv - vec2(cx, cy)) * vec2(uRes.x / uRes.y, 1.0));
+      float disc = smoothstep(rad, rad * 0.2, d);               // soft-edged bokeh disc
+      col += hsl2rgb(uHue + uSpread * (s1 - 0.5), 0.5, 0.5) * disc * (0.09 + 0.09 * s2);
+    }
+  } else if (uMode > 1.5) {
     // ---- SYNTHWAVE GRID (uMode==2): a neon perspective floor receding to a horizon sun-glow.
     // The iconic retro/synthwave scene — rows scroll TOWARD the viewer. Distinct from every
     // noise-field variant. The horizon sits LOW (bottom third) so the grid floor + neon sun
@@ -317,7 +343,7 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       mode: gl.getUniformLocation(prog, 'uMode'),
       warp: gl.getUniformLocation(prog, 'uWarp'),
     };
-    const modeFlag = variant === 'grid' ? 2 : variant === 'ember' ? 1 : 0;
+    const modeFlag = variant === 'bokeh' ? 3 : variant === 'grid' ? 2 : variant === 'ember' ? 1 : 0;
     const hue = parseBrandHue(
       getComputedStyle(document.documentElement).getPropertyValue('--brand-hue'),
     );
