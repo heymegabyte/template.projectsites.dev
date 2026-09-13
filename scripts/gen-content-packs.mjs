@@ -407,7 +407,7 @@ const SUBPAGE = {
       'Our menu changes with the seasons because the best flavors come from what is fresh and nearby. Whether you are here for a quiet dinner, a weekend brunch, or a celebration with friends, we save you a warm seat and a plate worth savoring.',
     ],
     faqBill: [
-      ['Do you take reservations, and is there a deposit?', 'You can book a table online or by phone at no charge. For large parties and private events we may ask for a small deposit, which goes toward your final bill.'],
+      ['Can I order ahead, and is there a deposit for big orders?', 'You can order ahead online or by phone at no charge. For large catering orders and private events we may ask for a small deposit, which goes toward your final bill.'],
       ['Do you offer gift cards?', 'We do. Gift cards are a favorite for birthdays and holidays, and you can pick one up in person or ask us about ordering one.'],
     ],
     faqSup: [
@@ -718,7 +718,7 @@ const SUB2 = {
       ['Reservations or walk-in', 'Book ahead online or just drop by; we welcome both. Planning a party? Ask about catering and private events and we will make it easy.'],
       ['Made for every guest', 'Vegetarian and gluten-free dishes are marked on the menu, and our kitchen happily accommodates allergies and preferences. Everyone leaves the table satisfied.'],
     ],
-    contactIntro: 'Have a question about the menu, want to book a table, or planning a party or catered event? We would love to hear from you. Send a message or give us a call and a member of our team will help you sort out the details, from dietary needs to private dining, so your next meal with us is exactly what you hoped for.',
+    contactIntro: 'Have a question about the menu, want to place a large order, or planning a party or catered event? We would love to hear from you. Send a message or give us a call and a member of our team will help you sort out the details, from dietary needs to private dining, so your next meal with us is exactly what you hoped for.',
     faqMore: [
       ['Do you have options for kids and picky eaters?', 'We do. Alongside our regular menu, we are always happy to keep things simple for younger guests or anyone who prefers plainer plates. Just let your server know; our kitchen would much rather make something everyone enjoys than see a plate go back untouched.'],
       ['Can you accommodate large groups and celebrations?', 'Absolutely. We regularly host birthdays, anniversaries, and get-togethers, and we can arrange group menus or a private space depending on the size. Reach out ahead of time and we will help you plan the details so your gathering is relaxed and memorable.'],
@@ -1095,7 +1095,7 @@ const CONTACT_EXTRA = {
   },
   restaurant: {
     reassure: 'Whether you are planning a special night out, organizing a party, or just curious about the menu, we are always happy to hear from you. A real member of our team will help you with reservations, dietary questions, catering, or private events, so your experience with us is exactly what you are hoping for. Reach out however is easiest, and let us help you plan something delicious.',
-    points: [['Reservations', 'Book a table online or give us a call. Planning for a big group? Let us know the size and we will make sure there is room for everyone.'], ['Catering and events', 'Hosting something special? Reach out and we will build a menu around your occasion, handle the details, and deliver food your guests will remember.'], ['Dietary needs', 'Have an allergy or a preference? Tell us ahead of time and our kitchen will happily accommodate, so everyone at your table can enjoy the meal.']],
+    points: [['Orders & pickup', 'Order ahead online or give us a call. Planning for a big group? Let us know the size and we will make sure everything is ready when you are.'], ['Catering and events', 'Hosting something special? Reach out and we will build a menu around your occasion, handle the details, and deliver food your guests will remember.'], ['Dietary needs', 'Have an allergy or a preference? Tell us ahead of time and our kitchen will happily accommodate, so everyone can enjoy the food.']],
   },
   'local-service': {
     reassure: 'When something in your home needs attention, the last thing you want is a runaround. Reach out and you will get a real person, a straight answer, and a fair, upfront quote, with no pressure and no surprise fees. Whether it is an urgent repair or a project you have been planning, we make getting help simple, and we treat your home and your time with the respect they deserve.',
@@ -1138,7 +1138,7 @@ const CONTACT_HEAD = {
   wellness: ['Come as you are', 'Book a session, ask about our services, or just say hello — we’re glad you’re here.', 'Reach out to book a session, ask about our services, or plan your first visit. Our team is here to help you feel calm, cared for, and welcome.'],
   fitness: ['Ready when you are', 'Book a tour, start a trial, or ask about memberships — let’s get you moving.', 'Get in touch to book a tour, claim a free trial, or ask about memberships and class schedules. Our team helps you find the right fit fast.'],
   legal: ['Let’s talk about your case', 'Request a consultation or ask a question — your first conversation is confidential and pressure-free.', 'Contact us to request a confidential consultation or ask about your situation. We respond promptly and explain your options in plain language.'],
-  restaurant: ['Come dine with us', 'Reserve a table, plan an event, or ask about the menu — we can’t wait to host you.', 'Get in touch to book a table, plan a private event, or ask about the menu and hours. We’d love to welcome you and make your visit memorable.'],
+  restaurant: ['Come see us', 'Stop by, plan an event, or ask about the menu — we can’t wait to serve you.', 'Get in touch to plan an event, place a large order, or ask about the menu and hours. We’d love to welcome you and make your visit memorable.'],
   'local-service': ['Let’s get it handled', 'Request a quote, book a visit, or ask a question — we’ll respond fast.', 'Reach out for a free quote, to schedule service, or to ask a question. Our team responds quickly and shows up on time, every single visit.'],
   nonprofit: ['Join us — every hand helps', 'Volunteer, donate, or ask how you can help — there’s a place here for you.', 'Get in touch to volunteer, donate, partner with us, or learn more about our mission. Every message helps us serve our community a little better.'],
   retail: ['We’d love to help', 'Ask about a product, check availability, or plan a visit — we’re happy to help.', 'Contact us about a product, stock and availability, orders, or store hours. Our team is happy to help you find exactly what you’re looking for.'],

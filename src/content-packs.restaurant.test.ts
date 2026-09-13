@@ -16,8 +16,10 @@ import { describe, it, expect } from 'vitest';
  * inclusive, not diluted; hospitality-mode sites still get "Reserve a table" via the seeded CTA.
  * This guards those tokens against regressing back to reservation-only wording.
  *
- * (Residual reservation copy remains in less-visible DEEP tokens — CONTACT_*, FAQ_BILL_*,
- * SERVICE_5 "Private Events", ABOUT_APPROACH — a tracked follow-on; this locks the core set.)
+ * AL-445 cleared the FULL probe-flagged set (core + contact + faq-bill + service copy). Softer,
+ * non-probe-flagged full-service phrasing remains ("private dining", a "Reservations or walk-in"
+ * service title) — acceptable + true for full-service, a soft follow-on. This guard keeps the
+ * probe-flagged set at zero pack-wide.
  */
 // vitest runs from the repo root, so the example pack is a cwd-relative read (robust — some
 // vitest transforms leave import.meta.url as a non-file scheme, which breaks new URL(../…)).
@@ -25,8 +27,11 @@ const pack = JSON.parse(
   readFileSync(resolve(process.cwd(), 'examples/_content.restaurant.json'), 'utf8'),
 ) as Record<string, string>;
 
-// Full-service-ONLY phrases that read wrong on a quickserve counter.
-const RESERVATION_ONLY = /reserve a table|reservations welcome|book (?:your|a) table|do you take reservations|come for a great meal/i;
+// The EXACT affirmative reservation regex the prod probe (projectsites
+// e2e/site-quality/verify-conversion-framing.mjs) flags on a quickserve site — keep this in
+// sync so the template guard and the deployed-site gate agree on what "quickserve-safe" means.
+const RESERVATION_ONLY =
+  /\b(reserve a table|reservations?\s+welcome|book (?:a|your) table|easy reservations?|make a reservation|table reservations?|come for a great meal)\b/i;
 
 describe('restaurant content pack — core tokens are food-spectrum-neutral (quickserve-safe)', () => {
   // The highest-visibility, most-rendered tokens: hero/CTA buttons, the trust badge, the first
@@ -52,6 +57,16 @@ describe('restaurant content pack — core tokens are food-spectrum-neutral (qui
       expect(val, `${key} present`).toBeTruthy();
       expect(RESERVATION_ONLY.test(val), `${key} must be quickserve-safe — got "${val}"`).toBe(false);
     }
+  });
+
+  it('NO token anywhere in the pack carries a probe-flagged reservation phrase', () => {
+    // Whole-pack scan (not just the core set) — a rebuilt quickserve site renders many of these
+    // tokens (contact, faq-bill, service descriptions), so ANY flagged phrase would trip the prod
+    // conversion-framing probe. AL-445 cleared the full set; this keeps it at zero.
+    const offenders = Object.entries(pack)
+      .filter(([, v]) => typeof v === 'string' && RESERVATION_ONLY.test(v))
+      .map(([k]) => k);
+    expect(offenders, `tokens with reservation-only copy: ${offenders.join(', ') || 'none'}`).toEqual([]);
   });
 
   it('SEO_DESCRIPTION stays keyword-rich + in the 120–156 char meta window', () => {
