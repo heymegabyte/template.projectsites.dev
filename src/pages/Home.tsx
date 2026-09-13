@@ -79,6 +79,9 @@ const faqs: FAQItem[] = [
   { question: '{FAQ_2_Q}', answer: '{FAQ_2_A}' },
   { question: '{FAQ_3_Q}', answer: '{FAQ_3_A}' },
   { question: '{FAQ_4_Q}', answer: '{FAQ_4_A}' },
+  // FAQ_5 densifies the homepage (+~60 words) + enriches FAQPage JSON-LD (GEO). The FAQ
+  // component drops any row whose token is unresolved, so pre-FAQ_5 builds still render 4.
+  { question: '{FAQ_5_Q}', answer: '{FAQ_5_A}' },
 ];
 
 const logos: Logo[] = [
