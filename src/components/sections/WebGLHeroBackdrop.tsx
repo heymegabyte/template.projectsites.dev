@@ -37,7 +37,8 @@ export type HeroBackdropVariant =
   | 'petals'
   | 'smoke'
   | 'terrain'
-  | 'silk';
+  | 'silk'
+  | 'constellation';
 
 /** Shader parameters per variant (pure data — unit-tested). */
 export interface HeroBackdropConfig {
@@ -102,6 +103,10 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
   // restraint; warp curves the folds. Distinct from aurora's ribbons: horizontal folds + a moving
   // highlight band, like light gliding across draped fabric.
   silk: { scale: 2.0, speed: 0.5, sharpness: 0.62, hueSpread: 0.07, intensity: 0.82, warp: 0.5 },
+  // constellation: a deep-night star map — tiny sharp TWINKLING star points (with faint cross
+  // sparkles) for SCHOLARLY (academic/library/education/research). hueSpread varies star color,
+  // low intensity keeps it behind the H1; scale/sharpness/warp inert (points are procedural).
+  constellation: { scale: 1.0, speed: 0.4, sharpness: 0.6, hueSpread: 0.1, intensity: 0.8, warp: 0.3 },
 };
 
 /**
@@ -109,7 +114,9 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
  * MOTION matches that personality — so every generated site gets a fitting
  * animated hero automatically (no per-build opt-in):
  *   - `aurora` — soft flowing ribbons → welcoming / organic / creative
- *     (scholarly, classic);
+ *     (classic — the generic soft-ribbon default);
+ *   - `constellation` — tiny twinkling star points (a knowledge map) → academic / scholarly / research
+ *     (scholarly — a library / university / research org wants a deep-night star chart, not generic ribbons);
  *   - `silk`   — draped-satin folds with a sweeping specular sheen → premium / elegant / refined
  *     (boutique — upscale fashion / jewelry / salon want a lustrous draped-fabric shimmer, not the
  *      soft aurora ribbons they used to share);
@@ -151,7 +158,9 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
 // every PRESET_NAMES entry is a key here) — add the mapping in the SAME change as a new preset.
 export const PRESET_BACKDROP: Record<string, HeroBackdropVariant> = {
   botanical: 'petals', // falling blossoms — florist/plant/garden get their OWN organic scene, not shared aurora ribbons (AL-511)
-  scholarly: 'aurora', classic: 'aurora',
+  classic: 'aurora',
+  scholarly: 'constellation', // AL-532: academic/library/education/research get a deep-night star map (twinkling knowledge points), not the generic soft-ribbon aurora
+
   boutique: 'silk', // AL-525: upscale fashion/jewelry/salon get draped-satin folds with a sweeping sheen — a soft aurora ribbon undersold the premium boutique feel
   editorial: 'waves',
   heritage: 'waves', // dignified authoritative swells — financial/legal/insurance/real-estate; ember's cozy hearth glow was a MISMATCH for a law/accounting/insurance firm (AL-490)
@@ -252,7 +261,26 @@ void main(){
   vec2 p = uv * vec2(uRes.x/uRes.y, 1.0);
   float t = uTime * 0.05;
   vec3 col;
-  if (uMode > 6.5) {
+  if (uMode > 7.5) {
+    // ---- CONSTELLATION (uMode==8): a deep-night STAR MAP — tiny sharp TWINKLING star points
+    // (with faint 4-point cross sparkles) drifting slowly on a dark field, a "knowledge map" for
+    // SCHOLARLY (academic / library / education / research). Distinct from bokeh's soft LARGE
+    // discs: stars are tiny, sharp, and twinkle. Dark base + low intensity keep the H1 legible.
+    col = vec3(0.0);
+    for (int i = 0; i < 16; i++) {
+      float fi = float(i);
+      float sx = hash(vec2(fi, 1.3));
+      float sy = hash(vec2(fi * 2.1, 7.7));
+      vec2 pos = vec2(fract(sx + 0.012 * sin(t * 0.3 + fi)), fract(sy + 0.012 * cos(t * 0.25 + fi)));
+      vec2 d = (uv - pos) * vec2(uRes.x / uRes.y, 1.0);
+      float dist = length(d);
+      float tw = 0.45 + 0.55 * sin(t * (1.4 + sx * 2.2) + fi * 1.7);      // per-star twinkle
+      float core = (0.0011 + 0.0011 * tw) / (dist * dist + 0.00045);      // tiny sharp core + halo
+      // faint 4-point sparkle spikes (thin cross) near the star so it reads as a STAR, not a dot
+      float spike = 0.00030 * tw * (1.0 / (abs(d.x) * 42.0 + 0.35) + 1.0 / (abs(d.y) * 42.0 + 0.35)) * smoothstep(0.09, 0.0, dist);
+      col += hsl2rgb(uHue + uSpread * (sx - 0.5), 0.55, 0.62) * (core + spike);
+    }
+  } else if (uMode > 6.5) {
     // ---- SILK (uMode==7): draped-satin folds with a slow SWEEPING SPECULAR SHEEN — a lustrous
     // premium field for BOUTIQUE (upscale fashion / jewelry / salon). A warped fbm field, sampled
     // stretched (folds run mostly horizontal like hanging fabric), lit by a sharp highlight band
@@ -467,7 +495,9 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       warp: gl.getUniformLocation(prog, 'uWarp'),
     };
     const modeFlag =
-      variant === 'silk'
+      variant === 'constellation'
+        ? 8
+        : variant === 'silk'
         ? 7
         : variant === 'terrain'
         ? 6
