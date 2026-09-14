@@ -27,7 +27,15 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
  */
 
 /** The visual character of the backdrop — pick per industry. */
-export type HeroBackdropVariant = 'aurora' | 'waves' | 'mesh' | 'ember' | 'grid' | 'bokeh' | 'petals';
+export type HeroBackdropVariant =
+  | 'aurora'
+  | 'waves'
+  | 'mesh'
+  | 'ember'
+  | 'grid'
+  | 'bokeh'
+  | 'petals'
+  | 'smoke';
 
 /** Shader parameters per variant (pure data — unit-tested). */
 export interface HeroBackdropConfig {
@@ -60,7 +68,10 @@ export interface HeroBackdropConfig {
  * sunbeam" field (luxe — fine dining / jewelry / hotels; a distinct premium scene, not the shared
  * `waves`). `petals` = soft brand-tinted blossoms drifting DOWNWARD with gentle sway + rotation, a
  * botanical "falling petals" field (florist / plant shop / garden / nursery — its OWN organic scene,
- * not the shared `aurora` ribbons). All stay dark + low-intensity so foreground text stays legible.
+ * not the shared `aurora` ribbons). `smoke` = cool, dark, near-monochrome wispy haze rising slowly, a
+ * moody after-dark field (noir — tattoo / speakeasy / cocktail lounge / nightclub / jazz; its OWN
+ * edgy scene, not ember's WARM food-hospitality glow). All stay dark + low-intensity so foreground
+ * text stays legible.
  */
 export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConfig> = {
   // warp: aurora highest (flowing ribbons), ember turbulent, waves silky-gentle, mesh subtle
@@ -78,6 +89,9 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
   // petals: falling blossoms — slow downward drift + rotation, wider hueSpread for floral color
   // variation, low intensity so the soft shapes never compete with the H1. scale/sharpness/warp inert.
   petals: { scale: 1.0, speed: 0.45, sharpness: 0.5, hueSpread: 0.14, intensity: 0.82, warp: 0.3 },
+  // smoke: cool dark wispy haze for NOIR — near-monochrome (low hueSpread), low intensity so the
+  // moody field never competes with the H1. scale drives the fbm frequency; sharpness/warp inert.
+  smoke: { scale: 2.2, speed: 0.5, sharpness: 0.6, hueSpread: 0.05, intensity: 0.7, warp: 0.4 },
 };
 
 /**
@@ -95,15 +109,18 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
  *     (luxe — fine dining / jewelry / hotels want their OWN premium field, not editorial's waves);
  *   - `mesh`   — tight cellular shimmer → technical / energetic / precise
  *     (futuristic, bold, precision, rugged, brutalist);
- *   - `ember`  — warm glow rising from a hearth floor → food / hospitality / artisan / after-dark
- *     (warm, artisan, noir — noir's after-dark steakhouse/lounge wants ember's
- *     intimate warm-glow-in-a-dark-room, not cool ribbons);
+ *   - `ember`  — warm glow rising from a hearth floor → food / hospitality / artisan
+ *     (warm, artisan — an intimate warm-glow-in-a-dark-room for a bakery/roastery/steakhouse);
+ *   - `smoke`  — cool dark wispy haze rising slowly → after-dark / edgy / moody
+ *     (noir — a tattoo studio / speakeasy / cocktail lounge / nightclub / jazz bar wants a smoky,
+ *      near-monochrome haze, NOT ember's cozy WARM food-hospitality glow);
  *   - `grid`   — neon perspective floor scrolling to a horizon sun-glow → retro / synthwave
  *     (retro — the iconic scrolling grid IS the retro identity; a soft aurora field undersold it).
  * Pure + total (unknown/blank → `aurora`) so it unit-tests in isolation.
  *
  * @example backdropForPreset('luxe')       // → 'bokeh'
  * @example backdropForPreset('botanical')  // → 'petals'
+ * @example backdropForPreset('noir')       // → 'smoke'
  * @example backdropForPreset('heritage')   // → 'waves'
  * @example backdropForPreset('futuristic') // → 'mesh'
  * @example backdropForPreset('warm')       // → 'ember'
@@ -123,7 +140,8 @@ export const PRESET_BACKDROP: Record<string, HeroBackdropVariant> = {
   heritage: 'waves', // dignified authoritative swells — financial/legal/insurance/real-estate; ember's cozy hearth glow was a MISMATCH for a law/accounting/insurance firm (AL-490)
   luxe: 'bokeh', // premium drifting light-motes — luxe's OWN refined scene, not editorial's waves
   futuristic: 'mesh', bold: 'mesh', precision: 'mesh', rugged: 'mesh', brutalist: 'mesh',
-  warm: 'ember', noir: 'ember', artisan: 'ember',
+  warm: 'ember', artisan: 'ember',
+  noir: 'smoke', // AL-517: after-dark venues (tattoo/speakeasy/cocktail/nightclub/jazz) get a cool wispy SMOKE haze, not the WARM food-hospitality ember glow — motivated by the seven-swords-tattoo delivery
   retro: 'grid', // synthwave neon perspective grid — retro's iconic aesthetic, not a soft ribbon field
 };
 export function backdropForPreset(preset: string | null | undefined): HeroBackdropVariant {
@@ -216,7 +234,20 @@ void main(){
   vec2 p = uv * vec2(uRes.x/uRes.y, 1.0);
   float t = uTime * 0.05;
   vec3 col;
-  if (uMode > 3.5) {
+  if (uMode > 4.5) {
+    // ---- SMOKE (uMode==5): cool, dark, slow-RISING wispy haze — a moody after-dark field for NOIR
+    // (tattoo / speakeasy / cocktail lounge / nightclub / jazz). Distinct from ember's WARM hearth
+    // glow: smoke is near-monochrome grey (a faint brand tint only in the densest wisps), the fbm
+    // tendrils are sharp+wispy (not a soft bloom), and it rises slowly — haze in a dark room, not a
+    // cozy fire. The shared vignette + intensity below keep the center H1 legible.
+    vec2 drift = vec2(0.02 * sin(t * 0.9), -t * 0.7);   // slow upward rise (smoke rises) + gentle sway
+    vec2 q = vec2(fbm(p * uScale + drift), fbm(p * uScale + drift + 3.3));
+    float f = fbm(p * uScale + 1.1 * q + drift);
+    float wisp = smoothstep(0.42, 0.86, f);             // sharp-ish tendrils = wispy smoke, not a glow
+    vec3 grey = vec3(0.09 + 0.22 * wisp);               // cool near-monochrome haze
+    vec3 tint = hsl2rgb(uHue + uSpread * (f - 0.5), 0.35, 0.15 + 0.13 * wisp);
+    col = mix(grey, tint, 0.33 * wisp);                 // mostly grey, a whisper of brand color in the wisps
+  } else if (uMode > 3.5) {
     // ---- PETALS (uMode==4): soft brand-tinted blossoms drifting DOWNWARD with a gentle lateral
     // sway + slow rotation — a botanical "falling petals" field for florist / plant / garden. The
     // downward motion (vs bokeh's upward rise) + the elongated, rotated soft shape read as petals,
@@ -389,7 +420,17 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       warp: gl.getUniformLocation(prog, 'uWarp'),
     };
     const modeFlag =
-      variant === 'petals' ? 4 : variant === 'bokeh' ? 3 : variant === 'grid' ? 2 : variant === 'ember' ? 1 : 0;
+      variant === 'smoke'
+        ? 5
+        : variant === 'petals'
+          ? 4
+          : variant === 'bokeh'
+            ? 3
+            : variant === 'grid'
+              ? 2
+              : variant === 'ember'
+                ? 1
+                : 0;
     const hue = parseBrandHue(
       getComputedStyle(document.documentElement).getPropertyValue('--brand-hue'),
     );
