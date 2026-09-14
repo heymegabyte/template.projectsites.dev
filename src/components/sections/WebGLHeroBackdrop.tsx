@@ -39,7 +39,8 @@ export type HeroBackdropVariant =
   | 'terrain'
   | 'silk'
   | 'constellation'
-  | 'monolith';
+  | 'monolith'
+  | 'weave';
 
 /** Shader parameters per variant (pure data — unit-tested). */
 export interface HeroBackdropConfig {
@@ -113,6 +114,11 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
   // = raw-concrete monochrome (only the single fault seam carries brand hue); warp inert. Distinct
   // from mesh's soft cellular shimmer: quantized blocks with dark mortar grooves + one glowing seam.
   monolith: { scale: 5.0, speed: 0.5, sharpness: 0.8, hueSpread: 0.04, intensity: 0.78, warp: 0.2 },
+  // weave: a warm interlaced warp/weft thread LATTICE for ARTISAN (coffee roaster / pottery /
+  // woodwork / leather / candle / chocolatier / distillery). scale = weave density, sharpness =
+  // thread crispness, low hueSpread = a subtle warm two-tone; warp inert (procedural lattice).
+  // Distinct from ember's diffuse rising glow: structured over/under woven threads (handcraft).
+  weave: { scale: 5.5, speed: 0.5, sharpness: 0.6, hueSpread: 0.06, intensity: 0.8, warp: 0.3 },
 };
 
 /**
@@ -174,7 +180,8 @@ export const PRESET_BACKDROP: Record<string, HeroBackdropVariant> = {
   futuristic: 'mesh', bold: 'mesh', precision: 'mesh',
   brutalist: 'monolith', // AL-538: raw stark concrete SLABS + one glowing fault seam — the soft cellular tech MESH was a mismatch for brutalist's hard-edged architectural identity
   rugged: 'terrain', // AL-521: outdoor/adventure/landscaping/trades get earthy topographic contour rings — a tech cellular MESH was a mismatch for the rugged outdoors
-  warm: 'ember', artisan: 'ember',
+  warm: 'ember',
+  artisan: 'weave', // AL-548: craft/maker (roaster/pottery/woodwork/leather/candle/chocolatier) get an interlaced woven-thread lattice — ember's diffuse food-hearth glow was a mismatch for handcraft's tactile, made-by-hand character
   noir: 'smoke', // AL-517: after-dark venues (tattoo/speakeasy/cocktail/nightclub/jazz) get a cool wispy SMOKE haze, not the WARM food-hospitality ember glow — motivated by the seven-swords-tattoo delivery
   retro: 'grid', // synthwave neon perspective grid — retro's iconic aesthetic, not a soft ribbon field
 };
@@ -256,7 +263,7 @@ uniform float uScale;
 uniform float uSharp;
 uniform float uSpread;
 uniform float uIntensity;
-uniform float uMode;      // 0=flowing(aurora/waves/mesh) 1=ember 2=grid 3=bokeh 4=petals 5=smoke 6=terrain 7=silk 8=constellation 9=monolith
+uniform float uMode;      // 0=flowing(aurora/waves/mesh) 1=ember 2=grid 3=bokeh 4=petals 5=smoke 6=terrain 7=silk 8=constellation 9=monolith 10=weave
 uniform float uWarp;      // domain-warp strength (0 = legacy flat field)
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
 float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
@@ -268,7 +275,24 @@ void main(){
   vec2 p = uv * vec2(uRes.x/uRes.y, 1.0);
   float t = uTime * 0.05;
   vec3 col;
-  if (uMode > 8.5) {
+  if (uMode > 9.5) {
+    // ---- WEAVE (uMode==10): a warm interlaced warp/weft thread LATTICE — a handcraft/textile field
+    // for ARTISAN (coffee roaster / pottery / woodwork / leather / candle / chocolatier / distillery).
+    // Two thread sets (horizontal warp + vertical weft) interlace via an over/under CHECKER so the
+    // field reads as WOVEN cloth, drifting slowly. Distinct from ember's diffuse rising glow: this is
+    // structured, tactile, made-by-hand. Warm brand-hue two-tone; dark ground keeps the H1 legible.
+    // uScale = weave density, uSharp = thread crispness.
+    vec2 g = p * uScale + vec2(t * 0.05, t * 0.04);        // slow diagonal drift
+    float warpT = abs(sin(g.y * 3.14159));                 // horizontal threads (ridge along y)
+    float weftT = abs(sin(g.x * 3.14159));                 // vertical threads (ridge along x)
+    vec2 cell = floor(g);
+    float over = mod(cell.x + cell.y, 2.0);                // checker: which thread is ON TOP this cell
+    float top = mix(warpT, weftT, over);                   // the over-thread shows crisply
+    float under = mix(weftT, warpT, over) * 0.45;          // the under-thread sits dimmer
+    float lattice = pow(max(top, under), mix(2.0, 5.0, uSharp)); // sharpen into distinct threads
+    float hue = uHue - 0.02 + uSpread * (over - 0.5);      // warm two-tone weave (nudged warm like craft)
+    col = hsl2rgb(hue, 0.5, 0.10 + 0.32 * lattice);        // warm woven threads on a dark ground
+  } else if (uMode > 8.5) {
     // ---- MONOLITH (uMode==9): stark, hard-edged concrete SLABS shifting slowly — a raw BRUTALIST
     // field (bold agencies / design studios / architecture / edgy brands). Hard QUANTIZED blocks
     // (staggered brick bond, 4 stepped concrete greys, dark mortar grooves — no soft bloom) with a
@@ -521,7 +545,9 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       warp: gl.getUniformLocation(prog, 'uWarp'),
     };
     const modeFlag =
-      variant === 'monolith'
+      variant === 'weave'
+        ? 10
+        : variant === 'monolith'
         ? 9
         : variant === 'constellation'
         ? 8

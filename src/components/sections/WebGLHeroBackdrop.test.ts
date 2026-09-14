@@ -68,8 +68,9 @@ describe('HERO_BACKDROP_CONFIGS', () => {
     'silk',
     'constellation',
     'monolith',
+    'weave',
   ];
-  it('defines all twelve variants with sane, text-legible params', () => {
+  it('defines all thirteen variants with sane, text-legible params', () => {
     for (const v of variants) {
       const c = HERO_BACKDROP_CONFIGS[v];
       expect(c).toBeDefined();
@@ -112,6 +113,7 @@ describe('backdropForPreset (per-industry hero motion)', () => {
     expect(backdropForPreset('scholarly')).toBe('constellation'); // AL-532: academic/library/research get a deep-night star map, NOT generic aurora ribbons
     expect(backdropForPreset('brutalist')).toBe('monolith'); // AL-538: bold/architecture/edgy brands get stark concrete slabs + a fault seam, NOT the soft cellular tech mesh they used to share
     expect(backdropForPreset('warm')).toBe('ember'); // food/hospitality — warm rising glow
+    expect(backdropForPreset('artisan')).toBe('weave'); // AL-548: craft/maker get an interlaced woven-thread lattice, NOT the food-hearth ember glow they used to share with warm
     expect(backdropForPreset('luxe')).toBe('bokeh'); // premium — its OWN light-mote field, not editorial's waves
     expect(backdropForPreset('editorial')).toBe('waves'); // authoritative, measured
     expect(backdropForPreset('heritage')).toBe('waves'); // AL-490: dignified/authoritative (financial/legal/insurance) — NOT ember's cozy hearth glow
