@@ -6,9 +6,10 @@ import { brand, featureOn } from '@/brand';
  * Trust strip rendered directly beneath the hero — wordless credibility above the
  * fold, the single most-cited conversion lever for local-service and considered
  * purchases. Renders promise-grade signals every business can stand behind (free
- * quotes, licensed & insured, fast response, satisfaction guaranteed) — NEVER a
- * fabricated review count or license number. When research surfaces real numbers,
- * pass them via `items` to override the defaults; a missing field is simply omitted.
+ * quotes, experienced & reliable, fast response, satisfaction guaranteed) — NEVER an
+ * unverifiable CREDENTIAL like a blanket "licensed & insured" (true for a plumber,
+ * FABRICATED for the salon / agency / consultant that also quotes) or a review count.
+ * A real trade passes "Licensed & insured" via `items`; a missing field is omitted.
  *
  * Theme tokens only, so it reads correctly on light (healthcare/wellness) and dark
  * (SaaS/agency) verticals alike.
@@ -22,14 +23,17 @@ interface Props {
   items?: TrustItem[];
 }
 
-/** Vertical-aware, fabrication-free defaults. Service verticals lead with the
- *  estimate + licensing promises; everyone else gets generic credibility. */
+/** Vertical-aware, fabrication-free defaults. Quote-using verticals lead with the
+ *  estimate + reliability promises; everyone else gets generic credibility.
+ *  NOTE: "Licensed & insured" is a trades-specific FACT (correct for a plumber,
+ *  fabricated for a salon / agency / consultant that also quotes) — it is NOT a
+ *  universal default; a genuine trade passes it via the `items` prop. */
 function defaultItems(): TrustItem[] {
   const svc = featureOn('quote');
   const base: TrustItem[] = svc
     ? [
         { icon: <BadgeCheck size={16} />, label: 'Free, no-obligation quotes' },
-        { icon: <ShieldCheck size={16} />, label: 'Licensed & insured' },
+        { icon: <ShieldCheck size={16} />, label: 'Experienced & reliable' },
         { icon: <Clock size={16} />, label: 'Fast, reliable response' },
         { icon: <HeartHandshake size={16} />, label: 'Satisfaction guaranteed' },
       ]
