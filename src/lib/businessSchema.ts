@@ -128,48 +128,24 @@ export function buildBusinessJsonLd(profile: BusinessProfile): Record<string, un
 }
 
 /**
- * Build the full per-page JSON-LD graph (5+ nodes per always.md).
- * Returns an array so consumers can drop it straight into <JsonLd data={...} />.
+ * Build the CLIENT-side per-page JSON-LD — ONLY the rich business entity (the
+ * LocalBusiness subtype carrying NAP + geo + openingHours + priceRange).
+ *
+ * @remarks
+ * AL-522: the site-level `WebSite` / `WebPage` / `BreadcrumbList` are injected
+ * SERVER-SIDE into every served page (the worker `build_validators.ts` shell
+ * injector — the no-JS baseline + the ≥4-block invariant). This component used to
+ * re-emit those THREE types client-side too, so the rendered DOM ended up with each
+ * one TWICE — and because the server blocks carry NO `@id` while these did
+ * (`#website`/`#webpage`), Google couldn't merge them → duplicate WebSite / WebPage /
+ * BreadcrumbList entities on every page (a real structured-data hygiene defect; the
+ * served HTML was already clean — the dup was client-only). Returning ONLY the rich
+ * business entity removes the duplication while KEEPING the valuable client-rendered
+ * NAP/geo/hours (the server's generic `Organization` block lacks them). Still an array
+ * so `<JsonLd data={...} />` consumers are unchanged.
  */
 export function buildSiteJsonLd(profile: BusinessProfile): Record<string, unknown>[] {
-  const organization = buildBusinessJsonLd(profile);
-
-  const website = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    '@id': `${profile.url}#website`,
-    name: profile.name,
-    url: profile.url,
-    description: profile.description,
-    publisher: { '@id': `${profile.url}#org` },
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: `${profile.url}/?q={search_term_string}`,
-      'query-input': 'required name=search_term_string',
-    },
-  };
-
-  const webpage = {
-    '@context': 'https://schema.org',
-    '@type': 'WebPage',
-    '@id': `${profile.url}#webpage`,
-    url: profile.url,
-    name: profile.name,
-    description: profile.description,
-    isPartOf: { '@id': `${profile.url}#website` },
-    about: { '@id': `${profile.url}#org` },
-    inLanguage: 'en-US',
-  };
-
-  const breadcrumb = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: profile.url },
-    ],
-  };
-
-  return [organization, website, webpage, breadcrumb];
+  return [buildBusinessJsonLd(profile)];
 }
 
 export function isLocalBusinessClass(value: BusinessClass): boolean {
