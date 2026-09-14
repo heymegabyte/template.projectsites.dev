@@ -18,9 +18,13 @@ const Lightbox = lazy(() => import('./Lightbox').then((m) => ({ default: m.Light
 const CommandPalette = lazy(() =>
   import('./CommandPalette').then((m) => ({ default: m.CommandPalette })),
 );
-const DevA11yBadge = lazy(() =>
-  import('./DevA11yBadge').then((m) => ({ default: m.DevA11yBadge })),
-);
+// Gate the lazy DECLARATION on DEV (not just the render): `import.meta.env.DEV` is a static
+// `false` in prod, so Vite dead-code-eliminates the `import('./DevA11yBadge')` entirely — no
+// chunk emitted, no reference, nothing to 404. (An ungated lazy import fired a 404 + "Failed to
+// fetch dynamically imported module" on every delivered site — AL-562.)
+const DevA11yBadge = import.meta.env.DEV
+  ? lazy(() => import('./DevA11yBadge').then((m) => ({ default: m.DevA11yBadge })))
+  : () => null;
 
 interface Props {
   children: React.ReactNode;
@@ -42,7 +46,12 @@ export default function Layout({ children }: Props) {
       <Suspense fallback={null}>
         <Lightbox />
         <CommandPalette />
-        <DevA11yBadge />
+        {/* DEV-only: gate the RENDER (not just the component body) so the prod build never
+            fires the lazy import — an ungated <DevA11yBadge/> triggered a 404 + "Failed to
+            fetch dynamically imported module" on every delivered site (its chunk is dev-only
+            + not emitted/served in prod). `import.meta.env.DEV` is statically false in prod,
+            so Vite dead-code-eliminates the import entirely. (AL-562) */}
+        {import.meta.env.DEV && <DevA11yBadge />}
       </Suspense>
     </>
   );
