@@ -1543,14 +1543,17 @@ main#main { view-transition-name: ps-main; }
     .hero-enter {
       opacity: 1;
       transform: translateY(0);
-      transition:
-        opacity var(--duration-slow) var(--ease),
-        transform var(--duration-slow) var(--ease);
+      /* AL-533: transform-ONLY entrance (no opacity fade). An opacity:0 @starting-style hid the
+         hero H1 — the LCP element on hero-text-dominant sites — until the fade finished, pushing
+         LCP to ~2.5s (measured on catbird: el=H1.hero-enter @ 2560ms; other sites whose LCP is the
+         small navbar wordmark were ~1.0s). A translateY(18px)→0 rise paints the element at full
+         opacity IMMEDIATELY (LCP counts the first paint), so the staggered entrance still plays but
+         never delays LCP. Base state is opacity:1 (SSR/no-JS/reduced-motion safe). */
+      transition: transform var(--duration-slow) var(--ease);
       transition-delay: calc(var(--enter-i, 0) * 90ms);
     }
     @starting-style {
       .hero-enter {
-        opacity: 0;
         transform: translateY(18px);
       }
     }
