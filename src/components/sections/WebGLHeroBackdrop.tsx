@@ -38,7 +38,8 @@ export type HeroBackdropVariant =
   | 'smoke'
   | 'terrain'
   | 'silk'
-  | 'constellation';
+  | 'constellation'
+  | 'monolith';
 
 /** Shader parameters per variant (pure data — unit-tested). */
 export interface HeroBackdropConfig {
@@ -107,6 +108,11 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
   // sparkles) for SCHOLARLY (academic/library/education/research). hueSpread varies star color,
   // low intensity keeps it behind the H1; scale/sharpness/warp inert (points are procedural).
   constellation: { scale: 1.0, speed: 0.4, sharpness: 0.6, hueSpread: 0.1, intensity: 0.8, warp: 0.3 },
+  // monolith: stark hard-edged concrete SLABS for BRUTALIST (bold agencies / design studios /
+  // architecture / edgy brands). scale = slab count, sharpness = edge crispness, near-zero hueSpread
+  // = raw-concrete monochrome (only the single fault seam carries brand hue); warp inert. Distinct
+  // from mesh's soft cellular shimmer: quantized blocks with dark mortar grooves + one glowing seam.
+  monolith: { scale: 5.0, speed: 0.5, sharpness: 0.8, hueSpread: 0.04, intensity: 0.78, warp: 0.2 },
 };
 
 /**
@@ -165,7 +171,8 @@ export const PRESET_BACKDROP: Record<string, HeroBackdropVariant> = {
   editorial: 'waves',
   heritage: 'waves', // dignified authoritative swells — financial/legal/insurance/real-estate; ember's cozy hearth glow was a MISMATCH for a law/accounting/insurance firm (AL-490)
   luxe: 'bokeh', // premium drifting light-motes — luxe's OWN refined scene, not editorial's waves
-  futuristic: 'mesh', bold: 'mesh', precision: 'mesh', brutalist: 'mesh',
+  futuristic: 'mesh', bold: 'mesh', precision: 'mesh',
+  brutalist: 'monolith', // AL-538: raw stark concrete SLABS + one glowing fault seam — the soft cellular tech MESH was a mismatch for brutalist's hard-edged architectural identity
   rugged: 'terrain', // AL-521: outdoor/adventure/landscaping/trades get earthy topographic contour rings — a tech cellular MESH was a mismatch for the rugged outdoors
   warm: 'ember', artisan: 'ember',
   noir: 'smoke', // AL-517: after-dark venues (tattoo/speakeasy/cocktail/nightclub/jazz) get a cool wispy SMOKE haze, not the WARM food-hospitality ember glow — motivated by the seven-swords-tattoo delivery
@@ -249,7 +256,7 @@ uniform float uScale;
 uniform float uSharp;
 uniform float uSpread;
 uniform float uIntensity;
-uniform float uMode;      // 0=flowing(aurora/waves/mesh) 1=ember 2=grid 3=bokeh 4=petals 5=smoke 6=terrain
+uniform float uMode;      // 0=flowing(aurora/waves/mesh) 1=ember 2=grid 3=bokeh 4=petals 5=smoke 6=terrain 7=silk 8=constellation 9=monolith
 uniform float uWarp;      // domain-warp strength (0 = legacy flat field)
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
 float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
@@ -261,7 +268,26 @@ void main(){
   vec2 p = uv * vec2(uRes.x/uRes.y, 1.0);
   float t = uTime * 0.05;
   vec3 col;
-  if (uMode > 7.5) {
+  if (uMode > 8.5) {
+    // ---- MONOLITH (uMode==9): stark, hard-edged concrete SLABS shifting slowly — a raw BRUTALIST
+    // field (bold agencies / design studios / architecture / edgy brands). Hard QUANTIZED blocks
+    // (staggered brick bond, 4 stepped concrete greys, dark mortar grooves — no soft bloom) with a
+    // single bright brand-hue SEAM glowing along one slowly-sweeping fault line. The opposite of
+    // mesh's soft cellular shimmer. Near-monochrome + low intensity keep the center H1 legible.
+    // uScale = slab count, uSharp unused here (edges are hard by construction).
+    vec2 g = vec2(p.x * uScale, p.y * uScale * 0.7);          // slab grid (slightly tall blocks)
+    float row = floor(g.y + t * 0.12);                        // which row (for the brick stagger), drifts slowly
+    vec2 gr = vec2(g.x + 0.5 * mod(row, 2.0), g.y + t * 0.12);// staggered brick bond + slow downward drift
+    vec2 cell = floor(gr);
+    float tone = hash(cell);                                  // per-slab concrete tone
+    float shade = 0.07 + 0.13 * floor(tone * 4.0) / 3.0;      // 4 HARD quantized concrete greys (no gradient)
+    vec2 f = fract(gr);                                       // position within the slab
+    float edge = smoothstep(0.0, 0.045, f.x) * smoothstep(0.0, 0.045, 1.0 - f.x)
+               * smoothstep(0.0, 0.045, f.y) * smoothstep(0.0, 0.045, 1.0 - f.y); // dark mortar grooves between slabs
+    float seamX = 0.5 + 0.30 * sin(t * 0.35);                 // one slowly-sweeping vertical fault line
+    float seam = smoothstep(0.014, 0.0, abs(uv.x - seamX));   // thin hard glowing seam
+    col = vec3(shade * mix(0.45, 1.0, edge)) + hsl2rgb(uHue, 0.85, 0.5) * seam * 0.5;
+  } else if (uMode > 7.5) {
     // ---- CONSTELLATION (uMode==8): a deep-night STAR MAP — tiny sharp TWINKLING star points
     // (with faint 4-point cross sparkles) drifting slowly on a dark field, a "knowledge map" for
     // SCHOLARLY (academic / library / education / research). Distinct from bokeh's soft LARGE
@@ -495,7 +521,9 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       warp: gl.getUniformLocation(prog, 'uWarp'),
     };
     const modeFlag =
-      variant === 'constellation'
+      variant === 'monolith'
+        ? 9
+        : variant === 'constellation'
         ? 8
         : variant === 'silk'
         ? 7
