@@ -3489,6 +3489,25 @@ main#main { view-transition-name: ps-main; }
           position: absolute; inset: 0; pointer-events: none;
           background: radial-gradient(60% 45% at 50% 78%, color-mix(in oklch, var(--color-accent) 14%, transparent), transparent 70%);
         }
+/* [WebGLHeroBackdrop.tsx static fallback] a slow brand-tinted DRIFT so the LIGHT-theme hero
+   (which ALWAYS gets the static gradient, never the dark WebGL scene — resolveBackdropMode) and
+   the no-WebGL fallback feel ALIVE, not flat. Transform-only (GPU-composited: no repaint, LCP/INP
+   -safe). opacity:0 by default → reduced-motion + SSR first paint are byte-identical to before; the
+   wash only appears + drifts under prefers-reduced-motion:no-preference. Both blobs pinned to the
+   CORNERS (16%/18% + 85%/82%) so the centered hero H1 is never tinted — dark-on-light stays ≥4.5:1. AL-564. */
+.hero-wash {
+          position: absolute; inset: -25%; pointer-events: none; opacity: 0;
+          background:
+            radial-gradient(38% 38% at 16% 18%, color-mix(in oklch, var(--color-accent) 16%, transparent), transparent 70%),
+            radial-gradient(42% 42% at 85% 82%, color-mix(in oklch, var(--color-primary) 14%, transparent), transparent 72%);
+        }
+        @media (prefers-reduced-motion: no-preference) {
+          .hero-wash { opacity: 0.5; animation: heroWashDrift 28s ease-in-out infinite alternate; will-change: transform; }
+          @keyframes heroWashDrift {
+            from { transform: translate3d(-2.5%, -1.5%, 0) scale(1.04) rotate(-1.2deg); }
+            to   { transform: translate3d(2.5%, 1.5%, 0) scale(1.12) rotate(1.2deg); }
+          }
+        }
         /* Cinematic film-grain over the hero photo — every theme dossier (luxe / noir /
            artisan / heritage) calls for "film grain", but the hero shipped without it.
            Sits ABOVE the photo + gradient + glow (z:0) and BELOW the z-10 copy, so it

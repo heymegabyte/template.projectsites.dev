@@ -665,6 +665,10 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
         <>
           <canvas ref={canvasRef} className="absolute h-0 w-0 opacity-0" aria-hidden="true" />
           <div className="h-full w-full" style={staticStyle} />
+          {/* Living brand-tinted drift (AL-564) — makes the LIGHT-theme hero (always static, never
+              the dark WebGL scene) + the no-WebGL fallback feel alive. opacity:0 under reduced-motion
+              (byte-identical to before); corner-pinned so the centered H1 never loses contrast. */}
+          <div className="hero-wash" aria-hidden="true" />
           {/* glass sheen — a soft top highlight so the flat fallback reads as a lit surface (depth). */}
           <div
             className="pointer-events-none absolute inset-x-0 top-0 h-1/3"
