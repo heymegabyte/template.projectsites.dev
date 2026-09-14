@@ -27,7 +27,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
  */
 
 /** The visual character of the backdrop — pick per industry. */
-export type HeroBackdropVariant = 'aurora' | 'waves' | 'mesh' | 'ember' | 'grid' | 'bokeh';
+export type HeroBackdropVariant = 'aurora' | 'waves' | 'mesh' | 'ember' | 'grid' | 'bokeh' | 'petals';
 
 /** Shader parameters per variant (pure data — unit-tested). */
 export interface HeroBackdropConfig {
@@ -58,7 +58,9 @@ export interface HeroBackdropConfig {
  * scrolling-toward-you grid, distinct from every noise-field variant).
  * `bokeh` = soft out-of-focus light discs drifting slowly upward, a refined "dust motes in a
  * sunbeam" field (luxe — fine dining / jewelry / hotels; a distinct premium scene, not the shared
- * `waves`). All stay dark + low-intensity so foreground text stays legible.
+ * `waves`). `petals` = soft brand-tinted blossoms drifting DOWNWARD with gentle sway + rotation, a
+ * botanical "falling petals" field (florist / plant shop / garden / nursery — its OWN organic scene,
+ * not the shared `aurora` ribbons). All stay dark + low-intensity so foreground text stays legible.
  */
 export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConfig> = {
   // warp: aurora highest (flowing ribbons), ember turbulent, waves silky-gentle, mesh subtle
@@ -73,6 +75,9 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
   // bokeh: slow drift (premium restraint), gentle hue variation across discs, low intensity so the
   // soft glows never compete with the hero H1. scale/sharpness/warp are inert for this mode.
   bokeh: { scale: 1.0, speed: 0.4, sharpness: 0.5, hueSpread: 0.1, intensity: 0.8, warp: 0.3 },
+  // petals: falling blossoms — slow downward drift + rotation, wider hueSpread for floral color
+  // variation, low intensity so the soft shapes never compete with the H1. scale/sharpness/warp inert.
+  petals: { scale: 1.0, speed: 0.45, sharpness: 0.5, hueSpread: 0.14, intensity: 0.82, warp: 0.3 },
 };
 
 /**
@@ -80,7 +85,9 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
  * MOTION matches that personality — so every generated site gets a fitting
  * animated hero automatically (no per-build opt-in):
  *   - `aurora` — soft flowing ribbons → welcoming / organic / creative
- *     (botanical, scholarly, boutique, classic);
+ *     (scholarly, boutique, classic);
+ *   - `petals` — soft blossoms drifting downward → botanical / floral / garden
+ *     (botanical — florist / plant shop / nursery get their OWN falling-petals scene, not shared aurora);
  *   - `waves`  — broad calm swells → authoritative / professional / trusted / dignified
  *     (editorial, heritage — a law / accounting / insurance / real-estate firm reads as steady +
  *      trusted, NOT cozy-warm; ember's hearth glow was a mismatch for it);
@@ -96,6 +103,7 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
  * Pure + total (unknown/blank → `aurora`) so it unit-tests in isolation.
  *
  * @example backdropForPreset('luxe')       // → 'bokeh'
+ * @example backdropForPreset('botanical')  // → 'petals'
  * @example backdropForPreset('heritage')   // → 'waves'
  * @example backdropForPreset('futuristic') // → 'mesh'
  * @example backdropForPreset('warm')       // → 'ember'
@@ -109,7 +117,8 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
 // commits), so the coverage is drift-GUARDED by a test (WebGLHeroBackdrop.test.ts asserts
 // every PRESET_NAMES entry is a key here) — add the mapping in the SAME change as a new preset.
 export const PRESET_BACKDROP: Record<string, HeroBackdropVariant> = {
-  botanical: 'aurora', scholarly: 'aurora', boutique: 'aurora', classic: 'aurora',
+  botanical: 'petals', // falling blossoms — florist/plant/garden get their OWN organic scene, not shared aurora ribbons (AL-511)
+  scholarly: 'aurora', boutique: 'aurora', classic: 'aurora',
   editorial: 'waves',
   heritage: 'waves', // dignified authoritative swells — financial/legal/insurance/real-estate; ember's cozy hearth glow was a MISMATCH for a law/accounting/insurance firm (AL-490)
   luxe: 'bokeh', // premium drifting light-motes — luxe's OWN refined scene, not editorial's waves
@@ -207,7 +216,26 @@ void main(){
   vec2 p = uv * vec2(uRes.x/uRes.y, 1.0);
   float t = uTime * 0.05;
   vec3 col;
-  if (uMode > 2.5) {
+  if (uMode > 3.5) {
+    // ---- PETALS (uMode==4): soft brand-tinted blossoms drifting DOWNWARD with a gentle lateral
+    // sway + slow rotation — a botanical "falling petals" field for florist / plant / garden. The
+    // downward motion (vs bokeh's upward rise) + the elongated, rotated soft shape read as petals,
+    // not motes. Same dark base + low intensity so the center H1 stays legible on any brand hue.
+    col = vec3(0.0);
+    for (int i = 0; i < 10; i++) {
+      float fi = float(i);
+      float s1 = hash(vec2(fi, 5.3));
+      float s2 = hash(vec2(fi * 1.7, 2.9));
+      float cy = fract(1.0 - (s2 + t * (0.45 + 0.5 * s1)));       // fall DOWNWARD, wraps 1..0
+      float cx = fract(s1 + 0.05 * sin(t * (0.7 + s2) + fi * 1.3)); // gentle lateral sway
+      vec2 d = (uv - vec2(cx, cy)) * vec2(uRes.x / uRes.y, 1.0);
+      float ang = t * (0.6 + s1) + fi;                            // slow rotation
+      vec2 r = vec2(cos(ang) * d.x - sin(ang) * d.y, sin(ang) * d.x + cos(ang) * d.y);
+      float rad = mix(0.05, 0.12, s1);
+      float petal = smoothstep(rad, rad * 0.15, length(r * vec2(1.0, 2.2))); // 2.2× taller = petal
+      col += hsl2rgb(uHue + uSpread * (s1 - 0.5), 0.55, 0.5) * petal * (0.08 + 0.08 * s2);
+    }
+  } else if (uMode > 2.5) {
     // ---- BOKEH (uMode==3): soft out-of-focus light discs drifting slowly upward — a refined
     // "dust motes in a sunbeam" field for luxe (fine dining / jewelry / hotels). Dark base; each
     // disc a soft brand-tinted radial glow; slow motion = understated premium. The shared vignette
@@ -360,7 +388,8 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       mode: gl.getUniformLocation(prog, 'uMode'),
       warp: gl.getUniformLocation(prog, 'uWarp'),
     };
-    const modeFlag = variant === 'bokeh' ? 3 : variant === 'grid' ? 2 : variant === 'ember' ? 1 : 0;
+    const modeFlag =
+      variant === 'petals' ? 4 : variant === 'bokeh' ? 3 : variant === 'grid' ? 2 : variant === 'ember' ? 1 : 0;
     const hue = parseBrandHue(
       getComputedStyle(document.documentElement).getPropertyValue('--brand-hue'),
     );
