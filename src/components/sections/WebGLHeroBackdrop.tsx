@@ -35,7 +35,8 @@ export type HeroBackdropVariant =
   | 'grid'
   | 'bokeh'
   | 'petals'
-  | 'smoke';
+  | 'smoke'
+  | 'terrain';
 
 /** Shader parameters per variant (pure data — unit-tested). */
 export interface HeroBackdropConfig {
@@ -92,6 +93,9 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
   // smoke: cool dark wispy haze for NOIR — near-monochrome (low hueSpread), low intensity so the
   // moody field never competes with the H1. scale drives the fbm frequency; sharpness/warp inert.
   smoke: { scale: 2.2, speed: 0.5, sharpness: 0.6, hueSpread: 0.05, intensity: 0.7, warp: 0.4 },
+  // terrain: slowly-morphing topographic contour rings for RUGGED (outdoor/adventure/trades). scale
+  // = contour density, sharpness = line crispness, low hueSpread = earthy consistency; warp inert.
+  terrain: { scale: 2.8, speed: 0.6, sharpness: 0.72, hueSpread: 0.06, intensity: 0.8, warp: 0.4 },
 };
 
 /**
@@ -108,7 +112,10 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
  *   - `bokeh`  — soft drifting out-of-focus light-motes → refined / premium / elegant
  *     (luxe — fine dining / jewelry / hotels want their OWN premium field, not editorial's waves);
  *   - `mesh`   — tight cellular shimmer → technical / energetic / precise
- *     (futuristic, bold, precision, rugged, brutalist);
+ *     (futuristic, bold, precision, brutalist);
+ *   - `terrain`— slowly-morphing topographic contour rings → outdoor / rugged / earthy
+ *     (rugged — outdoor gear / adventure / landscaping / construction / trades want an earthy
+ *      "living elevation map", NOT the tech cellular mesh they used to share);
  *   - `ember`  — warm glow rising from a hearth floor → food / hospitality / artisan
  *     (warm, artisan — an intimate warm-glow-in-a-dark-room for a bakery/roastery/steakhouse);
  *   - `smoke`  — cool dark wispy haze rising slowly → after-dark / edgy / moody
@@ -139,7 +146,8 @@ export const PRESET_BACKDROP: Record<string, HeroBackdropVariant> = {
   editorial: 'waves',
   heritage: 'waves', // dignified authoritative swells — financial/legal/insurance/real-estate; ember's cozy hearth glow was a MISMATCH for a law/accounting/insurance firm (AL-490)
   luxe: 'bokeh', // premium drifting light-motes — luxe's OWN refined scene, not editorial's waves
-  futuristic: 'mesh', bold: 'mesh', precision: 'mesh', rugged: 'mesh', brutalist: 'mesh',
+  futuristic: 'mesh', bold: 'mesh', precision: 'mesh', brutalist: 'mesh',
+  rugged: 'terrain', // AL-521: outdoor/adventure/landscaping/trades get earthy topographic contour rings — a tech cellular MESH was a mismatch for the rugged outdoors
   warm: 'ember', artisan: 'ember',
   noir: 'smoke', // AL-517: after-dark venues (tattoo/speakeasy/cocktail/nightclub/jazz) get a cool wispy SMOKE haze, not the WARM food-hospitality ember glow — motivated by the seven-swords-tattoo delivery
   retro: 'grid', // synthwave neon perspective grid — retro's iconic aesthetic, not a soft ribbon field
@@ -222,7 +230,7 @@ uniform float uScale;
 uniform float uSharp;
 uniform float uSpread;
 uniform float uIntensity;
-uniform float uMode;      // 0 = flowing field (aurora/waves/mesh); 1 = ember (warm upward rise)
+uniform float uMode;      // 0=flowing(aurora/waves/mesh) 1=ember 2=grid 3=bokeh 4=petals 5=smoke 6=terrain
 uniform float uWarp;      // domain-warp strength (0 = legacy flat field)
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
 float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
@@ -234,7 +242,22 @@ void main(){
   vec2 p = uv * vec2(uRes.x/uRes.y, 1.0);
   float t = uTime * 0.05;
   vec3 col;
-  if (uMode > 4.5) {
+  if (uMode > 5.5) {
+    // ---- TERRAIN (uMode==6): slowly-morphing topographic CONTOUR RINGS — an earthy "living
+    // elevation map" for RUGGED (outdoor gear / adventure / landscaping / construction / trades).
+    // Distinct from every other scene: thin bright brand-tinted contour rings on a dark earthy
+    // field, breathing as the elevation fbm drifts. uScale = contour density, uSharp = line
+    // crispness. The shared vignette + intensity below keep the center H1 legible.
+    vec2 drift = vec2(0.015 * sin(t * 0.5), t * 0.12);        // slow elevation morph + gentle pan
+    float e = fbm(p * uScale + drift);                        // elevation field 0..1
+    float bands = 9.0;                                        // number of contour levels
+    float g = fract(e * bands);                               // position within the current band
+    float lw = mix(0.20, 0.06, uSharp);                       // contour line half-width (sharper = thinner)
+    float line = (1.0 - smoothstep(0.0, lw, g)) + (1.0 - smoothstep(0.0, lw, 1.0 - g)); // ring at each band edge
+    line = clamp(line, 0.0, 1.0);
+    float relief = 0.10 * e;                                  // faint elevation fill for depth
+    col = hsl2rgb(uHue + uSpread * (e - 0.5), 0.5, 0.12 + relief + 0.34 * line);
+  } else if (uMode > 4.5) {
     // ---- SMOKE (uMode==5): cool, dark, slow-RISING wispy haze — a moody after-dark field for NOIR
     // (tattoo / speakeasy / cocktail lounge / nightclub / jazz). Distinct from ember's WARM hearth
     // glow: smoke is near-monochrome grey (a faint brand tint only in the densest wisps), the fbm
@@ -420,17 +443,19 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       warp: gl.getUniformLocation(prog, 'uWarp'),
     };
     const modeFlag =
-      variant === 'smoke'
-        ? 5
-        : variant === 'petals'
-          ? 4
-          : variant === 'bokeh'
-            ? 3
-            : variant === 'grid'
-              ? 2
-              : variant === 'ember'
-                ? 1
-                : 0;
+      variant === 'terrain'
+        ? 6
+        : variant === 'smoke'
+          ? 5
+          : variant === 'petals'
+            ? 4
+            : variant === 'bokeh'
+              ? 3
+              : variant === 'grid'
+                ? 2
+                : variant === 'ember'
+                  ? 1
+                  : 0;
     const hue = parseBrandHue(
       getComputedStyle(document.documentElement).getPropertyValue('--brand-hue'),
     );
