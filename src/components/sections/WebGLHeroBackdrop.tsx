@@ -36,7 +36,8 @@ export type HeroBackdropVariant =
   | 'bokeh'
   | 'petals'
   | 'smoke'
-  | 'terrain';
+  | 'terrain'
+  | 'silk';
 
 /** Shader parameters per variant (pure data — unit-tested). */
 export interface HeroBackdropConfig {
@@ -96,6 +97,11 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
   // terrain: slowly-morphing topographic contour rings for RUGGED (outdoor/adventure/trades). scale
   // = contour density, sharpness = line crispness, low hueSpread = earthy consistency; warp inert.
   terrain: { scale: 2.8, speed: 0.6, sharpness: 0.72, hueSpread: 0.06, intensity: 0.8, warp: 0.4 },
+  // silk: draped-satin folds with a slow sweeping specular sheen for BOUTIQUE (upscale fashion /
+  // jewelry / salon). scale = fold frequency, sharpness = sheen tightness, low hueSpread = elegant
+  // restraint; warp curves the folds. Distinct from aurora's ribbons: horizontal folds + a moving
+  // highlight band, like light gliding across draped fabric.
+  silk: { scale: 2.0, speed: 0.5, sharpness: 0.62, hueSpread: 0.07, intensity: 0.82, warp: 0.5 },
 };
 
 /**
@@ -103,7 +109,10 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
  * MOTION matches that personality — so every generated site gets a fitting
  * animated hero automatically (no per-build opt-in):
  *   - `aurora` — soft flowing ribbons → welcoming / organic / creative
- *     (scholarly, boutique, classic);
+ *     (scholarly, classic);
+ *   - `silk`   — draped-satin folds with a sweeping specular sheen → premium / elegant / refined
+ *     (boutique — upscale fashion / jewelry / salon want a lustrous draped-fabric shimmer, not the
+ *      soft aurora ribbons they used to share);
  *   - `petals` — soft blossoms drifting downward → botanical / floral / garden
  *     (botanical — florist / plant shop / nursery get their OWN falling-petals scene, not shared aurora);
  *   - `waves`  — broad calm swells → authoritative / professional / trusted / dignified
@@ -142,7 +151,8 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
 // every PRESET_NAMES entry is a key here) — add the mapping in the SAME change as a new preset.
 export const PRESET_BACKDROP: Record<string, HeroBackdropVariant> = {
   botanical: 'petals', // falling blossoms — florist/plant/garden get their OWN organic scene, not shared aurora ribbons (AL-511)
-  scholarly: 'aurora', boutique: 'aurora', classic: 'aurora',
+  scholarly: 'aurora', classic: 'aurora',
+  boutique: 'silk', // AL-525: upscale fashion/jewelry/salon get draped-satin folds with a sweeping sheen — a soft aurora ribbon undersold the premium boutique feel
   editorial: 'waves',
   heritage: 'waves', // dignified authoritative swells — financial/legal/insurance/real-estate; ember's cozy hearth glow was a MISMATCH for a law/accounting/insurance firm (AL-490)
   luxe: 'bokeh', // premium drifting light-motes — luxe's OWN refined scene, not editorial's waves
@@ -242,7 +252,21 @@ void main(){
   vec2 p = uv * vec2(uRes.x/uRes.y, 1.0);
   float t = uTime * 0.05;
   vec3 col;
-  if (uMode > 5.5) {
+  if (uMode > 6.5) {
+    // ---- SILK (uMode==7): draped-satin folds with a slow SWEEPING SPECULAR SHEEN — a lustrous
+    // premium field for BOUTIQUE (upscale fashion / jewelry / salon). A warped fbm field, sampled
+    // stretched (folds run mostly horizontal like hanging fabric), lit by a sharp highlight band
+    // that glides across the folds over time (light gliding on satin). Distinct from aurora's soft
+    // ribbons: tighter directional folds + a moving specular crest. Dark base + low intensity keep
+    // the center H1 legible. uScale = fold frequency, uSharp = sheen tightness.
+    vec2 drift = vec2(0.05 * sin(t * 0.6), t * 0.18);
+    vec2 q = vec2(fbm(p * uScale + drift), fbm(p * uScale + drift + 4.7));       // domain warp → curved folds
+    float fold = fbm(vec2(p.x * uScale * 0.6, p.y * uScale * 1.8) + uWarp * q + drift); // stretched → horizontal folds
+    float sheenBand = 0.5 + 0.5 * sin(fold * 6.2831 + p.x * 1.5 - t * 1.6);      // a highlight that sweeps the folds
+    float sheen = pow(sheenBand, mix(6.0, 16.0, uSharp));                        // sharp satin crest (sharper preset = tighter)
+    vec3 tint = hsl2rgb(uHue + uSpread * (fold - 0.5), 0.42, 0.14 + 0.10 * fold);
+    col = tint + hsl2rgb(uHue, 0.25, 0.5) * 0.42 * sheen;                        // base drape + bright moving sheen
+  } else if (uMode > 5.5) {
     // ---- TERRAIN (uMode==6): slowly-morphing topographic CONTOUR RINGS — an earthy "living
     // elevation map" for RUGGED (outdoor gear / adventure / landscaping / construction / trades).
     // Distinct from every other scene: thin bright brand-tinted contour rings on a dark earthy
@@ -443,7 +467,9 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       warp: gl.getUniformLocation(prog, 'uWarp'),
     };
     const modeFlag =
-      variant === 'terrain'
+      variant === 'silk'
+        ? 7
+        : variant === 'terrain'
         ? 6
         : variant === 'smoke'
           ? 5

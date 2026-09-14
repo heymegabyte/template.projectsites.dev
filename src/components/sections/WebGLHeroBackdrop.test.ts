@@ -65,8 +65,9 @@ describe('HERO_BACKDROP_CONFIGS', () => {
     'petals',
     'smoke',
     'terrain',
+    'silk',
   ];
-  it('defines all nine variants with sane, text-legible params', () => {
+  it('defines all ten variants with sane, text-legible params', () => {
     for (const v of variants) {
       const c = HERO_BACKDROP_CONFIGS[v];
       expect(c).toBeDefined();
@@ -105,6 +106,7 @@ describe('backdropForPreset (per-industry hero motion)', () => {
     expect(backdropForPreset('botanical')).toBe('petals'); // AL-511: florist/plant get their OWN falling-petals scene, not shared aurora
     expect(backdropForPreset('noir')).toBe('smoke'); // AL-517: after-dark (tattoo/speakeasy/cocktail) get a cool SMOKE haze, not the warm ember glow
     expect(backdropForPreset('rugged')).toBe('terrain'); // AL-521: outdoor/adventure/landscaping/trades get earthy topographic contours, NOT the tech mesh they used to share
+    expect(backdropForPreset('boutique')).toBe('silk'); // AL-525: upscale fashion/jewelry/salon get draped-satin sheen, NOT the soft aurora ribbons they used to share
     expect(backdropForPreset('warm')).toBe('ember'); // food/hospitality — warm rising glow
     expect(backdropForPreset('luxe')).toBe('bokeh'); // premium — its OWN light-mote field, not editorial's waves
     expect(backdropForPreset('editorial')).toBe('waves'); // authoritative, measured
