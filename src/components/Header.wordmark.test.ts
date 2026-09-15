@@ -90,3 +90,26 @@ describe('Header wires the wordmark aspect guard to onLoad (not just onError)', 
     expect(block).toMatch(/naturalWidth/);
   });
 });
+
+/**
+ * AL-591: ~4/9 sampled deployed sites (gentle-dental / vanta / ironhaus / martin-agency) never
+ * generated /logo-wordmark.png, so the old optimistic `<img src>` fired a hard 404 → a console
+ * error (a hard-gate break) on every such site. The fix: default to the text wordmark and only
+ * upgrade to the PNG once a fetch-HEAD confirms it exists — a fetch 404 is SILENT (no console
+ * error), unlike an <img> 404. This guards that the console-error-free probe stays wired.
+ */
+describe('AL-591: wordmark PNG is existence-probed (silent) before render, not optimistically 404d', () => {
+  it('wordmarkOk defaults to false (the text wordmark is the baseline, never a broken <img>)', () => {
+    expect(SRC).toMatch(/const\s*\[\s*wordmarkOk\s*,\s*setWordmarkOk\s*\]\s*=\s*useState\(false\)/);
+  });
+  it('a fetch HEAD probes /logo-wordmark.png and only setWordmarkOk(true) when it exists', () => {
+    expect(SRC).toMatch(/fetch\(\s*['"]\/logo-wordmark\.png['"]\s*,\s*\{\s*method:\s*['"]HEAD['"]/);
+    const at = SRC.indexOf("fetch('/logo-wordmark.png'");
+    const block = at >= 0 ? SRC.slice(at, at + 260) : '';
+    expect(block).toMatch(/r\.ok/);
+    expect(block).toMatch(/setWordmarkOk\(true\)/);
+  });
+  it('does NOT render the wordmark <img> optimistically (no useState(true) for wordmarkOk)', () => {
+    expect(SRC).not.toMatch(/wordmarkOk[^\n]*useState\(true\)/);
+  });
+});

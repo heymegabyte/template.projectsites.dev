@@ -77,7 +77,15 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
   // brand-color square from the favicon pipeline, not the real logo.
   const iconSrcs = ['/logo-icon.png', '/apple-touch-icon.png'];
   const [iconIdx, setIconIdx] = useState(0);
-  const [wordmarkOk, setWordmarkOk] = useState(true);
+  // AL-591: default to the crisp HTML text wordmark (the always-legible baseline), and ONLY
+  // upgrade to /logo-wordmark.png once a fetch-HEAD confirms it exists. A large fraction of
+  // deployed sites never generated a wordmark (gentle-dental / vanta / ironhaus / martin-agency
+  // all 404 it — the AI wordmark step flaked/was absent), and rendering `<img src>` optimistically
+  // fired a hard 404 → a console error on EVERY such site (the onError→text fallback fixed the
+  // VISUAL but not the console-error hard-gate). A `fetch` 404 is SILENT (no "Failed to load
+  // resource"), unlike an `<img>`/`<link>` 404 — so probing first eliminates the console error
+  // while keeping the pretty PNG whenever it's real. Icon keeps its serve-time apple-touch fallback.
+  const [wordmarkOk, setWordmarkOk] = useState(false);
   const { pathname } = useLocation();
 
   useEffect(() => setOpen(false), [pathname]);
@@ -97,6 +105,22 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
+  // AL-591: silently probe the wordmark PNG (a fetch 404 logs NO console error, unlike an <img>).
+  // Only upgrade from the text wordmark to the image when it genuinely exists.
+  useEffect(() => {
+    let alive = true;
+    fetch('/logo-wordmark.png', { method: 'HEAD' })
+      .then((r) => {
+        if (alive && r.ok) setWordmarkOk(true);
+      })
+      .catch(() => {
+        /* network hiccup → keep the text wordmark (never throws, never logs) */
+      });
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const business = brand.business.name || 'ProjectSites';
