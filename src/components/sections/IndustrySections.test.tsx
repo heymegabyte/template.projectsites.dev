@@ -95,6 +95,15 @@ describe('FeaturedCollection', () => {
     expect(c.querySelector('[data-bcl="product-view"]')).not.toBeNull();
     expect(ldTypes(c)).toContain('ItemList');
   });
+  it('product image is decorative (alt="") + async-decoded — the adjacent name carries the meaning (no double-announce)', () => {
+    const c = renderSec(
+      <FeaturedCollection items={[{ name: 'Gold Ring', image: 'https://img.example/x.jpg', href: 'https://x/p/1' }]} />,
+    );
+    const img = c.querySelector('img');
+    expect(img).not.toBeNull();
+    expect(img?.getAttribute('alt')).toBe('');
+    expect(img?.getAttribute('decoding')).toBe('async');
+  });
   it('renders null when all tokens unresolved', () => {
     const c = renderSec(<FeaturedCollection items={[{ name: '{ITEM}', price: '{PRICE}' }]} />);
     expect(c.querySelector('section')).toBeNull();

@@ -108,8 +108,9 @@ export function Menu({ categories, eyebrow = 'Menu', headline, description, menu
                   {it.image && (
                     <img
                       src={it.image}
-                      alt={it.name}
+                      alt=""
                       loading="lazy"
+                      decoding="async"
                       className="h-16 w-16 shrink-0 rounded-lg object-cover"
                     />
                   )}
