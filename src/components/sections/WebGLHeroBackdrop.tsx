@@ -92,8 +92,9 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
   // bokeh: slow drift (premium restraint), gentle hue variation across discs, low intensity so the
   // soft glows never compete with the hero H1. scale/sharpness/warp are inert for this mode.
   bokeh: { scale: 1.0, speed: 0.4, sharpness: 0.5, hueSpread: 0.1, intensity: 0.8, warp: 0.3 },
-  // petals: falling blossoms — slow downward drift + rotation, wider hueSpread for floral color
-  // variation, low intensity so the soft shapes never compete with the H1. scale/sharpness/warp inert.
+  // petals: falling blossoms across TWO depth layers (near larger/brighter/faster, far smaller/dimmer)
+  // drifting on a shared WIND gust (AL-611) — slow downward drift + rotation, wider hueSpread for floral
+  // color variation, low intensity so the soft shapes never compete with the H1. scale/sharpness/warp inert.
   petals: { scale: 1.0, speed: 0.45, sharpness: 0.5, hueSpread: 0.14, intensity: 0.82, warp: 0.3 },
   // smoke: cool dark wispy haze for NOIR — near-monochrome (low hueSpread), low intensity so the
   // moody field never competes with the H1. scale drives the fbm frequency; sharpness/warp inert.
@@ -402,19 +403,28 @@ void main(){
     // sway + slow rotation — a botanical "falling petals" field for florist / plant / garden. The
     // downward motion (vs bokeh's upward rise) + the elongated, rotated soft shape read as petals,
     // not motes. Same dark base + low intensity so the center H1 stays legible on any brand hue.
+    // DEPTH PARALLAX + a shared WIND GUST so the blossoms drift like petals on a breeze through a
+    // garden (AL-611) — not independent random jitter. Each petal carries a depth dp (0.5 far ..
+    // 1.0 near) that scales its SIZE, BRIGHTNESS + FALL SPEED (near = larger/brighter/faster → a
+    // real depth-of-field), and one low-freq wind term nudges every petal's x TOGETHER so gusts
+    // sweep the whole field coherently. 14 blossoms across the two depth layers = a denser, more
+    // cinematic bloom. Still petals-on-dark (lit blossoms keep it non-black) + low intensity so the
+    // center H1 stays legible.
     col = vec3(0.0);
-    for (int i = 0; i < 10; i++) {
+    float wind = 0.06 * sin(t * 0.35) + 0.03 * sin(t * 0.13 + 1.7); // one coherent breeze for every petal
+    for (int i = 0; i < 14; i++) {
       float fi = float(i);
       float s1 = hash(vec2(fi, 5.3));
       float s2 = hash(vec2(fi * 1.7, 2.9));
-      float cy = fract(1.0 - (s2 + t * (0.45 + 0.5 * s1)));       // fall DOWNWARD, wraps 1..0
-      float cx = fract(s1 + 0.05 * sin(t * (0.7 + s2) + fi * 1.3)); // gentle lateral sway
+      float dp = 0.5 + 0.5 * hash(vec2(fi * 0.7, 8.1));           // depth: 0.5 (far) .. 1.0 (near)
+      float cy = fract(1.0 - (s2 + t * (0.30 + 0.55 * s1) * dp)); // near falls FASTER (parallax)
+      float cx = fract(s1 + wind * dp + 0.04 * sin(t * (0.7 + s2) + fi * 1.3)); // shared gust + gentle sway
       vec2 d = (uv - vec2(cx, cy)) * vec2(uRes.x / uRes.y, 1.0);
       float ang = t * (0.6 + s1) + fi;                            // slow rotation
       vec2 r = vec2(cos(ang) * d.x - sin(ang) * d.y, sin(ang) * d.x + cos(ang) * d.y);
-      float rad = mix(0.05, 0.12, s1);
+      float rad = mix(0.05, 0.12, s1) * dp;                       // near = LARGER blossoms
       float petal = smoothstep(rad, rad * 0.15, length(r * vec2(1.0, 2.2))); // 2.2× taller = petal
-      col += hsl2rgb(uHue + uSpread * (s1 - 0.5), 0.55, 0.5) * petal * (0.08 + 0.08 * s2);
+      col += hsl2rgb(uHue + uSpread * (s1 - 0.5), 0.55, 0.5) * petal * (0.07 + 0.09 * s2) * dp; // near = BRIGHTER
     }
   } else if (uMode > 2.5) {
     // ---- BOKEH (uMode==3): soft out-of-focus light discs drifting slowly upward — a refined
