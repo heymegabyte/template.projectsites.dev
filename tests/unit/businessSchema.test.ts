@@ -189,24 +189,28 @@ describe('formatTime12', () => {
   });
 });
 
-describe('buildSiteJsonLd', () => {
-  it('returns at least 4 JSON-LD nodes', () => {
+describe('buildSiteJsonLd (AL-522: client emits ONLY the rich business entity)', () => {
+  // The site-level WebSite / WebPage / BreadcrumbList are injected SERVER-SIDE by the
+  // worker shell (build_validators). Re-emitting them client-side too produced DUPLICATE
+  // entities (the server blocks carry no @id, these did → Google couldn't merge). So the
+  // client returns ONLY the LocalBusiness/Organization entity carrying NAP/geo/hours.
+  it('returns exactly one node — the rich business entity', () => {
     const graph = buildSiteJsonLd(baseProfile);
-    expect(graph.length).toBeGreaterThanOrEqual(4);
+    expect(graph).toHaveLength(1);
+    expect(graph[0]).toEqual(buildBusinessJsonLd(baseProfile));
   });
 
-  it('includes Organization + WebSite + WebPage + BreadcrumbList types', () => {
-    const graph = buildSiteJsonLd(baseProfile);
-    const types = graph.map((n) => n['@type']);
-    expect(types).toContain('WebSite');
-    expect(types).toContain('WebPage');
-    expect(types).toContain('BreadcrumbList');
+  it('does NOT re-emit the server-side WebSite / WebPage / BreadcrumbList (no duplicate entities)', () => {
+    const types = buildSiteJsonLd(baseProfile).map((n) => n['@type']);
+    expect(types).not.toContain('WebSite');
+    expect(types).not.toContain('WebPage');
+    expect(types).not.toContain('BreadcrumbList');
+    expect(types[0]).toBe('SoftwareApplication'); // saas → the business entity type
   });
 
-  it('WebSite has SearchAction potentialAction', () => {
+  it('carries no client-side SearchAction (that lives on the server-injected WebSite)', () => {
     const graph = buildSiteJsonLd(baseProfile);
-    const website = graph.find((n) => n['@type'] === 'WebSite');
-    expect(website?.potentialAction).toBeDefined();
+    expect(graph[0].potentialAction).toBeUndefined();
   });
 });
 

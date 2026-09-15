@@ -88,8 +88,14 @@ function emptyRiskTokens(src) {
   // useSEO({ description: '{X_META_DESCRIPTION}' }) — a bare-token meta description
   // no pack emits ships an EMPTY <meta name="description"> (blank SERP snippet).
   // Only whole-token values (quoted OR backticked) count; computed `${brand…}`
-  // literals always have text and are correctly skipped.
-  for (const m of src.matchAll(/description:\s*(['"`])\{([A-Z][A-Z0-9_]{3,})\}\1/g)) add(m[2], 'meta');
+  // literals always have text and are correctly skipped. SCOPED to the useSEO(...)
+  // call window (not the whole file) so an ordinary `description:` OBJECT KEY on
+  // section data (MenuEntry / ServiceEntry / etc.) is never mistaken for the page
+  // meta description — false-positive fix, validator-precision-discipline.
+  for (const s of src.matchAll(/useSEO\s*\(/g)) {
+    const win = src.slice(s.index, s.index + 500);
+    for (const m of win.matchAll(/description:\s*(['"`])\{([A-Z][A-Z0-9_]{3,})\}\1/g)) add(m[2], 'meta');
+  }
   return out;
 }
 

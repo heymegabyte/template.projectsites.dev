@@ -23,6 +23,11 @@ import {
   PageAudio,
   CTASection,
   TeamRoles,
+  Menu,
+  OpeningHours,
+  ServiceMenu,
+  DonationTiers,
+  FeaturedCollection,
   type BentoTile,
   type Stat,
   type PricingTier,
@@ -30,6 +35,11 @@ import {
   type ProcessStep,
   type Logo,
   type TeamRole,
+  type MenuCategory,
+  type ServiceCategory,
+  type HoursRow,
+  type DonationTier,
+  type CollectionItem,
 } from '@/components/sections';
 
 const bentoTiles: BentoTile[] = [
@@ -53,6 +63,62 @@ const process: ProcessStep[] = [
   { title: '{PROCESS_2_TITLE}', description: '{PROCESS_2_DESCRIPTION}', icon: <Sparkles size={20} /> },
   { title: '{PROCESS_3_TITLE}', description: '{PROCESS_3_DESCRIPTION}', icon: <Rocket size={20} /> },
   { title: '{PROCESS_4_TITLE}', description: '{PROCESS_4_DESCRIPTION}', icon: <Award size={20} /> },
+];
+
+// ── Industry-specific section data (token-gated, self-hiding) ──────────────────
+// All five ship in every Home. Each renders `null` until the generation step fills
+// its tokens for the matching vertical — Menu→food, OpeningHours→local storefront,
+// ServiceMenu→appointments, DonationTiers→nonprofit, FeaturedCollection→retail — so
+// only the relevant section(s) appear and the rest stay hidden. The container's
+// domain-builder fills these from _research.json (menu_items / hours / services /
+// donation / products) for the business type; unfilled tokens are scrubbed to null.
+const menuCategories: MenuCategory[] = [
+  { name: '{MENU_CAT_1_NAME}', items: [
+    { name: '{MENU_CAT_1_ITEM_1_NAME}', description: '{MENU_CAT_1_ITEM_1_DESC}', price: '{MENU_CAT_1_ITEM_1_PRICE}' },
+    { name: '{MENU_CAT_1_ITEM_2_NAME}', description: '{MENU_CAT_1_ITEM_2_DESC}', price: '{MENU_CAT_1_ITEM_2_PRICE}' },
+    { name: '{MENU_CAT_1_ITEM_3_NAME}', description: '{MENU_CAT_1_ITEM_3_DESC}', price: '{MENU_CAT_1_ITEM_3_PRICE}' },
+  ] },
+  { name: '{MENU_CAT_2_NAME}', items: [
+    { name: '{MENU_CAT_2_ITEM_1_NAME}', description: '{MENU_CAT_2_ITEM_1_DESC}', price: '{MENU_CAT_2_ITEM_1_PRICE}' },
+    { name: '{MENU_CAT_2_ITEM_2_NAME}', description: '{MENU_CAT_2_ITEM_2_DESC}', price: '{MENU_CAT_2_ITEM_2_PRICE}' },
+    { name: '{MENU_CAT_2_ITEM_3_NAME}', description: '{MENU_CAT_2_ITEM_3_DESC}', price: '{MENU_CAT_2_ITEM_3_PRICE}' },
+  ] },
+];
+
+const serviceCategories: ServiceCategory[] = [
+  { name: '{SERVICE_CAT_1_NAME}', services: [
+    { name: '{SERVICE_1_NAME}', description: '{SERVICE_1_DESC}', price: '{SERVICE_1_PRICE}', duration: '{SERVICE_1_DURATION}' },
+    { name: '{SERVICE_2_NAME}', description: '{SERVICE_2_DESC}', price: '{SERVICE_2_PRICE}', duration: '{SERVICE_2_DURATION}' },
+    { name: '{SERVICE_3_NAME}', description: '{SERVICE_3_DESC}', price: '{SERVICE_3_PRICE}', duration: '{SERVICE_3_DURATION}' },
+  ] },
+  { name: '{SERVICE_CAT_2_NAME}', services: [
+    { name: '{SERVICE_4_NAME}', description: '{SERVICE_4_DESC}', price: '{SERVICE_4_PRICE}', duration: '{SERVICE_4_DURATION}' },
+    { name: '{SERVICE_5_NAME}', description: '{SERVICE_5_DESC}', price: '{SERVICE_5_PRICE}', duration: '{SERVICE_5_DURATION}' },
+  ] },
+];
+
+const hoursRows: HoursRow[] = [
+  { day: 'Monday', opens: '{HOURS_MON_OPEN}', closes: '{HOURS_MON_CLOSE}' },
+  { day: 'Tuesday', opens: '{HOURS_TUE_OPEN}', closes: '{HOURS_TUE_CLOSE}' },
+  { day: 'Wednesday', opens: '{HOURS_WED_OPEN}', closes: '{HOURS_WED_CLOSE}' },
+  { day: 'Thursday', opens: '{HOURS_THU_OPEN}', closes: '{HOURS_THU_CLOSE}' },
+  { day: 'Friday', opens: '{HOURS_FRI_OPEN}', closes: '{HOURS_FRI_CLOSE}' },
+  { day: 'Saturday', opens: '{HOURS_SAT_OPEN}', closes: '{HOURS_SAT_CLOSE}' },
+  { day: 'Sunday', opens: '{HOURS_SUN_OPEN}', closes: '{HOURS_SUN_CLOSE}' },
+];
+
+const donationTiers: DonationTier[] = [
+  { amount: '{DONATION_1_AMOUNT}', label: '{DONATION_1_LABEL}', impact: '{DONATION_1_IMPACT}' },
+  { amount: '{DONATION_2_AMOUNT}', label: '{DONATION_2_LABEL}', impact: '{DONATION_2_IMPACT}' },
+  { amount: '{DONATION_3_AMOUNT}', label: '{DONATION_3_LABEL}', impact: '{DONATION_3_IMPACT}' },
+  { amount: '{DONATION_4_AMOUNT}', label: '{DONATION_4_LABEL}', impact: '{DONATION_4_IMPACT}' },
+];
+
+const collectionItems: CollectionItem[] = [
+  { name: '{PRODUCT_1_NAME}', price: '{PRODUCT_1_PRICE}', image: '{PRODUCT_1_IMAGE_URL}', href: '{PRODUCT_1_URL}', badge: '{PRODUCT_1_BADGE}' },
+  { name: '{PRODUCT_2_NAME}', price: '{PRODUCT_2_PRICE}', image: '{PRODUCT_2_IMAGE_URL}', href: '{PRODUCT_2_URL}', badge: '{PRODUCT_2_BADGE}' },
+  { name: '{PRODUCT_3_NAME}', price: '{PRODUCT_3_PRICE}', image: '{PRODUCT_3_IMAGE_URL}', href: '{PRODUCT_3_URL}', badge: '{PRODUCT_3_BADGE}' },
+  { name: '{PRODUCT_4_NAME}', price: '{PRODUCT_4_PRICE}', image: '{PRODUCT_4_IMAGE_URL}', href: '{PRODUCT_4_URL}', badge: '{PRODUCT_4_BADGE}' },
 ];
 
 // Home photo gallery (masonry + lightbox). Placeholder srcs are filtered out at
@@ -407,6 +473,46 @@ export default function Home() {
           />
         </SafeSection>
       )}
+
+      {/* Industry-specific sections — each self-hides (renders null) until the
+          matching vertical's tokens are filled (see the data arrays above), so all
+          five ship in every Home and only the relevant one(s) appear. Order per the
+          domain-builder brief: content sections between the story/gallery and the
+          process/pricing/CTA. */}
+      <SafeSection name="menu">
+        <Menu categories={menuCategories} headline="{MENU_HEADLINE}" description="{MENU_SUBHEADLINE}" menuUrl="{MENU_URL}" />
+      </SafeSection>
+
+      <SafeSection name="services">
+        <ServiceMenu
+          categories={serviceCategories}
+          headline="{SERVICES_HEADLINE}"
+          description="{SERVICES_SUBHEADLINE}"
+          bookUrl="{BOOK_URL}"
+        />
+      </SafeSection>
+
+      <SafeSection name="collection">
+        <FeaturedCollection
+          items={collectionItems}
+          headline="{COLLECTION_HEADLINE}"
+          description="{COLLECTION_SUBHEADLINE}"
+          shopUrl="{SHOP_URL}"
+        />
+      </SafeSection>
+
+      <SafeSection name="donate">
+        <DonationTiers
+          tiers={donationTiers}
+          donateUrl="{DONATE_URL}"
+          headline="{DONATE_HEADLINE}"
+          description="{DONATE_SUBHEADLINE}"
+        />
+      </SafeSection>
+
+      <SafeSection name="hours">
+        <OpeningHours rows={hoursRows} headline="{HOURS_HEADLINE}" description="{HOURS_SUBHEADLINE}" />
+      </SafeSection>
 
       {featureOn('process') && (
         <SafeSection name="process">
