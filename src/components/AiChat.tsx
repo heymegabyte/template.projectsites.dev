@@ -233,7 +233,10 @@ export function AiChat({
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
-                  onSubmit(e as unknown as FormEvent);
+                  // Fire the form's REAL submit (a genuine SubmitEvent) instead of casting a
+                  // KeyboardEvent to FormEvent (`as unknown as` — a TS-strict smell). Bonus:
+                  // requestSubmit runs native constraint validation the direct call skipped.
+                  e.currentTarget.form?.requestSubmit();
                 }
               }}
               placeholder="Ask anything…"
