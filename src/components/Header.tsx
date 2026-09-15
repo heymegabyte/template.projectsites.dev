@@ -57,6 +57,28 @@ export function wordmarkTooSquare(naturalWidth: number, naturalHeight: number): 
   return naturalWidth / naturalHeight < 2;
 }
 
+/**
+ * A generated `/logo-wordmark.png` can bake INK that doesn't contrast the theme the icon-luminance
+ * logic chose. The icon drives theme polarity (light icon → dark theme), but the wordmark is a
+ * SEPARATE Ideogram asset with no such guarantee — so a DARK-ink wordmark can ship on a DARK header
+ * (or light-on-light), rendering an illegible smear even at a perfectly valid banner aspect.
+ * Measured live (AL-617): alpenglow-sports-tahoe-city's wordmark had mean opaque-ink luminance
+ * **25/255** on a dark header (the icon was 178 = light, so it correctly picked the dark theme —
+ * the wordmark simply didn't match). Gate it: when the wordmark's ink doesn't contrast the header,
+ * fall back to the always-theme-correct HTML text wordmark (`text-text` = theme ink + a halo).
+ * Pure so the DECISION is unit-testable (the canvas sampling that measures the ink can't run in jsdom).
+ *
+ * @param inkLuminance mean luminance (0–255) of the wordmark's opaque (alpha ≥ 32) pixels
+ * @param darkHeader   is the navbar/header dark (dark theme)?
+ * @returns true when the ink CONTRASTS the header (safe to render the PNG); false → use the text wordmark
+ */
+export function wordmarkContrastsTheme(inkLuminance: number, darkHeader: boolean): boolean {
+  if (!Number.isFinite(inkLuminance)) return true; // can't measure → trust it (best-effort)
+  // dark header needs LIGHT-ish ink (≥90); light header needs DARK-ish ink (≤165). The 90–165 mid
+  // band is ambiguous → trust it (only the clearly-wrong-polarity cases fall back).
+  return darkHeader ? inkLuminance >= 90 : inkLuminance <= 165;
+}
+
 export default function Header({ links, ctaLabel, ctaHref }: Props) {
   const navLinks = links ?? defaultLinks();
   // A single dominant, verb-first CTA converts best; for quote verticals it
@@ -184,7 +206,40 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
               // smear at navbar height — fall back to the crisp styled text wordmark instead.
               onLoad={(e) => {
                 const img = e.currentTarget;
-                if (wordmarkTooSquare(img.naturalWidth, img.naturalHeight)) setWordmarkOk(false);
+                if (wordmarkTooSquare(img.naturalWidth, img.naturalHeight)) {
+                  setWordmarkOk(false);
+                  return;
+                }
+                // AL-617: gate INK CONTRAST vs the theme — a dark-ink wordmark on a dark header (or
+                // light-on-light) is an illegible smear even at a valid aspect; sample the opaque-ink
+                // luminance (same-origin PNG → canvas is untainted) and fall back to the theme-correct
+                // text wordmark when it doesn't contrast. Best-effort: any failure keeps the PNG.
+                try {
+                  const w = 80;
+                  const h = Math.max(1, Math.round((80 * img.naturalHeight) / img.naturalWidth));
+                  const cv = document.createElement('canvas');
+                  cv.width = w;
+                  cv.height = h;
+                  const cx = cv.getContext('2d');
+                  if (!cx) return;
+                  cx.drawImage(img, 0, 0, w, h);
+                  const px = cx.getImageData(0, 0, w, h).data;
+                  let sum = 0;
+                  let n = 0;
+                  for (let i = 0; i < px.length; i += 4) {
+                    if (px[i + 3] < 32) continue; // skip transparent pixels
+                    sum += 0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2];
+                    n++;
+                  }
+                  const darkHeader =
+                    (document.documentElement.getAttribute('data-theme') || '').toLowerCase() ===
+                      'dark' ||
+                    (typeof window !== 'undefined' &&
+                      window.matchMedia?.('(prefers-color-scheme: dark)').matches === true);
+                  if (n && !wordmarkContrastsTheme(sum / n, darkHeader)) setWordmarkOk(false);
+                } catch {
+                  /* canvas unavailable/tainted → keep the PNG (best-effort) */
+                }
               }}
             />
           ) : (

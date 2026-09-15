@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { wordmarkTooSquare } from './Header';
+import { wordmarkTooSquare, wordmarkContrastsTheme } from './Header';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SRC = readFileSync(resolve(__dirname, './Header.tsx'), 'utf8');
@@ -81,13 +81,45 @@ describe('wordmarkTooSquare — fall back to text when the wordmark asset is too
   });
 });
 
-describe('Header wires the wordmark aspect guard to onLoad (not just onError)', () => {
-  it('the PNG wordmark img calls wordmarkTooSquare in onLoad', () => {
+/**
+ * AL-617: the wordmark PNG can bake INK that doesn't contrast the theme the icon-luminance logic
+ * chose (a DARK-ink wordmark on a DARK header, or light-on-light) → an illegible smear even at a
+ * valid banner aspect. Measured live on alpenglow-sports-tahoe-city: wordmark ink luminance 25/255
+ * on a dark header (icon 178 = light, so the dark theme was correct — the wordmark just didn't
+ * match). `wordmarkContrastsTheme` decides whether to render the PNG or fall back to the always-
+ * theme-correct text wordmark.
+ */
+describe('wordmarkContrastsTheme — fall back to text when the wordmark ink fights the theme', () => {
+  it('DARK ink on a DARK header does NOT contrast → fall back to text', () => {
+    expect(wordmarkContrastsTheme(25, true), 'alpenglow live case (ink 25 on dark)').toBe(false);
+    expect(wordmarkContrastsTheme(60, true), 'still-dark ink on dark').toBe(false);
+  });
+  it('LIGHT ink on a LIGHT header does NOT contrast → fall back to text', () => {
+    expect(wordmarkContrastsTheme(220, false), 'near-white ink on a light header').toBe(false);
+    expect(wordmarkContrastsTheme(200, false)).toBe(false);
+  });
+  it('correct-polarity ink CONTRASTS → render the PNG', () => {
+    expect(wordmarkContrastsTheme(178, true), 'light ink on dark (alpenglow ICON case)').toBe(true);
+    expect(wordmarkContrastsTheme(30, false), 'dark ink on light').toBe(true);
+  });
+  it('the ambiguous mid band + unmeasurable input are trusted (render the PNG)', () => {
+    expect(wordmarkContrastsTheme(128, true)).toBe(true);
+    expect(wordmarkContrastsTheme(128, false)).toBe(true);
+    expect(wordmarkContrastsTheme(NaN, true)).toBe(true);
+  });
+});
+
+describe('Header wires the wordmark guards to onLoad (aspect + ink contrast, not just onError)', () => {
+  it('the PNG wordmark img gates on wordmarkTooSquare AND wordmarkContrastsTheme in onLoad', () => {
     const imgAt = SRC.indexOf('src="/logo-wordmark.png"');
-    const block = imgAt >= 0 ? SRC.slice(imgAt, imgAt + 700) : '';
+    const block = imgAt >= 0 ? SRC.slice(imgAt, imgAt + 2800) : '';
     expect(block).toMatch(/onLoad=/);
     expect(block).toMatch(/wordmarkTooSquare\(/);
     expect(block).toMatch(/naturalWidth/);
+    // AL-617 ink-contrast gate: canvas-sample the ink + decide via wordmarkContrastsTheme
+    expect(block).toMatch(/wordmarkContrastsTheme\(/);
+    expect(block).toMatch(/getImageData|getContext/);
+    expect(block).toMatch(/data-theme|prefers-color-scheme/);
   });
 });
 
