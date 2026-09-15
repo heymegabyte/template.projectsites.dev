@@ -77,8 +77,9 @@ describe('HERO_BACKDROP_CONFIGS', () => {
     'constellation',
     'monolith',
     'weave',
+    'velocity',
   ];
-  it('defines all thirteen variants with sane, text-legible params', () => {
+  it('defines all fourteen variants with sane, text-legible params', () => {
     for (const v of variants) {
       const c = HERO_BACKDROP_CONFIGS[v];
       expect(c).toBeDefined();
@@ -126,7 +127,7 @@ describe('backdropForPreset (per-industry hero motion)', () => {
     expect(backdropForPreset('editorial')).toBe('waves'); // authoritative, measured
     expect(backdropForPreset('heritage')).toBe('waves'); // AL-490: dignified/authoritative (financial/legal/insurance) — NOT ember's cozy hearth glow
     expect(backdropForPreset('futuristic')).toBe('mesh'); // technical, energetic
-    expect(backdropForPreset('bold')).toBe('mesh');
+    expect(backdropForPreset('bold')).toBe('velocity'); // AL-605: energetic/kinetic bold gets its OWN speed-streak scene, not the calm cellular mesh (kept for futuristic/precision)
     expect(backdropForPreset('precision')).toBe('mesh');
     expect(backdropForPreset('retro')).toBe('grid'); // synthwave neon perspective grid
   });

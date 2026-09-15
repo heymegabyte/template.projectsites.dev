@@ -40,7 +40,8 @@ export type HeroBackdropVariant =
   | 'silk'
   | 'constellation'
   | 'monolith'
-  | 'weave';
+  | 'weave'
+  | 'velocity';
 
 /** Shader parameters per variant (pure data — unit-tested). */
 export interface HeroBackdropConfig {
@@ -119,6 +120,11 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
   // thread crispness, low hueSpread = a subtle warm two-tone; warp inert (procedural lattice).
   // Distinct from ember's diffuse rising glow: structured over/under woven threads (handcraft).
   weave: { scale: 5.5, speed: 0.5, sharpness: 0.6, hueSpread: 0.06, intensity: 0.8, warp: 0.3 },
+  // velocity: fast diagonal SPEED STREAKS / slipstream — a high-energy KINETIC field for BOLD
+  // (energetic / dynamic / athletic / high-energy brands). scale = streak density, sharpness =
+  // streak crispness, low hueSpread = tight brand-tinted streaks; warp inert (procedural lanes).
+  // Distinct from mesh's calm cellular shimmer: thin bright streaks rushing across a dark field.
+  velocity: { scale: 7.0, speed: 1.4, sharpness: 0.7, hueSpread: 0.05, intensity: 0.82, warp: 0.3 },
 };
 
 /**
@@ -139,8 +145,10 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
  *      trusted, NOT cozy-warm; ember's hearth glow was a mismatch for it);
  *   - `bokeh`  — soft drifting out-of-focus light-motes → refined / premium / elegant
  *     (luxe — fine dining / jewelry / hotels want their OWN premium field, not editorial's waves);
- *   - `mesh`   — tight cellular shimmer → technical / energetic / precise
- *     (futuristic, bold, precision, brutalist);
+ *   - `mesh`   — tight cellular shimmer → technical / precise
+ *     (futuristic, precision — the calm, exact tech read);
+ *   - `velocity` — fast diagonal speed-streaks / slipstream → energetic / dynamic / kinetic / athletic
+ *     (bold — the high-energy personality gets its OWN rushing streaks, not the calm cellular mesh, AL-605);
  *   - `terrain`— slowly-morphing topographic contour rings → outdoor / rugged / earthy
  *     (rugged — outdoor gear / adventure / landscaping / construction / trades want an earthy
  *      "living elevation map", NOT the tech cellular mesh they used to share);
@@ -177,7 +185,8 @@ export const PRESET_BACKDROP: Record<string, HeroBackdropVariant> = {
   editorial: 'waves',
   heritage: 'waves', // dignified authoritative swells — financial/legal/insurance/real-estate; ember's cozy hearth glow was a MISMATCH for a law/accounting/insurance firm (AL-490)
   luxe: 'bokeh', // premium drifting light-motes — luxe's OWN refined scene, not editorial's waves
-  futuristic: 'mesh', bold: 'mesh', precision: 'mesh',
+  futuristic: 'mesh', precision: 'mesh',
+  bold: 'velocity', // AL-605: the energetic/dynamic/kinetic/athletic BOLD personality gets its OWN high-energy speed-streak scene — the calm cellular MESH (kept for futuristic/precision) undersold bold's kinetic identity
   brutalist: 'monolith', // AL-538: raw stark concrete SLABS + one glowing fault seam — the soft cellular tech MESH was a mismatch for brutalist's hard-edged architectural identity
   rugged: 'terrain', // AL-521: outdoor/adventure/landscaping/trades get earthy topographic contour rings — a tech cellular MESH was a mismatch for the rugged outdoors
   warm: 'ember',
@@ -263,7 +272,7 @@ uniform float uScale;
 uniform float uSharp;
 uniform float uSpread;
 uniform float uIntensity;
-uniform float uMode;      // 0=flowing(aurora/waves/mesh) 1=ember 2=grid 3=bokeh 4=petals 5=smoke 6=terrain 7=silk 8=constellation 9=monolith 10=weave
+uniform float uMode;      // 0=flowing(aurora/waves/mesh) 1=ember 2=grid 3=bokeh 4=petals 5=smoke 6=terrain 7=silk 8=constellation 9=monolith 10=weave 11=velocity
 uniform float uWarp;      // domain-warp strength (0 = legacy flat field)
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
 float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
@@ -275,7 +284,23 @@ void main(){
   vec2 p = uv * vec2(uRes.x/uRes.y, 1.0);
   float t = uTime * 0.05;
   vec3 col;
-  if (uMode > 9.5) {
+  if (uMode > 10.5) {
+    // ---- VELOCITY (uMode==11): fast diagonal SPEED STREAKS / slipstream — a high-energy KINETIC
+    // field for BOLD (energetic / dynamic / athletic brands). Thin bright brand-tinted streaks rake
+    // across a dark field at speed (motion lines), distinct from mesh's calm cellular shimmer. The
+    // dark 0.12 base keeps it non-black by construction + the shared vignette/intensity keep the H1
+    // legible. uScale = streak density, uSharp = streak crispness.
+    float ang = 0.62;                                            // fixed diagonal rake
+    vec2 dir = vec2(cos(ang), sin(ang));
+    float across = dot(p, vec2(-dir.y, dir.x));                  // coord perpendicular to the streaks
+    float along = dot(p, dir);                                   // coord along the streaks
+    float jitter = fbm(vec2(floor(across * uScale), t * 0.3));   // per-lane offset (not a rigid comb)
+    float lane = abs(fract(across * uScale + jitter) - 0.5);     // 0 at each streak center
+    float line = pow(1.0 - smoothstep(0.0, mix(0.42, 0.12, uSharp), lane), 3.0); // thin bright streak
+    float head = 0.5 + 0.5 * sin((along * 1.5 - t * 6.0) * 3.14159); // a pulse racing along each streak
+    float glow = line * (0.35 + 0.65 * head);
+    col = hsl2rgb(uHue + uSpread * (jitter - 0.5), 0.7, 0.12 + 0.34 * glow); // dark base + bright streaks
+  } else if (uMode > 9.5) {
     // ---- WEAVE (uMode==10): a warm interlaced warp/weft thread LATTICE — a handcraft/textile field
     // for ARTISAN (coffee roaster / pottery / woodwork / leather / candle / chocolatier / distillery).
     // Two thread sets (horizontal warp + vertical weft) interlace via an over/under CHECKER so the
@@ -545,7 +570,9 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       warp: gl.getUniformLocation(prog, 'uWarp'),
     };
     const modeFlag =
-      variant === 'weave'
+      variant === 'velocity'
+        ? 11
+        : variant === 'weave'
         ? 10
         : variant === 'monolith'
         ? 9
