@@ -73,6 +73,7 @@ export function Demo({
                   src={poster.src}
                   alt={poster.alt}
                   loading="lazy"
+                  decoding="async"
                   className="h-full w-full object-cover"
                 />
               ) : (

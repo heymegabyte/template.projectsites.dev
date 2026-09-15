@@ -66,6 +66,7 @@ export function Quote({ text, author, role, photo, source, eyebrow, jsonLd = tru
               src={photo}
               alt=""
               loading="lazy"
+              decoding="async"
               width={48}
               height={48}
               className="h-12 w-12 rounded-full object-cover border border-border"

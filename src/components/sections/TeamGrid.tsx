@@ -81,6 +81,7 @@ export function TeamGrid({
                   src={m.photo}
                   alt={`Portrait of ${m.name}`}
                   loading="lazy"
+                  decoding="async"
                   className="team-card-photo h-full w-full object-cover"
                 />
               ) : (

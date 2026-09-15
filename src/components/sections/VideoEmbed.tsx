@@ -92,6 +92,7 @@ export function VideoEmbed({
               src={poster.src}
               alt={poster.alt}
               loading="lazy"
+              decoding="async"
               className="h-full w-full object-cover"
             />
             <div className="absolute inset-0 bg-background/40 group-hover:bg-background/30 transition-colors" />

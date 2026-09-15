@@ -136,6 +136,7 @@ export function BentoGrid({ tiles, className, eyebrow, headline, description }: 
                     src={t.image}
                     alt={t.imageAlt ?? ''}
                     loading={i < 3 ? 'eager' : 'lazy'}
+                    decoding="async"
                     className="bento-tile__img h-full w-full object-cover opacity-30"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/80 to-transparent" />

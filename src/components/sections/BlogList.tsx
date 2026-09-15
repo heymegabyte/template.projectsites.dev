@@ -50,6 +50,7 @@ export function BlogList({ posts, eyebrow, headline, className, basePath = '/blo
                 src={hero.cover}
                 alt=""
                 loading="eager"
+                decoding="async"
                 className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-slow"
               />
             </div>
@@ -81,6 +82,7 @@ export function BlogList({ posts, eyebrow, headline, className, basePath = '/blo
                     src={p.cover}
                     alt=""
                     loading="lazy"
+                    decoding="async"
                     className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-slow"
                   />
                 </div>

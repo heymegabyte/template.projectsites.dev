@@ -43,6 +43,7 @@ export function CaseStudyGrid({ studies, eyebrow, headline, className, basePath 
                     src={s.cover}
                     alt=""
                     loading="lazy"
+                    decoding="async"
                     className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-slow"
                   />
                 </div>

@@ -100,6 +100,7 @@ export function FeatureSplit({
                   src={safeImage.src}
                   alt={safeImage.alt}
                   loading="lazy"
+                  decoding="async"
                   className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                 />
                 <div

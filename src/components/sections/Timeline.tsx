@@ -122,7 +122,7 @@ export function Timeline({
               <h3 className="tl-title text-text font-heading">{e.title}</h3>
               {e.image && (
                 <figure className="tl-fig">
-                  <img src={e.image} alt={e.imageAlt ?? ''} loading="lazy" />
+                  <img src={e.image} alt={e.imageAlt ?? ''} decoding="async" loading="lazy" />
                 </figure>
               )}
               <p className="tl-desc text-text-muted">{e.description}</p>

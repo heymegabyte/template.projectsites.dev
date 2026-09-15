@@ -56,6 +56,7 @@ export function Spotlight({
           src={visual.src}
           alt={visual.alt}
           loading="lazy"
+          decoding="async"
           width={1200}
           height={960}
           className="h-full w-full object-cover"
