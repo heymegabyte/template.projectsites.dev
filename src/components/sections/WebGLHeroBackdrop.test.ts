@@ -1,4 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 import {
   parseBrandHue,
   resolveBackdropMode,
@@ -9,6 +12,11 @@ import {
   type HeroBackdropVariant,
 } from './WebGLHeroBackdrop';
 import { PRESET_NAMES } from '../../themePresets';
+
+const BACKDROP_SRC = readFileSync(
+  resolve(dirname(fileURLToPath(import.meta.url)), './WebGLHeroBackdrop.tsx'),
+  'utf8',
+);
 
 /**
  * The imperative WebGL path can't run in jsdom (no WebGL context), so these guard
@@ -155,6 +163,53 @@ describe('PRESET_BACKDROP coverage (drift guard vs themePresets)', () => {
     for (const [preset, variant] of Object.entries(PRESET_BACKDROP)) {
       expect(HERO_BACKDROP_CONFIGS[variant], `${preset} → ${variant}`).toBeDefined();
     }
+  });
+});
+
+describe('shader-branch source gate (every variant is actually RENDERED, not silently aurora/black)', () => {
+  // The existing tests prove preset→variant→config coverage, but NOT that each variant is
+  // wired all the way to a GLSL branch. A new scene variant (config + preset) whose `modeFlag`
+  // mapping OR `uMode > N.5` branch is forgotten renders as the mode-0 else-branch (silent
+  // wrong-scene = aurora) or, if its modeFlag lands outside the ladder, an unhandled black
+  // field — invisible to jsdom + axe (it's a <canvas>). This source-gate (per the
+  // canvas-mount-blind-to-black-shader lesson) makes that regression fail at CI, and directly
+  // de-risks adding the next per-industry scene (e.g. a `velocity` field for active-gear).
+  //
+  // aurora/waves/mesh SHARE the flowing mode-0 else-branch (differentiated by config, not a
+  // distinct uMode) — every OTHER variant must carry its own modeFlag + shader branch.
+  const MODE0 = new Set<HeroBackdropVariant>(['aurora', 'waves', 'mesh']);
+  const DISTINCT = (Object.keys(HERO_BACKDROP_CONFIGS) as HeroBackdropVariant[]).filter(
+    (v) => !MODE0.has(v),
+  );
+
+  it('every distinct variant is mapped in the modeFlag ternary (else it silently renders mode-0 aurora)', () => {
+    for (const v of DISTINCT) {
+      expect(BACKDROP_SRC, `${v} must appear as \`variant === '${v}'\` in the modeFlag mapping`).toContain(
+        `variant === '${v}'`,
+      );
+    }
+  });
+
+  it('the uMode branch ladder is contiguous 1..(max) — no gap falls a mode through to the wrong scene', () => {
+    // Discover the highest uMode the ternary assigns (e.g. weave→10 today), then assert every
+    // guard `uMode > 1.5 … > (max-0.5)` exists so modes 2..max each own a branch (mode 1=ember,
+    // mode 0=flowing live in the final else). Deriving `max` from the source means the ladder
+    // must GROW with the next scene — add its branch in the same change or this fails.
+    // Match ONLY the modeFlag ternary arms (`variant === 'weave' ? 10`) so an unrelated
+    // integer ternary elsewhere can't false-inflate the ladder requirement.
+    const modeNums = [...BACKDROP_SRC.matchAll(/variant\s*===\s*'[^']+'\s*\?\s*(\d+)/g)].map((m) =>
+      Number(m[1]),
+    );
+    const maxMode = modeNums.length ? Math.max(...modeNums) : 10;
+    for (let n = 1; n <= maxMode - 1; n++) {
+      expect(BACKDROP_SRC, `shader must have a \`uMode > ${n}.5\` branch guard`).toContain(`uMode > ${n}.5`);
+    }
+  });
+
+  it('the uMode uniform comment documents every mode the ternary can emit (author-intent doc stays honest)', () => {
+    // The `uniform float uMode; // 0=… 1=ember … 10=weave` comment is the human map of the ladder;
+    // guard that it names the highest mode so a new scene updates the doc too (drift catch).
+    expect(BACKDROP_SRC).toMatch(/uniform float uMode;[^\n]*10=weave/);
   });
 });
 
