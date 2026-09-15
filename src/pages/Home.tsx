@@ -24,7 +24,6 @@ import {
   CTASection,
   TeamRoles,
   Menu,
-  OpeningHours,
   ServiceMenu,
   DonationTiers,
   FeaturedCollection,
@@ -37,7 +36,6 @@ import {
   type TeamRole,
   type MenuCategory,
   type ServiceCategory,
-  type HoursRow,
   type DonationTier,
   type CollectionItem,
 } from '@/components/sections';
@@ -66,12 +64,13 @@ const process: ProcessStep[] = [
 ];
 
 // ── Industry-specific section data (token-gated, self-hiding) ──────────────────
-// All five ship in every Home. Each renders `null` until the generation step fills
-// its tokens for the matching vertical — Menu→food, OpeningHours→local storefront,
-// ServiceMenu→appointments, DonationTiers→nonprofit, FeaturedCollection→retail — so
-// only the relevant section(s) appear and the rest stay hidden. The container's
-// domain-builder fills these from _research.json (menu_items / hours / services /
-// donation / products) for the business type; unfilled tokens are scrubbed to null.
+// All four ship in every Home. Each renders `null` until the generation step fills
+// its tokens for the matching vertical — Menu→food, ServiceMenu→appointments,
+// DonationTiers→nonprofit, FeaturedCollection→retail — so only the relevant
+// section(s) appear and the rest stay hidden. The container's domain-builder fills
+// these from _research.json (menu_items / services / donation / products) for the
+// business type; unfilled tokens are scrubbed to null. (Hours + live open-now render
+// in LocationMap from the freeform `hours` token — not a separate section.)
 const menuCategories: MenuCategory[] = [
   { name: '{MENU_CAT_1_NAME}', items: [
     { name: '{MENU_CAT_1_ITEM_1_NAME}', description: '{MENU_CAT_1_ITEM_1_DESC}', price: '{MENU_CAT_1_ITEM_1_PRICE}' },
@@ -95,16 +94,6 @@ const serviceCategories: ServiceCategory[] = [
     { name: '{SERVICE_4_NAME}', description: '{SERVICE_4_DESC}', price: '{SERVICE_4_PRICE}', duration: '{SERVICE_4_DURATION}' },
     { name: '{SERVICE_5_NAME}', description: '{SERVICE_5_DESC}', price: '{SERVICE_5_PRICE}', duration: '{SERVICE_5_DURATION}' },
   ] },
-];
-
-const hoursRows: HoursRow[] = [
-  { day: 'Monday', opens: '{HOURS_MON_OPEN}', closes: '{HOURS_MON_CLOSE}' },
-  { day: 'Tuesday', opens: '{HOURS_TUE_OPEN}', closes: '{HOURS_TUE_CLOSE}' },
-  { day: 'Wednesday', opens: '{HOURS_WED_OPEN}', closes: '{HOURS_WED_CLOSE}' },
-  { day: 'Thursday', opens: '{HOURS_THU_OPEN}', closes: '{HOURS_THU_CLOSE}' },
-  { day: 'Friday', opens: '{HOURS_FRI_OPEN}', closes: '{HOURS_FRI_CLOSE}' },
-  { day: 'Saturday', opens: '{HOURS_SAT_OPEN}', closes: '{HOURS_SAT_CLOSE}' },
-  { day: 'Sunday', opens: '{HOURS_SUN_OPEN}', closes: '{HOURS_SUN_CLOSE}' },
 ];
 
 const donationTiers: DonationTier[] = [
@@ -476,9 +465,9 @@ export default function Home() {
 
       {/* Industry-specific sections — each self-hides (renders null) until the
           matching vertical's tokens are filled (see the data arrays above), so all
-          five ship in every Home and only the relevant one(s) appear. Order per the
+          four ship in every Home and only the relevant one(s) appear. Order per the
           domain-builder brief: content sections between the story/gallery and the
-          process/pricing/CTA. */}
+          process/pricing/CTA. (Hours live in LocationMap below, not here.) */}
       <SafeSection name="menu">
         <Menu categories={menuCategories} headline="{MENU_HEADLINE}" description="{MENU_SUBHEADLINE}" menuUrl="{MENU_URL}" />
       </SafeSection>
@@ -508,10 +497,6 @@ export default function Home() {
           headline="{DONATE_HEADLINE}"
           description="{DONATE_SUBHEADLINE}"
         />
-      </SafeSection>
-
-      <SafeSection name="hours">
-        <OpeningHours rows={hoursRows} headline="{HOURS_HEADLINE}" description="{HOURS_SUBHEADLINE}" />
       </SafeSection>
 
       {featureOn('process') && (

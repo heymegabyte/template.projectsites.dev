@@ -2,7 +2,6 @@ import { render } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import type { ReactElement } from 'react';
 import { Menu } from './Menu';
-import { OpeningHours } from './OpeningHours';
 import { ServiceMenu } from './ServiceMenu';
 import { DonationTiers } from './DonationTiers';
 import { FeaturedCollection } from './FeaturedCollection';
@@ -44,40 +43,6 @@ describe('Menu', () => {
   });
   it('renders null when all tokens unresolved', () => {
     const c = renderSec(<Menu categories={[{ name: '{CAT}', items: [{ name: '{ITEM_1}', price: '{PRICE}' }] }]} />);
-    expect(c.querySelector('section')).toBeNull();
-  });
-});
-
-describe('OpeningHours', () => {
-  it('renders day rows + openingHoursSpecification JSON-LD when real', () => {
-    const c = renderSec(
-      <OpeningHours
-        rows={[
-          { day: 'Monday', opens: '9:00 AM', closes: '5:00 PM' },
-          { day: 'Sunday', closed: true },
-        ]}
-      />,
-    );
-    expect(c.textContent).toContain('Monday');
-    expect(c.textContent).toContain('09:00');
-    expect(c.textContent).toContain('Closed');
-    expect(ldTypes(c)).toContain('LocalBusiness');
-  });
-  it('renders null when no parseable day survives', () => {
-    const c = renderSec(<OpeningHours rows={[{ day: '{DAY}', opens: '{OPEN}', closes: '{CLOSE}' }]} />);
-    expect(c.querySelector('section')).toBeNull();
-  });
-  it('renders null when day names are literal but every time is an unresolved token', () => {
-    // The Home template passes literal day names + {TOKEN} times, so this is the
-    // real self-hide path — must NOT ship 7 lying "Closed" rows.
-    const c = renderSec(
-      <OpeningHours
-        rows={[
-          { day: 'Monday', opens: '{OPEN}', closes: '{CLOSE}' },
-          { day: 'Tuesday', opens: '{OPEN}', closes: '{CLOSE}' },
-        ]}
-      />,
-    );
     expect(c.querySelector('section')).toBeNull();
   });
 });

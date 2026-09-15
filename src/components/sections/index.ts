@@ -33,7 +33,6 @@ export { VideoEmbed } from './VideoEmbed';
 // blocks the container orchestrator (domain-builder) imports per business type,
 // instead of improvising raw markup each build. See sections/AGENTS.md § Industry.
 export { Menu, type MenuCategory, type MenuEntry } from './Menu';
-export { OpeningHours, type HoursRow } from './OpeningHours';
 export { ServiceMenu, type ServiceCategory, type ServiceEntry } from './ServiceMenu';
 export { DonationTiers, type DonationTier } from './DonationTiers';
 export { FeaturedCollection, type CollectionItem } from './FeaturedCollection';

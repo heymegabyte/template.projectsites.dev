@@ -120,21 +120,22 @@ Work samples       → CaseStudyGrid
 
 ## Industry-specific sections (AL-620)
 
-First-class, tokenized, JSON-LD-emitting blocks for vertical needs. All five are ALREADY imported + rendered in `Home.tsx` (token-gated, self-hiding) — the container `domain-builder` FILLS their tokens for the matching vertical instead of creating raw files. Each returns `null` until real data is present (scrubText firewall) and emits its own schema.org block.
+First-class, tokenized, JSON-LD-emitting blocks for vertical needs. All four are ALREADY imported + rendered in `Home.tsx` (token-gated, self-hiding) — the container `domain-builder` FILLS their tokens for the matching vertical instead of creating raw files. Each returns `null` until real data is present (scrubText firewall) and emits its own schema.org block.
 
 ```
 Restaurant / café / bar / bakery                → Menu               (Menu JSON-LD)
 Salon / spa / trades / pro / medical            → ServiceMenu        (OfferCatalog)
-Any local storefront (hours)                    → OpeningHours       (openingHoursSpecification + live open-now badge)
 Nonprofit / charity                             → DonationTiers      (DonateAction — needs a REAL donate URL)
 Retail (jewelers/books/records/outdoor/plants)  → FeaturedCollection (ItemList / Product)
 ```
+
+Hours + live "open now" are NOT an industry section — they render in `LocationMap` (map + weekly grid + open-now chip + directions), driven by the freeform `hours` token via `businessSchema` (`describeToday` + `OpeningHoursSpecification` JSON-LD). Never add a second hours section.
 
 Extra rules for these (on top of the contract above):
 
 1. **Prices flow to schema** — any price/amount whose leading number parses becomes an `Offer`/`MenuItem`/`Product` price (`priceCurrency:'USD'`).
 2. **Every CTA is tracked** — `data-bcl="{menu-view|book|call|donate|product-view|shop-all}"` on every action link (feeds PostHog micro-conversions).
-3. **Gate on REAL data, never proxies** — a `description:` object key or a bare phone number must NEVER make a section appear. DonationTiers requires a real donate URL; OpeningHours requires ≥1 day with parseable times. Unfilled tokens → the whole section hides.
+3. **Gate on REAL data, never proxies** — a `description:` object key or a bare phone number must NEVER make a section appear. DonationTiers requires a real donate URL. Unfilled tokens → the whole section hides.
 
 Covered by `IndustrySections.test.tsx` (null-on-token + JSON-LD emission) and the prod probe `apps/project-sites/e2e/site-quality/verify-industry-sections.mjs`.
 
