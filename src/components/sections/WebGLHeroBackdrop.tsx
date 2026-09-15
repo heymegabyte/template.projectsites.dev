@@ -275,6 +275,7 @@ uniform float uSpread;
 uniform float uIntensity;
 uniform float uMode;      // 0=flowing(aurora/waves/mesh) 1=ember 2=grid 3=bokeh 4=petals 5=smoke 6=terrain 7=silk 8=constellation 9=monolith 10=weave 11=velocity
 uniform float uWarp;      // domain-warp strength (0 = legacy flat field)
+uniform vec2 uParallax;   // pointer + scroll parallax offset — subtle living depth (0 under reduced-motion)
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
 float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
   return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),f.x), mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),f.x), f.y); }
@@ -282,6 +283,7 @@ float fbm(vec2 p){ float v=0.0, a=0.5; for(int i=0;i<5;i++){ v+=a*noise(p); p*=2
 vec3 hsl2rgb(float h,float s,float l){ vec3 r=clamp(abs(mod(h*6.0+vec3(0.0,4.0,2.0),6.0)-3.0)-1.0,0.0,1.0); return l+s*(r-0.5)*(1.0-abs(2.0*l-1.0)); }
 void main(){
   vec2 uv = gl_FragCoord.xy / uRes.xy;
+  uv += uParallax;                       // pointer/scroll parallax — subtle living depth, shifts EVERY scene uniformly
   vec2 p = uv * vec2(uRes.x/uRes.y, 1.0);
   float t = uTime * 0.05;
   vec3 col;
@@ -578,6 +580,7 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       intensity: gl.getUniformLocation(prog, 'uIntensity'),
       mode: gl.getUniformLocation(prog, 'uMode'),
       warp: gl.getUniformLocation(prog, 'uWarp'),
+      parallax: gl.getUniformLocation(prog, 'uParallax'),
     };
     const modeFlag =
       variant === 'velocity'
@@ -622,6 +625,23 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
     ro.observe(canvas);
     resize();
 
+    // Pointer + scroll PARALLAX — a subtle living-depth shift of the whole field (cinematic-3D
+    // roadmap #1). Only wired here on the motion-ALLOWED path (reduced-motion returned 'static'
+    // above), passive + RAF-smoothed so it never costs INP; default-ON for EVERY industry scene.
+    const mouse = { x: 0, y: 0 };
+    let scrollDrift = 0;
+    const pCur = { x: 0, y: 0 };
+    const onPointer = (e: PointerEvent) => {
+      mouse.x = (e.clientX / window.innerWidth - 0.5) * 2 * 0.035;
+      mouse.y = (e.clientY / window.innerHeight - 0.5) * 2 * 0.035;
+    };
+    const onScroll = () => {
+      scrollDrift = Math.min(window.scrollY / Math.max(1, window.innerHeight), 2) * 0.02;
+    };
+    window.addEventListener('pointermove', onPointer, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
     let raf = 0;
     let running = true;
     const start = performance.now();
@@ -637,6 +657,10 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       gl.uniform1f(u.intensity, cfg.intensity);
       gl.uniform1f(u.mode, modeFlag);
       gl.uniform1f(u.warp, cfg.warp);
+      // Ease the field toward the pointer/scroll target — premium, never jittery (a slow lerp).
+      pCur.x += (mouse.x - pCur.x) * 0.06;
+      pCur.y += (mouse.y + scrollDrift - pCur.y) * 0.06;
+      gl.uniform2f(u.parallax, pCur.x, pCur.y);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       raf = requestAnimationFrame(frame);
     };
@@ -675,6 +699,8 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       ro.disconnect();
       io.disconnect();
       document.removeEventListener('visibilitychange', onVis);
+      window.removeEventListener('pointermove', onPointer);
+      window.removeEventListener('scroll', onScroll);
       canvas.removeEventListener('webglcontextlost', onLost);
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };

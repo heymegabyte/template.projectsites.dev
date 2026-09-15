@@ -229,3 +229,26 @@ describe('GRAIN_DATA_URI (static-fallback glass+grain)', () => {
     expect(GRAIN_DATA_URI.trim().endsWith('")')).toBe(true);
   });
 });
+
+describe('pointer + scroll parallax (cinematic-3D #1) — default-on every scene, INP-safe, reduced-motion-off', () => {
+  it('declares the uParallax uniform + applies it to uv (shifts EVERY scene uniformly)', () => {
+    expect(BACKDROP_SRC).toMatch(/uniform vec2 uParallax/);
+    expect(BACKDROP_SRC).toMatch(/uv \+= uParallax/);
+  });
+  it('wires PASSIVE pointermove + scroll listeners AFTER the reduced-motion early-return (static path attaches none)', () => {
+    expect(BACKDROP_SRC).toMatch(/addEventListener\('pointermove'[\s\S]*?passive:\s*true/);
+    expect(BACKDROP_SRC).toMatch(/addEventListener\('scroll'[\s\S]*?passive:\s*true/);
+    const guardAt = BACKDROP_SRC.indexOf("next === 'static'");
+    const listenerAt = BACKDROP_SRC.indexOf("addEventListener('pointermove'");
+    expect(guardAt, 'reduced-motion static guard present').toBeGreaterThan(-1);
+    expect(listenerAt, 'listeners wired only after the static early-return').toBeGreaterThan(guardAt);
+  });
+  it('RAF-smooths (lerps) toward the target + sets the uniform each frame', () => {
+    expect(BACKDROP_SRC).toMatch(/pCur\.x \+=/);
+    expect(BACKDROP_SRC).toMatch(/gl\.uniform2f\(u\.parallax/);
+  });
+  it('removes both listeners on cleanup (no leak)', () => {
+    expect(BACKDROP_SRC).toMatch(/removeEventListener\('pointermove'/);
+    expect(BACKDROP_SRC).toMatch(/removeEventListener\('scroll'/);
+  });
+});
