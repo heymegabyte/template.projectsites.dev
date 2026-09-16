@@ -103,13 +103,17 @@ export function FeatureSplit({
                   clipRevealEnabled() && 'ps-clip-reveal',
                 )}
               >
-                <img
-                  src={safeImage.src}
-                  alt={safeImage.alt}
-                  loading="lazy"
-                  decoding="async"
-                  className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-                />
+                {/* Ken-Burns "living imagery": the wrapper slow-zooms on scroll (view-timeline);
+                    the img keeps its hover-scale — nested transforms compose, no conflict. */}
+                <div className="ps-ken-burns h-full w-full">
+                  <img
+                    src={safeImage.src}
+                    alt={safeImage.alt}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                  />
+                </div>
                 <div
                   className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/25 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
                   aria-hidden="true"

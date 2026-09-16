@@ -51,3 +51,14 @@ describe('FeatureSplit — clip-path reveal is flag-gated', () => {
     expect(el!.querySelector('img')).not.toBeNull(); // the framed <img> is still inside
   });
 });
+
+describe('FeatureSplit — Ken-Burns living-imagery wrapper (CINEMATIC-3D, ships ON)', () => {
+  it('wraps the framed image in a .ps-ken-burns scroll-scale layer, and the img keeps its hover-scale', () => {
+    const { container } = renderFS();
+    const kb = container.querySelector('.ps-ken-burns') as HTMLElement | null;
+    expect(kb).not.toBeNull();
+    const img = kb!.querySelector('img'); // Ken-Burns WRAPS the img (composes with hover, never replaces)
+    expect(img).not.toBeNull();
+    expect(img!.className).toContain('group-hover:scale-[1.06]'); // hover micro-interaction preserved
+  });
+});

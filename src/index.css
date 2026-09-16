@@ -621,6 +621,31 @@ main#main { view-transition-name: ps-main; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   KEN-BURNS "LIVING IMAGERY" (CINEMATIC-3D) — a below-fold section image slowly
+   SCALES as it scrolls through the viewport (the Obys / Immersive-Garden signature
+   of imagery that quietly breathes). Native `animation-timeline: view()` scrubs the
+   zoom to scroll position → compositor-driven (INP-safe); applied to a WRAPPER inside
+   the frame so it composes with (never fights) the img's hover-scale; the frame's
+   `overflow-hidden` clips the zoom (no reflow → CLS-safe); below-fold only (LCP-safe).
+   Firefox (no `animation-timeline`) + reduced-motion → the wrapper is untransformed +
+   STATIC (image at natural 1.0 — never stuck mid-zoom); no JS, no fallback branch.
+   ───────────────────────────────────────────────────────────────────────── */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .ps-ken-burns {
+      will-change: transform;
+      animation: ps-ken-burns-drift linear both;
+      animation-timeline: view();
+      animation-range: cover;
+    }
+    @keyframes ps-ken-burns-drift {
+      from { transform: scale(1.02); }
+      to { transform: scale(1.1); }
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
    FEATURE SPLIT — a soft OKLCH accent aura behind the framed About visual for
    cinematic depth. Static (no motion — composes with the column's reveal-on-view);
    the hover accent-ring lives on the frame via Tailwind ring utilities.
