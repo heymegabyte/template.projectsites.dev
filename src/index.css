@@ -4220,3 +4220,49 @@ main#main { view-transition-name: ps-main; }
     radial-gradient(46% 40% at 86% 90%, color-mix(in oklch, var(--color-primary) 6%, transparent), transparent 76%),
     repeating-linear-gradient(90deg, color-mix(in oklch, var(--color-text) 3%, transparent) 0 1px, transparent 1px 7px);
 }
+
+/* ── Cinematic pointer 3D-tilt (TiltCard) ─────────────────────────────────────────────────
+   Depth-on-pointer for the hero card (Awwwards/Framer/motion.so signature). IDENTITY at rest so
+   the wrapped hero <img> stays the LCP element; the transform is a POST-hydration, pointer-only
+   enhancement. The whole effect (transform + glare) lives INSIDE
+   `@media (prefers-reduced-motion: no-preference)`, and the component only attaches its pointer
+   listeners on a fine-pointer + motion-allowed device — so a touch/reduced-motion visitor gets a
+   plain, static card. Transform/opacity only → zero CLS; rAF-throttled move → INP-safe. */
+.tilt-persp {
+  perspective: 1000px;
+}
+.tilt-inner {
+  position: relative;
+}
+.tilt-glare {
+  display: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tilt-inner[data-tilt] {
+    transform: rotateX(var(--tilt-rx, 0deg)) rotateY(var(--tilt-ry, 0deg));
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .tilt-inner[data-tilting='1'] {
+    transition: transform 0.09s ease-out;
+    will-change: transform;
+  }
+  .tilt-glare {
+    display: block;
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    background: radial-gradient(
+      circle at var(--tilt-mx, 50%) var(--tilt-my, 50%),
+      rgba(255, 255, 255, 0.25),
+      rgba(255, 255, 255, 0) 45%
+    );
+    mix-blend-mode: overlay;
+  }
+  .tilt-inner[data-tilting='1'] .tilt-glare {
+    opacity: 1;
+  }
+}

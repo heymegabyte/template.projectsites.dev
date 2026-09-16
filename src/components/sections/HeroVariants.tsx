@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { brand } from '@/brand';
 import { scrubText, scrubImage } from '@/lib/placeholders';
 import { WebGLHeroBackdrop, backdropForPreset, type HeroBackdropVariant } from '@/components/sections/WebGLHeroBackdrop';
+import { TiltCard } from '@/components/TiltCard';
 
 type Trust = { icon?: 'star' | 'shield' | 'award'; label: string };
 
@@ -254,7 +255,9 @@ export function HeroSplit({ eyebrow, headline, subheadline, primary, secondary, 
           <div className="relative">
             {/* Accent ring + glow framing the LCP photo (decorative, behind it). */}
             <div aria-hidden="true" className="pointer-events-none absolute -inset-3 -z-10 rounded-[1.75rem] bg-gradient-to-br from-accent/25 via-primary/10 to-transparent blur-2xl" />
-            <div className="card-tactile relative overflow-hidden rounded-2xl aspect-[5/4] shadow-lg ring-1 ring-border">
+            {/* Cinematic pointer 3D-tilt (TiltCard): identity at rest → the eager <img> stays the
+                LCP; tilt + glare are fine-pointer + motion-gated (touch/reduced-motion → static). */}
+            <TiltCard className="card-tactile relative overflow-hidden rounded-2xl aspect-[5/4] shadow-lg ring-1 ring-border">
               <img
                 src={safeImage.src}
                 alt={safeImage.alt}
@@ -265,7 +268,7 @@ export function HeroSplit({ eyebrow, headline, subheadline, primary, secondary, 
               />
               {/* Cinematic vignette + top sheen — pure overlay, never the LCP. */}
               <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-accent/10" />
-            </div>
+            </TiltCard>
             <div aria-hidden="true" className="absolute inset-0 -z-20 blur-3xl bg-accent/10 rounded-full" />
           </div>
         )}
