@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { isPlaceholder } from '@/lib/placeholders';
 
 export interface CaseStudy {
   slug: string;
@@ -20,6 +21,12 @@ interface Props {
 }
 
 export function CaseStudyGrid({ studies, eyebrow, headline, className, basePath = '/case-studies' }: Props) {
+  // Drop unfilled `{CS_N_*}` slot cards — a business with fewer case studies than the template's
+  // slots would otherwise render a broken/empty card (build_validators only guards {BUSINESS_*}, not
+  // section slots). If NONE are filled (the raw template skeleton / unit fixtures), keep all so the
+  // dev build still renders. Uses the isPlaceholder firewall (placeholders.ts).
+  const filled = studies.filter((s) => !isPlaceholder(s.title));
+  const shown = filled.length > 0 ? filled : studies;
   return (
     <section className={cn('py-24 md:py-32 max-w-container-wide mx-auto px-6', className)}>
       {(eyebrow || headline) && (
@@ -31,7 +38,7 @@ export function CaseStudyGrid({ studies, eyebrow, headline, className, basePath 
         </div>
       )}
       <ul className="grid md:grid-cols-2 gap-8">
-        {studies.map((s) => (
+        {shown.map((s) => (
           <li key={s.slug}>
             <Link
               to={`${basePath}/${s.slug}`}

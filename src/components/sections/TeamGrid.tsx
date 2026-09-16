@@ -1,6 +1,7 @@
 import { type CSSProperties } from 'react';
 import { JsonLd } from '@/components/JsonLd';
 import { cn } from '@/lib/utils';
+import { isPlaceholder } from '@/lib/placeholders';
 
 export interface TeamMember {
   name: string;
@@ -43,10 +44,15 @@ export function TeamGrid({
   description,
   className,
 }: Props) {
+  // Drop unfilled `{TEAM_N_*}` slot members (a business with fewer people than the template's slots)
+  // so a partial fill never renders a broken/empty card OR emits a `{TEAM_3_NAME}` Person JSON-LD.
+  // If NONE are filled (raw template skeleton / unit fixtures), keep all so the dev build renders.
+  const filled = members.filter((m) => !isPlaceholder(m.name));
+  const shown = filled.length > 0 ? filled : members;
   return (
     <section className={cn('py-24 md:py-32 max-w-container-wide mx-auto px-6', className)}>
       <JsonLd
-        data={members.map((m) => ({
+        data={shown.map((m) => ({
           '@context': 'https://schema.org',
           '@type': 'Person',
           name: m.name,
@@ -66,7 +72,7 @@ export function TeamGrid({
         {description && <p className="text-text-muted max-w-2xl mx-auto text-lg text-pretty">{description}</p>}
       </div>
       <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {members.map((m, i) => (
+        {shown.map((m, i) => (
           <li
             key={`${m.name}-${i}`}
             style={{ '--tm-i': i } as CSSProperties}
