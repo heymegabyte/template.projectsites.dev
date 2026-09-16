@@ -6,6 +6,7 @@ import BackToTop from './BackToTop';
 import { ScrollProgress } from './ScrollProgress';
 import { PWAInstallPrompt } from './PWAInstallPrompt';
 import { StickyActionBar } from './StickyActionBar';
+import { SmartWelcomeRibbon } from './SmartWelcomeRibbon';
 
 /*
  * Interaction-triggered chrome — lazy-loaded so their chunks (photoswipe ~60kB behind
@@ -57,6 +58,10 @@ export default function Layout({ children }: Props) {
       <SkipLink />
       <ScrollProgress />
       <Header />
+      {/* Smart Welcome Ribbon (personalized_ribbon, dark by default) — zero-config visitor-adaptive
+          greeting. Fixed-position + post-hydration → zero CLS, never the LCP element. Renders null
+          unless the flag is on AND the visitor is a recognized arrival (returning / from social). */}
+      <SmartWelcomeRibbon />
       <main id="main" tabIndex={-1}>
         {children}
       </main>
