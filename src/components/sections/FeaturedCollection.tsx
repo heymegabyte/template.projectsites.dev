@@ -1,5 +1,6 @@
 import { brand } from '@/brand';
 import { JsonLd } from '@/components/JsonLd';
+import { TiltCard } from '@/components/TiltCard';
 import { hasRealImage, scrubText } from '@/lib/placeholders';
 import { cn } from '@/lib/utils';
 
@@ -86,7 +87,7 @@ export function FeaturedCollection({
 
   const Card = ({ it }: { it: (typeof safeItems)[number] }) => (
     <>
-      <div className="relative aspect-square overflow-hidden rounded-xl bg-accent/5">
+      <TiltCard className="relative aspect-square overflow-hidden rounded-xl bg-accent/5" max={7}>
         {it.image ? (
           <img
             src={it.image}
@@ -99,11 +100,14 @@ export function FeaturedCollection({
           <div aria-hidden="true" className="h-full w-full bg-gradient-to-br from-accent/10 to-primary/10" />
         )}
         {it.badge && (
-          <span className="absolute left-3 top-3 rounded-full bg-accent px-2.5 py-1 text-[11px] font-mono uppercase tracking-wide text-[var(--color-on-accent)]">
+          <span
+            data-tilt-layer
+            className="absolute left-3 top-3 z-10 rounded-full bg-accent px-2.5 py-1 text-[11px] font-mono uppercase tracking-wide text-[var(--color-on-accent)]"
+          >
             {it.badge}
           </span>
         )}
-      </div>
+      </TiltCard>
       <div className="mt-3 flex items-baseline justify-between gap-3">
         <span className="font-heading font-semibold text-text group-hover:text-accent transition-colors">
           {it.name}

@@ -4441,4 +4441,16 @@ main#main { view-transition-name: ps-main; }
   .tilt-inner[data-tilting='1'] .tilt-glare {
     opacity: 1;
   }
+  /* Depth layer — a marked child (e.g. a product badge) floats above the card
+     surface on Z during an ACTIVE tilt: the "parallax within the card" depth the
+     best Awwwards/Framer product grids have. translateZ engages ONLY while tilting
+     (data-tilting='1'), so the element is UNMOVED at rest (identity → no layout /
+     CLS / LCP disturbance); .tilt-inner already carries transform-style: preserve-3d. */
+  .tilt-inner [data-tilt-layer] {
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .tilt-inner[data-tilting='1'] [data-tilt-layer] {
+    transform: translateZ(26px);
+    transition: transform 0.12s ease-out;
+  }
 }
