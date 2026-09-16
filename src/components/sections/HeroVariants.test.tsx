@@ -43,6 +43,23 @@ describe('HeroVariants — per-industry WebGL backdrop wired ON by default', () 
     expect(container.querySelector('canvas')).not.toBeNull();
   });
 
+  it('the LCP hero <img> carries eager + fetchpriority=high + EXPLICIT width/height (ttfr-north-star §4)', () => {
+    // The LCP image must reserve its box pre-CSS (Lighthouse "explicit dimensions" audit + CLS
+    // insurance) AND load with top priority — not just rely on the aspect-ratio container.
+    const { container } = renderIn(
+      <HeroSplit
+        headline="A real, specific headline"
+        image={{ src: 'https://example.com/hero.jpg', alt: 'Storefront' }}
+      />,
+    );
+    const img = container.querySelector('img.hero-kenburns') as HTMLImageElement | null;
+    expect(img).not.toBeNull();
+    expect(img!.getAttribute('loading')).toBe('eager');
+    expect(img!.getAttribute('fetchpriority')).toBe('high');
+    expect(Number(img!.getAttribute('width'))).toBeGreaterThan(0);
+    expect(Number(img!.getAttribute('height'))).toBeGreaterThan(0);
+  });
+
   it('backdropForPreset(brand.themeStyle) always resolves to a real variant', () => {
     expect(['aurora', 'waves', 'mesh', 'ember', 'grid']).toContain(backdropForPreset(brand.themeStyle));
   });

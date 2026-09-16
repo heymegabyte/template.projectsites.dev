@@ -273,6 +273,8 @@ export function HeroSplit({ eyebrow, headline, subheadline, primary, secondary, 
                 alt={safeImage.alt}
                 loading="eager"
                 fetchPriority="high"
+                width={1000}
+                height={800}
                 data-no-zoom
                 className="h-full w-full object-cover hero-kenburns"
               />
