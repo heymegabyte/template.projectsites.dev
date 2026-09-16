@@ -276,6 +276,8 @@ uniform float uIntensity;
 uniform float uMode;      // 0=flowing(aurora/waves/mesh) 1=ember 2=grid 3=bokeh 4=petals 5=smoke 6=terrain 7=silk 8=constellation 9=monolith 10=weave 11=velocity
 uniform float uWarp;      // domain-warp strength (0 = legacy flat field)
 uniform vec2 uParallax;   // pointer + scroll parallax offset — subtle living depth (0 under reduced-motion)
+uniform vec2 uSpot;       // cursor position in uv (0..1); center (0.5,0.5) at rest
+uniform float uSpotStrength; // cursor light-bloom strength, eases 0→1 on pointer activity (0 pre-interaction)
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
 float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
   return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),f.x), mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),f.x), f.y); }
@@ -487,6 +489,16 @@ void main(){
     float sheen = uWarp > 0.0 ? 0.06 * pow(band, 3.0) : 0.0;
     col = hsl2rgb(hue, 0.7, 0.13 + 0.30*band + glow + sheen);
   }
+  // CURSOR LIGHT BLOOM (cinematic-3d) — a soft brand-tinted glow that follows the pointer across the
+  // atmospheric field ("the scene is lit where you point" — the Linear/Vercel signature). Purely
+  // ADDITIVE (never darkens → non-black-safe) and applied to EVERY scene uniformly. uSpotStrength eases
+  // 0→1 only on pointer activity, so at rest / pre-interaction (when LCP is measured) / reduced-motion
+  // (WebGL path is off entirely) it contributes NOTHING → identity-at-rest + zero LCP impact preserved.
+  // Attenuated toward the center so it never brightens behind the centered H1 (text legibility protected).
+  float spotD = length((uv - uSpot) * vec2(uRes.x/uRes.y, 1.0));
+  float spot = smoothstep(0.42, 0.0, spotD) * uSpotStrength;
+  spot *= smoothstep(0.10, 0.42, length(uv - 0.5));      // fade to 0 near center → H1 stays high-contrast
+  col += hsl2rgb(uHue, 0.45, 0.6) * spot * 0.11;         // subtle brand-tinted additive bloom (never competes)
   col *= smoothstep(1.25, 0.2, length(uv-0.5));   // vignette → keeps center text legible
   // PER-HUE PERCEPTUAL-LUMINANCE COMPENSATION — at the same lightness a green/amber brand reads
   // ~3× brighter than a blue one (measured: green 95 vs blue 33), so bright-hue brands shipped an
@@ -581,6 +593,8 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       mode: gl.getUniformLocation(prog, 'uMode'),
       warp: gl.getUniformLocation(prog, 'uWarp'),
       parallax: gl.getUniformLocation(prog, 'uParallax'),
+      spot: gl.getUniformLocation(prog, 'uSpot'),
+      spotStrength: gl.getUniformLocation(prog, 'uSpotStrength'),
     };
     const modeFlag =
       variant === 'velocity'
@@ -631,9 +645,18 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
     const mouse = { x: 0, y: 0 };
     let scrollDrift = 0;
     const pCur = { x: 0, y: 0 };
+    // Cursor light-bloom: target = pointer in uv (0..1, y-flipped to gl_FragCoord's bottom-up space);
+    // strength ramps 0→1 on pointer activity so at rest / pre-interaction (LCP window) it is fully OFF.
+    const spotTarget = { x: 0.5, y: 0.5 };
+    const spotCur = { x: 0.5, y: 0.5 };
+    let spotStrengthTarget = 0;
+    let spotStrengthCur = 0;
     const onPointer = (e: PointerEvent) => {
       mouse.x = (e.clientX / window.innerWidth - 0.5) * 2 * 0.035;
       mouse.y = (e.clientY / window.innerHeight - 0.5) * 2 * 0.035;
+      spotTarget.x = e.clientX / window.innerWidth;
+      spotTarget.y = 1 - e.clientY / window.innerHeight; // uv.y is bottom-up
+      spotStrengthTarget = 1; // pointer active → bloom eases on
     };
     const onScroll = () => {
       scrollDrift = Math.min(window.scrollY / Math.max(1, window.innerHeight), 2) * 0.02;
@@ -661,6 +684,12 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       pCur.x += (mouse.x - pCur.x) * 0.06;
       pCur.y += (mouse.y + scrollDrift - pCur.y) * 0.06;
       gl.uniform2f(u.parallax, pCur.x, pCur.y);
+      // Ease the cursor light-bloom toward the pointer + ramp its strength (0 until first pointer move).
+      spotCur.x += (spotTarget.x - spotCur.x) * 0.08;
+      spotCur.y += (spotTarget.y - spotCur.y) * 0.08;
+      spotStrengthCur += (spotStrengthTarget - spotStrengthCur) * 0.05;
+      gl.uniform2f(u.spot, spotCur.x, spotCur.y);
+      gl.uniform1f(u.spotStrength, spotStrengthCur);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       raf = requestAnimationFrame(frame);
     };
