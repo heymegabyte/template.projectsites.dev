@@ -335,12 +335,32 @@ main#main { view-transition-name: ps-main; }
 .grain { position: relative; isolation: isolate; }
 .grain::after {
   content: '';
-  position: absolute; inset: 0;
+  position: absolute;
+  /* Oversized (−50% inset → 200%×200%) so the filmic-flicker translate never exposes an edge. */
+  top: -50%; left: -50%; width: 200%; height: 200%;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
   opacity: 0.05;
   mix-blend-mode: overlay;
   pointer-events: none;
   z-index: -1;
+}
+/* Filmic flicker — the noise layer JUMPS between offsets like real film grain. Transform-only
+   (compositor-driven, zero main-thread paint → no INP cost) + steps(1) for the discrete film
+   jitter. reduced-motion → NO animation (the static grain above stands). */
+@media (prefers-reduced-motion: no-preference) {
+  .grain::after { animation: grain-flicker 0.8s steps(1) infinite; }
+}
+@keyframes grain-flicker {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  10% { transform: translate3d(-7%, -12%, 0); }
+  20% { transform: translate3d(-14%, 6%, 0); }
+  30% { transform: translate3d(9%, -18%, 0); }
+  40% { transform: translate3d(-6%, 14%, 0); }
+  50% { transform: translate3d(-16%, 8%, 0); }
+  60% { transform: translate3d(12%, 3%, 0); }
+  70% { transform: translate3d(2%, 16%, 0); }
+  80% { transform: translate3d(5%, -8%, 0); }
+  90% { transform: translate3d(-11%, 7%, 0); }
 }
 /* A11y: users who disable transparency shouldn't get the decorative noise overlay. */
 @media (prefers-reduced-transparency: reduce) {
