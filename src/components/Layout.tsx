@@ -7,6 +7,7 @@ import { ScrollProgress } from './ScrollProgress';
 import { PWAInstallPrompt } from './PWAInstallPrompt';
 import { StickyActionBar } from './StickyActionBar';
 import { SmartWelcomeRibbon } from './SmartWelcomeRibbon';
+import { IntroTeaser } from './IntroTeaser';
 
 /*
  * Interaction-triggered chrome — lazy-loaded so their chunks (photoswipe ~60kB behind
@@ -57,6 +58,9 @@ export default function Layout({ children }: Props) {
     <>
       <SkipLink />
       <ScrollProgress />
+      {/* Cinematic intro curtain — first homepage visit per session only; reduced-motion / repeat
+          visit / sub-page → renders null. LCP-safe (hero renders in <main> below, stays the LCP). */}
+      <IntroTeaser />
       <Header />
       {/* Smart Welcome Ribbon (personalized_ribbon, dark by default) — zero-config visitor-adaptive
           greeting. Fixed-position + post-hydration → zero CLS, never the LCP element. Renders null
