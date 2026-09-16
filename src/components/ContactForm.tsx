@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FocusEvent } from 'react';
+import { useEffect, useState, type ChangeEvent, type FocusEvent } from 'react';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Send, Check, AlertCircle, X } from 'lucide-react';
@@ -10,7 +10,8 @@ import { z } from 'zod';
  *
  *   - useActionState consolidates pending / error / success state in one hook
  *   - useFormStatus inside the submit button gets `pending` without prop drilling
- *   - <form action={async fn}> auto-resets on success
+ *   - on success, an effect clears the CONTROLLED field state (React 19's native
+ *     `<form action>` reset only clears UNCONTROLLED fields, never `value=`-bound ones)
  *   - Zod validates input before POST (BE parity — same shape as the server guard)
  *   - LIVE per-field validity: as the visitor types/blurs, each field shows an
  *     inline green check (valid) / red × (invalid) + `aria-invalid`, so the error
@@ -179,6 +180,21 @@ export function ContactForm({ endpoint, slug = 'default' }: Props) {
     phone: false,
     message: false,
   });
+
+  // React 19's `<form action>` resets UNCONTROLLED fields on success — but these inputs are
+  // CONTROLLED (`value={values[...]}`), which the native reset CANNOT clear. Without this, the
+  // visitor's just-sent name/email/message linger in the fields next to the "Thanks…" message,
+  // reading as "did it actually send? should I resend?" — friction on the primary conversion
+  // surface. On a successful send, clear the controlled values + touched state so the form returns
+  // to a clean slate (the success message stays). Keyed on `state.status` so it fires once per send.
+  useEffect(() => {
+    if (state.status === 'success') {
+      setValues({ name: '', email: '', phone: '', message: '' });
+      setTouched({ name: false, email: false, phone: false, message: false });
+    }
+    // Key on the `state` OBJECT (useActionState returns a fresh object per action completion),
+    // so a SECOND successful send — where `state.status` stays 'success' — still re-clears.
+  }, [state]);
 
   const onFieldChange = (name: FieldName) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setValues((v) => ({ ...v, [name]: e.target.value }));
