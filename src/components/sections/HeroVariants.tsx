@@ -8,6 +8,7 @@ import { scrubText, scrubImage } from '@/lib/placeholders';
 import { WebGLHeroBackdrop, backdropForPreset, type HeroBackdropVariant } from '@/components/sections/WebGLHeroBackdrop';
 import { TiltCard } from '@/components/TiltCard';
 import { ScrollParallax } from '@/components/ScrollParallax';
+import { ScrambleText } from '@/components/ScrambleText';
 
 type Trust = { icon?: 'star' | 'shield' | 'award'; label: string };
 
@@ -136,7 +137,7 @@ export function HeroCenter({ eyebrow, headline, subheadline, primary, secondary,
             className="hero-enter inline-block text-accent text-xs md:text-sm font-mono tracking-[0.3em] uppercase mb-6 px-4 py-2 rounded-full border border-accent/20 bg-accent/5"
             style={{ ['--enter-i' as string]: 0 }}
           >
-            {safeEyebrow}
+            <ScrambleText text={safeEyebrow} />
           </span>
         )}
         <h1
@@ -226,7 +227,7 @@ export function HeroSplit({ eyebrow, headline, subheadline, primary, secondary, 
         <div className="relative z-10">
           {safeEyebrow && (
             <span className="hero-enter text-accent text-sm font-mono tracking-widest uppercase" style={{ ['--enter-i' as string]: 0 }}>
-              {safeEyebrow}
+              <ScrambleText text={safeEyebrow} />
             </span>
           )}
           <h1

@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { scrubText } from '@/lib/placeholders';
+import { ScrambleText } from '@/components/ScrambleText';
 
 interface Props {
   headline: string;
@@ -51,7 +52,7 @@ export function CTASection({
         )}
         <div className="relative z-10">
           {safeEyebrow && (
-            <span className="text-accent text-sm font-mono tracking-widest uppercase">{safeEyebrow}</span>
+            <span className="text-accent text-sm font-mono tracking-widest uppercase"><ScrambleText text={safeEyebrow} /></span>
           )}
           <h2 className="mt-4 text-3xl md:text-5xl font-bold font-heading text-text">
             <span className={tone === 'emphatic' ? 'gradient-text' : ''}>{safeHeadline}</span>

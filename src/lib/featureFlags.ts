@@ -26,3 +26,16 @@ export function personalizedRibbonEnabled(): boolean {
 export function clipRevealEnabled(): boolean {
   return import.meta.env.VITE_CLIP_REVEAL === '1';
 }
+
+/**
+ * Kinetic text-scramble (`text_scramble`) — the Awwwards SOTD tier-1 micro-interaction: a headline /
+ * eyebrow "decodes" left-to-right (cycling glyphs → real text) on first view AND on hover, so a
+ * live label that reacts to attention reads as premium in a way flat text never does. Dark by
+ * default (experimental); opt a build in with `VITE_TEXT_SCRAMBLE=1`. Applied only to the MONO
+ * eyebrow (fixed-width glyphs → zero width jitter → CLS-safe; not the LCP element → LCP-safe;
+ * single ~620ms rAF → INP-safe). Reduced-motion / no-JS / flag-off → the plain static real text.
+ * Source: awwwards.com scramble-text inspiration + Codrops 2026 kinetic-type trend.
+ */
+export function textScrambleEnabled(): boolean {
+  return import.meta.env.VITE_TEXT_SCRAMBLE === '1';
+}
