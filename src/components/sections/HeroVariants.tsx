@@ -7,6 +7,7 @@ import { brand } from '@/brand';
 import { scrubText, scrubImage } from '@/lib/placeholders';
 import { WebGLHeroBackdrop, backdropForPreset, type HeroBackdropVariant } from '@/components/sections/WebGLHeroBackdrop';
 import { TiltCard } from '@/components/TiltCard';
+import { ScrollParallax } from '@/components/ScrollParallax';
 
 type Trust = { icon?: 'star' | 'shield' | 'award'; label: string };
 
@@ -112,6 +113,11 @@ export function HeroCenter({ eyebrow, headline, subheadline, primary, secondary,
           this variant so neither can become the LCP. */}
       <div aria-hidden="true" className="hero-center-aura pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[46rem] w-[46rem] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />
       <div aria-hidden="true" className="hero-center-halo pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[38rem] w-[38rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-60" />
+      {/* CINEMATIC-3D depth parallax — two decorative accent orbs drift at DIFFERENT rates as the
+          page scrolls (motion.so-style layered depth). LCP-safe (a blurred bg-color div is never an
+          LCP candidate; identity at scroll 0), and static under reduced-motion / Firefox. */}
+      <ScrollParallax depth={1.6} className="absolute -top-28 right-[10%] -z-10 h-64 w-64 rounded-full bg-accent/15 blur-3xl" />
+      <ScrollParallax depth={0.6} className="absolute bottom-[8%] left-[8%] -z-10 h-52 w-52 rounded-full bg-primary/12 blur-3xl" />
       {/* Fine token-tinted grid — sits on border color so it reads on light + dark. */}
       <div
         aria-hidden="true"
@@ -211,6 +217,10 @@ export function HeroSplit({ eyebrow, headline, subheadline, primary, secondary, 
           none), always smaller and behind the eager hero <img>, so neither can
           become the LCP element. Motion is gated by prefers-reduced-motion. */}
       <div aria-hidden="true" className="hero-aurora pointer-events-none absolute -top-24 -left-24 -z-10 h-[34rem] w-[34rem] rounded-full blur-3xl opacity-70" />
+      {/* CINEMATIC-3D depth parallax — layered accent orbs drift at different rates on scroll
+          (see the HeroCenter note): decorative, LCP-safe, static under reduced-motion / Firefox. */}
+      <ScrollParallax depth={1.5} className="absolute top-[6%] right-[6%] -z-10 h-60 w-60 rounded-full bg-accent/15 blur-3xl" />
+      <ScrollParallax depth={0.55} className="absolute -bottom-20 left-[4%] -z-10 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
       <div aria-hidden="true" className="grain pointer-events-none absolute inset-0 -z-10" />
       <div className={cn('grid gap-16 items-center', safeImage ? 'lg:grid-cols-2' : 'max-w-3xl mx-auto text-center')}>
         <div className="relative z-10">

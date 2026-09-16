@@ -570,6 +570,31 @@ main#main { view-transition-name: ps-main; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   SCROLL-DRIVEN DEPTH PARALLAX (CINEMATIC-3D) — decorative background layers
+   drift on the Y axis at PER-LAYER rates (via the `--ps-parallax-depth` custom
+   property) as the page scrolls, giving the hero cinematic depth (the motion.so /
+   Awwwards signature). Compositor-driven → OFF the main thread (INP-safe); the
+   `from` frame is IDENTITY at scroll 0 → first paint unchanged (LCP-safe);
+   transform-only → no reflow (CLS-safe). Consumed by <ScrollParallax>. Firefox
+   (no `animation-timeline`) and reduced-motion users fall through both gates and
+   the layer stays perfectly STATIC — no JS fallback branch needed.
+   ───────────────────────────────────────────────────────────────────────── */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .ps-parallax {
+      will-change: transform;
+      animation: ps-parallax-drift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
+    }
+    @keyframes ps-parallax-drift {
+      from { transform: translate3d(0, 0, 0); }
+      to { transform: translate3d(0, calc(var(--ps-parallax-depth, 1) * -80px), 0); }
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
    FEATURE SPLIT — a soft OKLCH accent aura behind the framed About visual for
    cinematic depth. Static (no motion — composes with the column's reveal-on-view);
    the hover accent-ring lives on the frame via Tailwind ring utilities.
