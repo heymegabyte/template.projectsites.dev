@@ -595,6 +595,32 @@ main#main { view-transition-name: ps-main; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   CLIP-PATH SCROLL REVEAL (BLEEDING-EDGE) — the Awwwards/Zentry-signature
+   "clip-path shaped transition": a below-fold section visual wipes OPEN (a
+   cinematic letterbox reveal) as it scrolls into view, choreographed with the
+   column's text reveal (directed motion, not decoration). Native
+   `animation-timeline: view()` → compositor-driven (INP-safe); clip-path only,
+   no reflow (CLS-safe); applied to BELOW-fold visuals only (LCP-safe). Gated by
+   `clipRevealEnabled()` (VITE_CLIP_REVEAL, dark) AND these two queries — Firefox
+   (no `animation-timeline`) + reduced-motion users get the image fully visible +
+   STATIC (never a clipped-and-stuck image); no JS, no fallback branch.
+   ───────────────────────────────────────────────────────────────────────── */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .ps-clip-reveal {
+      will-change: clip-path;
+      animation: ps-clip-reveal-in linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 42%;
+    }
+    @keyframes ps-clip-reveal-in {
+      from { clip-path: inset(35% 0 35% 0); }
+      to { clip-path: inset(0 0 0 0); }
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
    FEATURE SPLIT — a soft OKLCH accent aura behind the framed About visual for
    cinematic depth. Static (no motion — composes with the column's reveal-on-view);
    the hover accent-ring lives on the frame via Tailwind ring utilities.

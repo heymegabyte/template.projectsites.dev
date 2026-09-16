@@ -4,6 +4,7 @@ import { ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { scrubText, scrubList, scrubImage } from '@/lib/placeholders';
+import { clipRevealEnabled } from '@/lib/featureFlags';
 
 interface Props {
   eyebrow?: string;
@@ -95,7 +96,13 @@ export function FeatureSplit({
                 aria-hidden="true"
                 className="feature-visual-aura pointer-events-none absolute -inset-5 -z-10 rounded-[2rem]"
               />
-              <div className="group card-tactile overflow-hidden rounded-2xl aspect-[4/3] relative ring-1 ring-border transition-all duration-500 hover:ring-2 hover:ring-accent/40 motion-reduce:transition-none">
+              <div
+                data-clip-reveal={clipRevealEnabled() ? '1' : undefined}
+                className={cn(
+                  'group card-tactile overflow-hidden rounded-2xl aspect-[4/3] relative ring-1 ring-border transition-all duration-500 hover:ring-2 hover:ring-accent/40 motion-reduce:transition-none',
+                  clipRevealEnabled() && 'ps-clip-reveal',
+                )}
+              >
                 <img
                   src={safeImage.src}
                   alt={safeImage.alt}

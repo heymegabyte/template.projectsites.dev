@@ -15,3 +15,14 @@
 export function personalizedRibbonEnabled(): boolean {
   return import.meta.env.VITE_PERSONALIZED_RIBBON === '1';
 }
+
+/**
+ * Clip-path scroll reveal (`clip_reveal`) — the Awwwards/Zentry-signature "clip-path shaped
+ * transition": a below-fold section visual wipes open (a cinematic letterbox reveal) as it scrolls
+ * into view, driven by native `animation-timeline: view()` (compositor → INP-safe; below-fold →
+ * LCP-safe; clip-path only → CLS-safe). Dark by default (experimental); opt a build in with
+ * `VITE_CLIP_REVEAL=1`. Firefox / reduced-motion get the static, fully-visible image (never clipped).
+ */
+export function clipRevealEnabled(): boolean {
+  return import.meta.env.VITE_CLIP_REVEAL === '1';
+}
