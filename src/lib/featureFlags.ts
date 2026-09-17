@@ -55,3 +55,23 @@ export function textScrambleEnabled(): boolean {
 export function exitIntentEnabled(): boolean {
   return import.meta.env.VITE_EXIT_INTENT === '1';
 }
+
+/**
+ * Scroll-driven 3D depth-cascade (`scroll_cinema` / VITE_SCROLL_CINEMA) — the motion.so / Awwwards
+ * "content emerges from depth" signature. A below-fold group's items don't just fade+rise flat
+ * (the existing `.reveal-on-view`); they CASCADE forward out of Z-depth — each item enters with a
+ * subtle `rotateX` + `translateZ` (parent `perspective`) staggered per position, so the section
+ * reads as a layered 3D scene assembling itself, not a flat list sliding up. Dark by default
+ * (experimental); opt a build in with `VITE_SCROLL_CINEMA=1`.
+ *
+ * Safe BY CONSTRUCTION — pure native `animation-timeline: view()`, ZERO JS / no scroll listener
+ * (unlike GSAP/Lenis): LCP-safe (below-fold + the keyframe's settled frame is identity, and it
+ * NEVER wraps the hero LCP element), INP-safe (compositor-driven, off the main thread), CLS-safe
+ * (transform + opacity only, opacity floored at 0.9 so text holds AA at every frame). Firefox
+ * (no `animation-timeline`) + `prefers-reduced-motion: reduce` fall through both gates → items are
+ * perfectly STATIC + fully visible. Source: motion.so / Awwwards SOTD 3D-scroll showcases +
+ * Codrops 2026 scroll-depth trend — the cinematic layer the one-click AI builders don't ship.
+ */
+export function scrollCinemaEnabled(): boolean {
+  return import.meta.env.VITE_SCROLL_CINEMA === '1';
+}
