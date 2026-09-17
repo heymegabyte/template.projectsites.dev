@@ -177,6 +177,8 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
               alt=""
               width={56}
               height={56}
+              fetchPriority="high"
+              decoding="async"
               // drop-shadow halo (not a box): keeps the mark TRANSPARENT while staying
               // legible over a busy/low-contrast hero when the header is transparent
               // (unscrolled) — per the logo-contrast rule. Sized BIG (h-12→h-14, 48→56px)
@@ -200,6 +202,11 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
             <img
               src="/logo-wordmark.png"
               alt={business}
+              // C.2 LCP (AL-718): the wordmark is the LCP element on text-hero sites. Eager
+              // + high-priority so it's not deprioritized behind the hero image; the build
+              // also injects a <link rel=preload fetchpriority=high> for its bytes.
+              fetchPriority="high"
+              decoding="async"
               className="site-wordmark h-10 sm:h-12 w-auto max-w-[220px] sm:max-w-[340px] object-contain drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]"
               onError={() => setWordmarkOk(false)}
               // A near-square wordmark loads fine (no onError) yet squishes to an illegible
