@@ -41,7 +41,8 @@ export type HeroBackdropVariant =
   | 'constellation'
   | 'monolith'
   | 'weave'
-  | 'velocity';
+  | 'velocity'
+  | 'gyro';
 
 /** Shader parameters per variant (pure data — unit-tested). */
 export interface HeroBackdropConfig {
@@ -126,6 +127,11 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
   // streak crispness, low hueSpread = tight brand-tinted streaks; warp inert (procedural lanes).
   // Distinct from mesh's calm cellular shimmer: thin bright streaks rushing across a dark field.
   velocity: { scale: 7.0, speed: 1.4, sharpness: 0.7, hueSpread: 0.05, intensity: 0.82, warp: 0.3 },
+  // gyro: concentric orbital RINGS slowly rotating with a radar SWEEP arm — a precision-INSTRUMENT /
+  // gyroscope field for PRECISION (engineering / motorsports / aerospace / machining). scale = ring
+  // count, sharpness = ring crispness, low hueSpread = calibrated-instrument restraint; warp inert.
+  // Distinct from mesh's soft cellular shimmer: crisp brand-tinted rings + a slow sweep read as a gauge.
+  gyro: { scale: 5.0, speed: 0.6, sharpness: 0.72, hueSpread: 0.05, intensity: 0.8, warp: 0.3 },
 };
 
 /**
@@ -147,7 +153,10 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
  *   - `bokeh`  — soft drifting out-of-focus light-motes → refined / premium / elegant
  *     (luxe — fine dining / jewelry / hotels want their OWN premium field, not editorial's waves);
  *   - `mesh`   — tight cellular shimmer → technical / precise
- *     (futuristic, precision — the calm, exact tech read);
+ *     (futuristic — the calm, exact tech/AI/SaaS read);
+ *   - `gyro`   — concentric orbital rings + a slow radar sweep → engineering / motorsports / precision
+ *     (precision — machining / aerospace / auto-performance get a calibrated precision-INSTRUMENT gauge,
+ *      not the soft cellular mesh they used to share with futuristic, AL-699);
  *   - `velocity` — fast diagonal speed-streaks / slipstream → energetic / dynamic / kinetic / athletic
  *     (bold — the high-energy personality gets its OWN rushing streaks, not the calm cellular mesh, AL-605);
  *   - `terrain`— slowly-morphing topographic contour rings → outdoor / rugged / earthy
@@ -167,6 +176,7 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
  * @example backdropForPreset('noir')       // → 'smoke'
  * @example backdropForPreset('heritage')   // → 'waves'
  * @example backdropForPreset('futuristic') // → 'mesh'
+ * @example backdropForPreset('precision')  // → 'gyro'
  * @example backdropForPreset('warm')       // → 'ember'
  * @example backdropForPreset('retro')      // → 'grid'
  * @example backdropForPreset(undefined)    // → 'aurora'
@@ -186,7 +196,8 @@ export const PRESET_BACKDROP: Record<string, HeroBackdropVariant> = {
   editorial: 'waves',
   heritage: 'waves', // dignified authoritative swells — financial/legal/insurance/real-estate; ember's cozy hearth glow was a MISMATCH for a law/accounting/insurance firm (AL-490)
   luxe: 'bokeh', // premium drifting light-motes — luxe's OWN refined scene, not editorial's waves
-  futuristic: 'mesh', precision: 'mesh',
+  futuristic: 'mesh',
+  precision: 'gyro', // AL-699: engineering/motorsports/machining/aerospace get their OWN precision-instrument gyroscope rings + radar sweep — the soft cellular MESH (kept for futuristic tech/AI) undersold precision's calibrated-instrument identity
   bold: 'velocity', // AL-605: the energetic/dynamic/kinetic/athletic BOLD personality gets its OWN high-energy speed-streak scene — the calm cellular MESH (kept for futuristic/precision) undersold bold's kinetic identity
   brutalist: 'monolith', // AL-538: raw stark concrete SLABS + one glowing fault seam — the soft cellular tech MESH was a mismatch for brutalist's hard-edged architectural identity
   rugged: 'terrain', // AL-521: outdoor/adventure/landscaping/trades get earthy topographic contour rings — a tech cellular MESH was a mismatch for the rugged outdoors
@@ -197,6 +208,32 @@ export const PRESET_BACKDROP: Record<string, HeroBackdropVariant> = {
 };
 export function backdropForPreset(preset: string | null | undefined): HeroBackdropVariant {
   return PRESET_BACKDROP[(preset ?? '').trim().toLowerCase()] ?? 'aurora';
+}
+
+/**
+ * DEMO-ONLY backdrop-variant override for the template showcase (`template.projectsites.dev`, AL-699).
+ * A `?bg=<variant>` query param lets the LIVE demo preview ANY hero scene (e.g. `?bg=gyro`) so a new
+ * cinematic variant is provable in a real browser WITHOUT a full site rebuild (the 402/fast-path
+ * bypass, per the template-demo-is-live-proof pattern). Gated to the demo host (+ localhost for dev)
+ * so GENERATED customer sites ALWAYS use their brand-derived variant — a visitor's URL param can never
+ * change a real site's hero. Pure → unit-tested.
+ *
+ * @example demoVariantOverride('template.projectsites.dev', '?bg=gyro', 'aurora') // → 'gyro'
+ * @example demoVariantOverride('acme.projectsites.dev', '?bg=gyro', 'ember')      // → 'ember' (ignored off-demo)
+ * @example demoVariantOverride('template.projectsites.dev', '?bg=nope', 'aurora') // → 'aurora' (invalid ignored)
+ */
+export function demoVariantOverride(
+  hostname: string,
+  search: string,
+  fallback: HeroBackdropVariant,
+): HeroBackdropVariant {
+  const isDemo =
+    hostname === 'template.projectsites.dev' || hostname === 'localhost' || hostname === '127.0.0.1';
+  if (!isDemo) return fallback;
+  const req = new URLSearchParams(search || '').get('bg');
+  return req && Object.prototype.hasOwnProperty.call(HERO_BACKDROP_CONFIGS, req)
+    ? (req as HeroBackdropVariant)
+    : fallback;
 }
 
 /**
@@ -273,7 +310,7 @@ uniform float uScale;
 uniform float uSharp;
 uniform float uSpread;
 uniform float uIntensity;
-uniform float uMode;      // 0=flowing(aurora/waves/mesh) 1=ember 2=grid 3=bokeh 4=petals 5=smoke 6=terrain 7=silk 8=constellation 9=monolith 10=weave 11=velocity
+uniform float uMode;      // 0=flowing(aurora/waves/mesh) 1=ember 2=grid 3=bokeh 4=petals 5=smoke 6=terrain 7=silk 8=constellation 9=monolith 10=weave 11=velocity 12=gyro
 uniform float uWarp;      // domain-warp strength (0 = legacy flat field)
 uniform vec2 uParallax;   // pointer + scroll parallax offset — subtle living depth (0 under reduced-motion)
 uniform vec2 uSpot;       // cursor position in uv (0..1); center (0.5,0.5) at rest
@@ -289,7 +326,23 @@ void main(){
   vec2 p = uv * vec2(uRes.x/uRes.y, 1.0);
   float t = uTime * 0.05;
   vec3 col;
-  if (uMode > 10.5) {
+  if (uMode > 11.5) {
+    // ---- GYRO (uMode==12): concentric orbital RINGS drifting outward under a slow radar SWEEP arm —
+    // a precision-INSTRUMENT / gyroscope field for PRECISION (engineering / motorsports / aerospace /
+    // machining). Aspect-corrected circular rings + a rotating bright arm that lights the rings it
+    // crosses read as a calibrated gauge. Distinct from mesh's soft cellular shimmer. Dark 0.11 base
+    // (non-black by construction) + the shared vignette/intensity keep the center H1 legible.
+    // uScale = ring count, uSharp = ring crispness.
+    vec2 c = uv - 0.5;
+    c.x *= uRes.x / uRes.y;                                       // aspect-correct → truly circular rings
+    float r = length(c);
+    float ang = atan(c.y, c.x);
+    float band = abs(fract(r * uScale - t * 0.12) - 0.5);        // concentric rings drifting slowly outward
+    float ring = pow(1.0 - smoothstep(0.0, mix(0.26, 0.08, uSharp), band), 3.0); // crisp bright rings
+    float sweep = pow(0.5 + 0.5 * sin(ang - t * 0.7), 8.0);      // one bright arm sweeping around slowly (radar)
+    float glow = ring * (0.45 + 0.55 * sweep) + 0.10 * sweep;    // rings flare where the arm crosses them
+    col = hsl2rgb(uHue + uSpread * (r - 0.3), 0.62, 0.11 + 0.34 * glow);
+  } else if (uMode > 10.5) {
     // ---- VELOCITY (uMode==11): fast diagonal SPEED STREAKS / slipstream — a high-energy KINETIC
     // field for BOLD (energetic / dynamic / athletic brands). Thin bright brand-tinted streaks rake
     // across a dark field at speed (motion lines), distinct from mesh's calm cellular shimmer. The
@@ -542,7 +595,12 @@ interface Props {
 export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [mode, setMode] = useState<'webgl' | 'static'>('static');
-  const cfg = HERO_BACKDROP_CONFIGS[variant] ?? HERO_BACKDROP_CONFIGS.aurora;
+  // DEMO-only `?bg=<variant>` preview (AL-699) — no-op on generated customer sites (off-demo host).
+  const effectiveVariant =
+    typeof window !== 'undefined'
+      ? demoVariantOverride(window.location.hostname, window.location.search, variant)
+      : variant;
+  const cfg = HERO_BACKDROP_CONFIGS[effectiveVariant] ?? HERO_BACKDROP_CONFIGS.aurora;
 
   useEffect(() => {
     const reducedMotion =
@@ -597,27 +655,29 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       spotStrength: gl.getUniformLocation(prog, 'uSpotStrength'),
     };
     const modeFlag =
-      variant === 'velocity'
+      effectiveVariant === 'gyro'
+        ? 12
+        : effectiveVariant === 'velocity'
         ? 11
-        : variant === 'weave'
+        : effectiveVariant === 'weave'
         ? 10
-        : variant === 'monolith'
+        : effectiveVariant === 'monolith'
         ? 9
-        : variant === 'constellation'
+        : effectiveVariant === 'constellation'
         ? 8
-        : variant === 'silk'
+        : effectiveVariant === 'silk'
         ? 7
-        : variant === 'terrain'
+        : effectiveVariant === 'terrain'
         ? 6
-        : variant === 'smoke'
+        : effectiveVariant === 'smoke'
           ? 5
-          : variant === 'petals'
+          : effectiveVariant === 'petals'
             ? 4
-            : variant === 'bokeh'
+            : effectiveVariant === 'bokeh'
               ? 3
-              : variant === 'grid'
+              : effectiveVariant === 'grid'
                 ? 2
-                : variant === 'ember'
+                : effectiveVariant === 'ember'
                   ? 1
                   : 0;
     const hue = parseBrandHue(
@@ -733,7 +793,7 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       canvas.removeEventListener('webglcontextlost', onLost);
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
-  }, [variant, cfg.scale, cfg.sharpness, cfg.hueSpread, cfg.intensity, cfg.warp]);
+  }, [effectiveVariant, cfg.scale, cfg.sharpness, cfg.hueSpread, cfg.intensity, cfg.warp]);
 
   // Static brand gradient — the always-legible fallback (reduced-motion / no-WebGL /
   // SSR first paint). Uses the brand tokens so it matches the animated version's palette.

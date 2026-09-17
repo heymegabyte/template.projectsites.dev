@@ -6,6 +6,7 @@ import {
   parseBrandHue,
   resolveBackdropMode,
   backdropForPreset,
+  demoVariantOverride,
   HERO_BACKDROP_CONFIGS,
   PRESET_BACKDROP,
   GRAIN_DATA_URI,
@@ -78,8 +79,9 @@ describe('HERO_BACKDROP_CONFIGS', () => {
     'monolith',
     'weave',
     'velocity',
+    'gyro',
   ];
-  it('defines all fourteen variants with sane, text-legible params', () => {
+  it('defines all fifteen variants with sane, text-legible params', () => {
     for (const v of variants) {
       const c = HERO_BACKDROP_CONFIGS[v];
       expect(c).toBeDefined();
@@ -127,10 +129,24 @@ describe('backdropForPreset (per-industry hero motion)', () => {
     expect(backdropForPreset('editorial')).toBe('waves'); // authoritative, measured
     expect(backdropForPreset('heritage')).toBe('waves'); // AL-490: dignified/authoritative (financial/legal/insurance) — NOT ember's cozy hearth glow
     expect(backdropForPreset('futuristic')).toBe('mesh'); // technical, energetic
-    expect(backdropForPreset('bold')).toBe('velocity'); // AL-605: energetic/kinetic bold gets its OWN speed-streak scene, not the calm cellular mesh (kept for futuristic/precision)
-    expect(backdropForPreset('precision')).toBe('mesh');
+    expect(backdropForPreset('bold')).toBe('velocity'); // AL-605: energetic/kinetic bold gets its OWN speed-streak scene, not the calm cellular mesh (kept for futuristic)
+    expect(backdropForPreset('precision')).toBe('gyro'); // AL-699: engineering/motorsports/machining/aerospace get their OWN precision-instrument gyroscope rings + radar sweep, not the cellular mesh they used to share with futuristic
     expect(backdropForPreset('retro')).toBe('grid'); // synthwave neon perspective grid
   });
+  it('demoVariantOverride: `?bg=` previews any scene ONLY on the demo host — never on generated sites (AL-699)', () => {
+    // On the demo host, a valid `?bg=` overrides the brand variant (lets a new scene be proven live).
+    expect(demoVariantOverride('template.projectsites.dev', '?bg=gyro', 'aurora')).toBe('gyro');
+    expect(demoVariantOverride('localhost', '?bg=velocity', 'mesh')).toBe('velocity');
+    // Off the demo host (a real generated customer site), the param is IGNORED → brand variant wins.
+    expect(demoVariantOverride('acme-motors.projectsites.dev', '?bg=gyro', 'ember')).toBe('ember');
+    expect(demoVariantOverride('customdomain.com', '?bg=petals', 'silk')).toBe('silk');
+    // Invalid / absent params fall back to the brand variant even on the demo (no crash, no blank scene).
+    expect(demoVariantOverride('template.projectsites.dev', '?bg=notarealvariant', 'aurora')).toBe('aurora');
+    expect(demoVariantOverride('template.projectsites.dev', '', 'mesh')).toBe('mesh');
+    // A prototype-pollution key (`__proto__`) must NOT resolve as a valid variant (hasOwnProperty guard).
+    expect(demoVariantOverride('template.projectsites.dev', '?bg=__proto__', 'aurora')).toBe('aurora');
+  });
+
   it('is case-insensitive + total (blank / unknown / nullish → aurora)', () => {
     expect(backdropForPreset('LUXE')).toBe('bokeh');
     expect(backdropForPreset('  futuristic  ')).toBe('mesh');
@@ -185,8 +201,8 @@ describe('shader-branch source gate (every variant is actually RENDERED, not sil
 
   it('every distinct variant is mapped in the modeFlag ternary (else it silently renders mode-0 aurora)', () => {
     for (const v of DISTINCT) {
-      expect(BACKDROP_SRC, `${v} must appear as \`variant === '${v}'\` in the modeFlag mapping`).toContain(
-        `variant === '${v}'`,
+      expect(BACKDROP_SRC, `${v} must appear as \`effectiveVariant === '${v}'\` in the modeFlag mapping`).toContain(
+        `effectiveVariant === '${v}'`,
       );
     }
   });
@@ -196,9 +212,9 @@ describe('shader-branch source gate (every variant is actually RENDERED, not sil
     // guard `uMode > 1.5 … > (max-0.5)` exists so modes 2..max each own a branch (mode 1=ember,
     // mode 0=flowing live in the final else). Deriving `max` from the source means the ladder
     // must GROW with the next scene — add its branch in the same change or this fails.
-    // Match ONLY the modeFlag ternary arms (`variant === 'weave' ? 10`) so an unrelated
+    // Match ONLY the modeFlag ternary arms (`effectiveVariant === 'gyro' ? 12`) so an unrelated
     // integer ternary elsewhere can't false-inflate the ladder requirement.
-    const modeNums = [...BACKDROP_SRC.matchAll(/variant\s*===\s*'[^']+'\s*\?\s*(\d+)/g)].map((m) =>
+    const modeNums = [...BACKDROP_SRC.matchAll(/effectiveVariant\s*===\s*'[^']+'\s*\?\s*(\d+)/g)].map((m) =>
       Number(m[1]),
     );
     const maxMode = modeNums.length ? Math.max(...modeNums) : 10;
@@ -210,7 +226,7 @@ describe('shader-branch source gate (every variant is actually RENDERED, not sil
   it('the uMode uniform comment documents every mode the ternary can emit (author-intent doc stays honest)', () => {
     // The `uniform float uMode; // 0=… 1=ember … 10=weave` comment is the human map of the ladder;
     // guard that it names the highest mode so a new scene updates the doc too (drift catch).
-    expect(BACKDROP_SRC).toMatch(/uniform float uMode;[^\n]*10=weave/);
+    expect(BACKDROP_SRC).toMatch(/uniform float uMode;[^\n]*12=gyro/);
   });
 });
 
