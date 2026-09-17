@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { scrubText } from '@/lib/placeholders';
 import { ScrambleText } from '@/components/ScrambleText';
+import { PointerSpotlight } from '@/components/PointerSpotlight';
 
 interface Props {
   headline: string;
@@ -48,6 +49,9 @@ export function CTASection({
             {/* Drifting aurora glows behind the closing CTA — cinematic depth, motion-gated. */}
             <div aria-hidden="true" className="cta-glow-1 pointer-events-none absolute -left-16 -top-20 h-56 w-56 rounded-full bg-accent/25 blur-3xl" />
             <div aria-hidden="true" className="cta-glow-2 pointer-events-none absolute -right-16 -bottom-20 h-56 w-56 rounded-full bg-primary/25 blur-3xl" />
+            {/* Cursor-reactive ambient spotlight — interactive depth the auto-drifting glows lack.
+                Transform-only + rAF-throttled + (pointer:fine)/reduced-motion gated (static glow otherwise). */}
+            <PointerSpotlight />
           </>
         )}
         <div className="relative z-10">
