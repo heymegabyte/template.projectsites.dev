@@ -8,6 +8,7 @@ import { PWAInstallPrompt } from './PWAInstallPrompt';
 import { StickyActionBar } from './StickyActionBar';
 import { SmartWelcomeRibbon } from './SmartWelcomeRibbon';
 import { IntroTeaser } from './IntroTeaser';
+import { ExitIntentOffer } from './ExitIntentOffer';
 
 /*
  * Interaction-triggered chrome — lazy-loaded so their chunks (photoswipe ~60kB behind
@@ -61,6 +62,9 @@ export default function Layout({ children }: Props) {
       {/* Cinematic intro curtain — first homepage visit per session only; reduced-motion / repeat
           visit / sub-page → renders null. LCP-safe (hero renders in <main> below, stays the LCP). */}
       <IntroTeaser />
+      {/* Exit-Intent Recovery (exit_intent, dark by default) — session-once conversion card on the
+          desktop cursor-leaves-top signal; renders null until then (LCP-safe) + on touch / flag-off. */}
+      <ExitIntentOffer />
       <Header />
       {/* Smart Welcome Ribbon (personalized_ribbon, dark by default) — zero-config visitor-adaptive
           greeting. Fixed-position + post-hydration → zero CLS, never the LCP element. Renders null

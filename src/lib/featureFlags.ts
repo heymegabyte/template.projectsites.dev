@@ -39,3 +39,19 @@ export function clipRevealEnabled(): boolean {
 export function textScrambleEnabled(): boolean {
   return import.meta.env.VITE_TEXT_SCRAMBLE === '1';
 }
+
+/**
+ * Exit-Intent Recovery (`exit_intent`) — the 2026 conversion frontier that is explicitly NOT native
+ * to Framer / Lovable / v0 (it's "an architectural approach layered on, not a one-click feature").
+ * When a desktop visitor's cursor darts to the top of the viewport to leave (the classic exit
+ * signal), a tasteful, session-once card offers the ONE highest-intent action for THIS business —
+ * derived automatically from its own content (click-to-call its phone, else jump to contact). The
+ * owner configures NOTHING (embarrassingly-easy + ai-permanence). Dark by default (experimental);
+ * opt a build in with `VITE_EXIT_INTENT=1`. LCP-safe (renders nothing until the exit signal, long
+ * after paint), zero bundle (no lazy libs), reduced-motion-safe (CSS-gated entrance), axe-clean.
+ * Source: elementor.com/blog/ai-landing + edesigninteractive.com 2026 conversion-trends (exit-intent
+ * micro-behavior adaptation) — the named bleeding-edge the big AI builders don't ship.
+ */
+export function exitIntentEnabled(): boolean {
+  return import.meta.env.VITE_EXIT_INTENT === '1';
+}
