@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { scrubText } from '@/lib/placeholders';
 import { ScrambleText } from '@/components/ScrambleText';
 import { PointerSpotlight } from '@/components/PointerSpotlight';
+import { ParticleField } from '@/components/ParticleField';
 
 interface Props {
   headline: string;
@@ -52,6 +53,10 @@ export function CTASection({
             {/* Cursor-reactive ambient spotlight — interactive depth the auto-drifting glows lack.
                 Transform-only + rAF-throttled + (pointer:fine)/reduced-motion gated (static glow otherwise). */}
             <PointerSpotlight />
+            {/* Ambient particle field (particle_field, dark by default) — luminous brand-tinted
+                motes drift behind the CTA. Canvas 2D, mounts AFTER first paint (below-fold →
+                LCP-safe), paused off-screen/hidden, reduced-motion → null. */}
+            <ParticleField />
           </>
         )}
         <div className="relative z-10">

@@ -75,3 +75,24 @@ export function exitIntentEnabled(): boolean {
 export function scrollCinemaEnabled(): boolean {
   return import.meta.env.VITE_SCROLL_CINEMA === '1';
 }
+
+/**
+ * Ambient particle field (`particle_field` / VITE_PARTICLE_FIELD) — the Awwwards / motion.so
+ * "living canvas" ambient signature: a slow drift of luminous brand-tinted motes behind the
+ * closing CTA band, giving the section depth + life a flat gradient can't. Canvas 2D (NO WebGL,
+ * NO library, ~2KB, a pre-rendered glow sprite `drawImage`d per mote), scoped INSIDE the
+ * below-fold CTA container (visible over its gradient, behind its `z-10` text). Dark by default
+ * (experimental); opt a build in with `VITE_PARTICLE_FIELD=1`.
+ *
+ * Safe BY CONSTRUCTION: LCP-safe (below-fold + the canvas MOUNTS only after an idle callback,
+ * long after first paint, and is a decorative aria-hidden layer, NEVER the LCP element);
+ * INP-safe (one lightweight rAF, ≤64 sprite blits, PAUSED on tab-hidden + when scrolled
+ * off-screen via IntersectionObserver, passive pointer parallax reads a ref); CLS-safe
+ * (absolute inset-0, zero layout). `prefers-reduced-motion: reduce` / no-canvas / no-JS /
+ * flag-off → renders `null` (the section's existing gradient + aurora glows stand — still gorgeous).
+ * Source: Awwwards SOTD ambient-canvas showcases + Codrops 2026 particle-field trend — the living
+ * backdrop the one-click AI builders don't ship.
+ */
+export function particleFieldEnabled(): boolean {
+  return import.meta.env.VITE_PARTICLE_FIELD === '1';
+}
