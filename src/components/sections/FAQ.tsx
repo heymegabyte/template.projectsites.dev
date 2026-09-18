@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react';
 import { JsonLd } from '@/components/JsonLd';
 import { cn } from '@/lib/utils';
 import { scrubText } from '@/lib/placeholders';
+import { faqNativeDisclosureEnabled } from '@/lib/featureFlags';
 
 export interface FAQItem {
   question: string;
@@ -40,6 +41,14 @@ interface Props {
  * Enter/Space, and a keyboard-visible focus ring. All motion is additionally
  * dropped under `prefers-reduced-data: reduce` (Save-Data) — the accordion then
  * opens/closes INSTANTLY and stays fully operable (only motion is removed).
+ *
+ * Opt-in upgrade (dark by default, `faqNativeDisclosureEnabled` /
+ * `VITE_FAQ_NATIVE_DISCLOSURE=1`): the panel gains a `data-faq-native` attribute
+ * that, in browsers with `interpolate-size: allow-keywords`, tweens the answer
+ * `height: 0 → auto` NATIVELY (the 2026 "unsolvable transition, solved") instead
+ * of the grid-rows clip. It's a pure-CSS opt-in — zero new JS — and layered under
+ * `@supports`, so flag-off / Firefox / Safari keep the byte-identical grid-rows
+ * reveal. See `featureFlags.ts` for the full safety rationale.
  */
 export function FAQ({
   items,
@@ -51,6 +60,10 @@ export function FAQ({
   as = 'h2',
 }: Props) {
   const [open, setOpen] = useState<Set<number>>(new Set([0]));
+  // Opt-in (dark by default): upgrade the answer reveal to a native `height: 0 → auto`
+  // `interpolate-size` tween. Purely a CSS opt-in flag on the panel — the grid-rows reveal below
+  // stays the universal base/fallback, so flag-off ships byte-identically. See featureFlags.ts.
+  const nativeDisclosure = faqNativeDisclosureEnabled();
 
   // Drop Q&A pairs where either side is an unresolved token — this also keeps
   // the FAQPage JSON-LD from emitting `{FAQ_1_Q}` (which would fail Rich Results
@@ -119,12 +132,13 @@ export function FAQ({
                 id={`faq-panel-${i}`}
                 role="region"
                 aria-label={it.question}
+                data-faq-native={nativeDisclosure ? '' : undefined}
                 className={cn(
                   'faq-panel grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none',
                   isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                 )}
               >
-                <div className="overflow-hidden">
+                <div className="faq-panel__clip overflow-hidden">
                   <p className="faq-answer pb-6 pl-4 pr-1 text-text-muted leading-relaxed">{it.answer}</p>
                 </div>
               </div>

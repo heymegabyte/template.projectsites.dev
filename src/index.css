@@ -3007,6 +3007,57 @@ main#main { view-transition-name: ps-main; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   NATIVE height-auto DISCLOSURE (opt-in: featureFlags.faqNativeDisclosureEnabled
+   / VITE_FAQ_NATIVE_DISCLOSURE=1 → the panel carries [data-faq-native]).
+
+   The 2026 "last unsolvable CSS transition, solved": `interpolate-size:
+   allow-keywords` lets the answer clip tween `height: 0 → auto` DIRECTLY, for a
+   content-honest reveal the grid-rows 0fr↔1fr clip can only approximate. Layered
+   STRICTLY under `@supports (interpolate-size: allow-keywords)` so the grid-rows
+   reveal (above) is the universal base/fallback — flag-off OR an unsupported
+   engine (Firefox/Safari) renders byte-identically. Driven ENTIRELY off the
+   existing `[data-faq-open]` state → ZERO new JS, no listener, no measurement.
+
+   Safe: LCP-safe (below-fold panel, collapsed at height 0, never the hero LCP
+   element); INP-safe (the height tween fires only on a discrete click, one-shot —
+   no scroll/continuous work); CLS-safe (only the intentionally-opened panel
+   resizes). Reduced-motion / Save-Data (below) → INSTANT open/close, fully
+   operable. Source: developer.chrome.com/docs/css-ui/animate-to-height-auto.
+   ─────────────────────────────────────────────────────────────────────── */
+@supports (interpolate-size: allow-keywords) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+
+  /* Hand the reveal from the grid track to the clip's own height. Neutralise the
+     grid-rows machinery on native panels so the two techniques never fight. */
+  .faq-panel[data-faq-native] {
+    display: block;
+    grid-template-rows: none;
+    transition: none;
+  }
+  .faq-panel[data-faq-native] .faq-panel__clip {
+    height: 0;
+  }
+  .faq-item[data-faq-open] .faq-panel[data-faq-native] .faq-panel__clip {
+    height: auto;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .faq-panel[data-faq-native] .faq-panel__clip {
+      transition: height var(--duration-base, 0.3s) var(--ease, ease-out);
+    }
+  }
+
+  /* Reduced-motion / Save-Data: reveal is instant, content fully legible. */
+  @media (prefers-reduced-motion: reduce), (prefers-reduced-data: reduce) {
+    .faq-panel[data-faq-native] .faq-panel__clip {
+      transition: none !important;
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
    TRUST PILLS (hero credential chips — HeroVariants TrustRow)
    Glass credential pills under the hero. The resting state (Tailwind: glass
    surface + hairline border + legible text) is fully visible with no motion or

@@ -122,3 +122,27 @@ export function particleFieldEnabled(): boolean {
 export function cinematicProcessEnabled(): boolean {
   return import.meta.env.VITE_CINEMATIC_PROCESS === '1';
 }
+
+/**
+ * Native height-auto FAQ disclosure (`faq_native_disclosure` / VITE_FAQ_NATIVE_DISCLOSURE) — the
+ * 2026 "last unsolvable CSS transition, solved": `interpolate-size: allow-keywords` lets the answer
+ * panel tween `height: 0 → auto` DIRECTLY (impossible before Chrome 129), retiring the `grid-rows
+ * 0fr↔1fr` clip-workaround for the natural, content-honest reveal an owner's visitor feels as
+ * premium. The reveal is driven ENTIRELY by CSS off the existing `[data-faq-open]` state + a single
+ * `data-faq-native` opt-in attribute on the panel — ZERO new JS, no listener, no measurement.
+ * Dark by default (experimental); opt a build in with `VITE_FAQ_NATIVE_DISCLOSURE=1`.
+ *
+ * Safe BY CONSTRUCTION — layered strictly UNDER `@supports (interpolate-size: allow-keywords)`, so
+ * the always-present `grid-rows` reveal remains the universal base/fallback: flag-off OR an
+ * unsupported browser (Firefox/Safari) renders byte-identically to today. LCP-safe (a below-fold
+ * panel, collapsed at height 0, NEVER the hero LCP element); INP-safe (the height tween fires only
+ * on a discrete click, one-shot — no continuous/scroll work, no main-thread listener); CLS-safe
+ * (the panel is the only thing that resizes, expected on user intent). `prefers-reduced-motion:
+ * reduce` / `prefers-reduced-data: reduce` → the existing FAQ resets clamp it to an INSTANT
+ * open/close, fully operable. Source: developer.chrome.com/docs/css-ui/animate-to-height-auto +
+ * web.dev CSS-2026 `interpolate-size`/`calc-size()` — the native primitive the one-click AI builders
+ * (Framer / v0 / Lovable) still emulate with JS.
+ */
+export function faqNativeDisclosureEnabled(): boolean {
+  return import.meta.env.VITE_FAQ_NATIVE_DISCLOSURE === '1';
+}
