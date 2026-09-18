@@ -87,4 +87,17 @@ describe('BentoGrid tile heading level adapts to the section headline (no H1→H
     expect(container.querySelectorAll('h3')).toHaveLength(0);
     expect([...container.querySelectorAll('h2')].map((h) => h.textContent)).toContain('Made from scratch');
   });
+
+  it('a CDN-image tile renders a responsive, modern-format <img> (srcSet + auto=format, no fm=jpg)', () => {
+    const cdnTiles: BentoTile[] = [
+      { id: 'a', title: 'Made from scratch', image: 'https://images.unsplash.com/photo-x?fit=max&fm=jpg&ixid=y' },
+    ];
+    const { container } = renderIn(<BentoGrid tiles={cdnTiles} headline="Why choose us" />);
+    const img = container.querySelector('img.bento-tile__img') as HTMLImageElement | null;
+    expect(img).not.toBeNull();
+    expect(img!.getAttribute('srcSet') ?? img!.getAttribute('srcset')).toContain('480w'); // responsive
+    expect(img!.getAttribute('src')).toContain('auto=format'); // modern format
+    expect(img!.getAttribute('src')).not.toContain('fm=jpg'); // JPEG forcing dropped
+    expect(img!.getAttribute('sizes')).toContain('33vw');
+  });
 });

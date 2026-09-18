@@ -1,6 +1,7 @@
 import { type CSSProperties, type PointerEvent, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { scrubText, hasRealImage } from '@/lib/placeholders';
+import { cdnImageProps } from '@/lib/cdn-image';
 
 type Span = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -118,6 +119,13 @@ export function BentoGrid({ tiles, className, eyebrow, headline, description }: 
           // glass-sheen + hover-lift + accent-ring + cursor-spotlight treatment
           // via `.bento-tile`.
           const accent = t.accent || isHero;
+          // Responsive + modern-format props for the tile photo: raw Unsplash `fm=jpg` full-width
+          // URLs → `auto=format` (AVIF/WebP) + a per-width srcSet, so below-fold tiles don't each
+          // ship a 1000px JPEG. Bento tiles are ≤1/3 the grid ≥lg, full-width on phone. Additive
+          // (falls back to src); no-op for non-CDN URLs.
+          const timg = t.image
+            ? cdnImageProps(t.image, '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw')
+            : null;
           return (
             <Comp
               key={t.id}
@@ -140,7 +148,9 @@ export function BentoGrid({ tiles, className, eyebrow, headline, description }: 
               {t.image && (
                 <div className="absolute inset-0 -z-10">
                   <img
-                    src={t.image}
+                    src={timg?.src ?? t.image}
+                    srcSet={timg?.srcSet}
+                    sizes={timg?.sizes}
                     alt={t.imageAlt ?? ''}
                     loading={i < 3 ? 'eager' : 'lazy'}
                     decoding="async"
