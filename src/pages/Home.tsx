@@ -8,6 +8,7 @@ import { brand, featureOn } from '@/brand';
 import { buildSiteJsonLd, parseAddress, parseHours, type BusinessClass } from '@/lib/businessSchema';
 import { GalleryGrid } from '@/components/local';
 import { hasRealImage } from '@/lib/placeholders';
+import { cinematicProcessEnabled } from '@/lib/featureFlags';
 
 import {
   HeroSplit,
@@ -16,6 +17,7 @@ import {
   Stats,
   FeatureSplit,
   ProcessSteps,
+  CinematicProcess,
   Pricing,
   FAQ,
   LogoCloud,
@@ -501,11 +503,19 @@ export default function Home() {
 
       {featureOn('process') && (
         <SafeSection name="process">
-          <ProcessSteps
-            steps={process}
-            headline="{PROCESS_HEADLINE}"
-            description="{PROCESS_SUBHEADLINE}"
-          />
+          {cinematicProcessEnabled() ? (
+            <CinematicProcess
+              steps={process}
+              headline="{PROCESS_HEADLINE}"
+              description="{PROCESS_SUBHEADLINE}"
+            />
+          ) : (
+            <ProcessSteps
+              steps={process}
+              headline="{PROCESS_HEADLINE}"
+              description="{PROCESS_SUBHEADLINE}"
+            />
+          )}
         </SafeSection>
       )}
 

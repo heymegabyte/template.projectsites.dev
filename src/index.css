@@ -4665,3 +4665,98 @@ main#main { view-transition-name: ps-main; }
     }
   }
 }
+
+/* ───────────────────────────────────────────────────────────────────────
+   CINEMATIC PROCESS REEL  (cinematic_process / VITE_CINEMATIC_PROCESS)
+   Pinned, scroll-scrubbed "chapters" scrollytelling (Apple / Awwwards / motion.so tier).
+   BASE STATE (no view-timeline support / Firefox / reduced-motion / < md / no-JS) = a
+   fully-visible, legible vertical stack of every step — the pin+scrub is a PURE ENHANCEMENT.
+   Compositor-driven `animation-timeline: view()` → INP-safe · below-fold → LCP-safe ·
+   opacity/transform only → CLS-safe. Owned by CinematicProcess.tsx.
+   ─────────────────────────────────────────────────────────────────────── */
+.cine-acts { list-style: none; margin: 0; padding: 2.5rem 0 4rem; display: grid; gap: 2rem; }
+.cine-act {
+  position: relative;
+  display: grid;
+  gap: 0.75rem;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  border-radius: 1.25rem;
+  background: color-mix(in oklab, var(--color-text, #f4f4ff) 4%, var(--color-background, #060610));
+  border: 1px solid color-mix(in oklab, var(--color-accent, #00e5ff) 14%, transparent);
+  opacity: 1;
+}
+.cine-act::before {
+  content: attr(data-num);
+  position: absolute; top: 0.4rem; right: 1.25rem;
+  font-family: var(--font-heading, inherit); font-weight: 800; line-height: 1;
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  color: color-mix(in oklab, var(--color-accent, #00e5ff) 16%, transparent);
+  pointer-events: none; user-select: none;
+}
+.cine-title { font-size: clamp(1.5rem, 3.4vw, 2.6rem); line-height: 1.1; }
+.cine-desc { font-size: clamp(1rem, 1.5vw, 1.2rem); max-width: 46ch; }
+.cine-hud { display: none; }
+.cine-rail { display: block; height: 2px; width: min(38rem, 60vw); border-radius: 2px;
+  background: color-mix(in oklab, var(--color-text, #f4f4ff) 12%, transparent); overflow: hidden; }
+.cine-rail-fill { display: block; height: 100%; transform-origin: left; transform: scaleX(1);
+  background: linear-gradient(90deg,
+    color-mix(in oklab, var(--color-accent, #00e5ff) 90%, transparent),
+    color-mix(in oklab, var(--color-primary, #7c3aed) 90%, transparent)); }
+
+@supports (animation-timeline: view()) {
+  @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+    /* Tall wrapper = the scroll runway; its view-timeline drives every act + the rail. */
+    .cine-process {
+      height: calc(100svh * var(--cine-acts, 4));
+      view-timeline-name: --cineTl;
+      view-timeline-axis: block;
+      /* The per-act + rail scrub windows (--cine-from/--cine-to, --cine-rail-from/--cine-rail-to)
+         are computed as concrete % in CinematicProcess.tsx and land inline — CSS calc() inside
+         animation-range proved unreliable, so the math lives in JS. */
+    }
+    .cine-stage {
+      position: sticky; top: 0;
+      height: 100svh;
+      display: grid; place-items: center;
+      overflow: hidden;
+    }
+    .cine-acts { display: block; padding: 0; }
+    .cine-act {
+      position: absolute; inset: 0;
+      display: grid; align-content: center; justify-items: start;
+      max-width: min(56rem, 92vw);
+      margin-inline: auto;
+      gap: 1.25rem;
+      padding: 0 2rem;
+      border: 0; background: transparent; border-radius: 0;
+      opacity: 0;
+      will-change: opacity, transform;
+      animation: cine-act-scrub linear both;
+      animation-timeline: --cineTl;
+      /* This act's slice of the pinned `cover` band — concrete % from the component (see above). */
+      animation-range: cover var(--cine-from, 20%) cover var(--cine-to, 80%);
+    }
+    .cine-act::before { top: auto; right: auto; bottom: 7%; left: -0.5rem;
+      font-size: clamp(6rem, 18vw, 15rem);
+      color: color-mix(in oklab, var(--color-accent, #00e5ff) 12%, transparent); z-index: 0; }
+    .cine-act-body { position: relative; z-index: 1; }
+    .cine-title { font-size: clamp(2.2rem, 5.5vw, 4.5rem); }
+    .cine-desc { font-size: clamp(1.1rem, 2vw, 1.6rem); max-width: 52ch; }
+    @keyframes cine-act-scrub {
+      0%   { opacity: 0; transform: translateY(48px)  scale(0.94); }
+      16%  { opacity: 1; transform: translateY(0)     scale(1);    }
+      84%  { opacity: 1; transform: translateY(0)     scale(1);    }
+      100% { opacity: 0; transform: translateY(-48px) scale(0.98); }
+    }
+    /* Progress rail pinned at the stage foot, draws across the whole reel. */
+    .cine-hud { display: block; position: absolute; left: 0; right: 0; bottom: clamp(2rem, 6vh, 4rem);
+      display: grid; place-items: center; }
+    .cine-rail-fill {
+      transform: scaleX(0);
+      animation: cine-rail-draw linear both;
+      animation-timeline: --cineTl;
+      animation-range: cover var(--cine-rail-from, 20%) cover var(--cine-rail-to, 80%);
+    }
+    @keyframes cine-rail-draw { to { transform: scaleX(1); } }
+  }
+}

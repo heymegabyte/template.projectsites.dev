@@ -19,6 +19,7 @@ export { Newsletter } from './Newsletter';
 export { PageAudio } from './PageAudio';
 export { Pricing, type PricingTier } from './Pricing';
 export { ProcessSteps, type ProcessStep } from './ProcessSteps';
+export { CinematicProcess, type CinematicProcessStep } from './CinematicProcess';
 export { Quote } from './Quote';
 export { SocialProof } from './SocialProof';
 export { Spotlight } from './Spotlight';
