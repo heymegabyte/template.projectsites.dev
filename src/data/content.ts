@@ -8,250 +8,136 @@ export interface BlogPost extends BlogPostSummary {
 
 export const posts: BlogPost[] = [
   {
-    slug: 'website-speed-core-web-vitals-2026',
-    title: 'Website speed in 2026: how Core Web Vitals win or lose customers',
-    excerpt: 'A slow site turns buyers away before they ever see your offer. Here is what Core Web Vitals measure, the numbers to hit, and the fixes that move them.',
+    slug: 'small-things-done-well',
+    title: 'The small things, done well',
+    excerpt: 'Anyone can get the big things right on a good day. What earns loyalty is the care in the small things, done the same way even when no one is watching.',
     date: '2026-08-18',
-    author: 'Editorial Team',
-    category: 'Web guide',
-    readMinutes: 6,
-    body: `Speed is not a technical vanity metric. It is the first impression your website makes, and visitors decide whether to stay in the time it takes a page to paint. Google has measured this for years through Core Web Vitals, and in 2026 those scores shape both how you rank in search and how many visitors turn into customers. Here is what they measure and how to move them.
+    author: 'The Team',
+    category: 'Our craft',
+    readMinutes: 4,
+    body: `Ask people why they keep coming back to a place they love, and they rarely name one grand thing. They describe a hundred small ones: the greeting that felt genuine, the detail no one else would have noticed, the way a problem got quietly made right. The big moments get the applause, but the small things, done well and done consistently, are what people actually remember.
 
-## The three numbers that matter
+## Care is a habit, not a mood
 
-Core Web Vitals boil the experience down to three measurements, each with a clear target:
+It is easy to do good work when you feel like it. The difference shows on the ordinary days — the slow afternoons, the end of a long week — when the temptation is to cut a corner no one would catch. We try to hold the same standard whether the room is full or empty, because the people in front of us on a quiet Tuesday deserve exactly what the busy crowd gets. Consistency is its own kind of hospitality.
 
-- **Largest Contentful Paint (LCP)** — how long until the biggest thing on screen, usually the hero image or headline, finishes loading. Aim for under 2.5 seconds.
-- **Interaction to Next Paint (INP)** — how quickly the page responds when someone taps a button or opens a menu. Aim for under 200 milliseconds.
-- **Cumulative Layout Shift (CLS)** — how much the page jumps around as it loads. Aim for under 0.1, so a customer never taps the wrong thing because a banner pushed the page down.
+## The details people feel but rarely name
 
-Google reports these from real visits, not a lab test, so they reflect what your actual customers feel on their actual phones.
+Most of what makes an experience feel considered happens below the surface. A space that is clean in the corners you would not think to check. A pace that never makes you feel rushed or forgotten. A small extra that no one asked for. Individually none of these is remarkable; together they add up to the sense that you are in good hands, and that feeling is the whole thing.
 
-## Why a slow site quietly costs you money
+## Why it is worth the trouble
 
-Every extra second of load time thins out the people who wait. Studies across retail and services consistently show conversion falling as pages get slower, and mobile visitors are the least patient of all. A business that loads in one second routinely converts a meaningfully higher share of visitors than one that takes five, for the exact same offer. You are not losing customers because your prices are wrong. You are losing them before the page even appears.
-
-## The fixes that actually move the needle
-
-Most speed problems trace back to a short list of causes:
-
-- **Oversized images.** A photo saved straight from a camera can be several megabytes. Serve modern formats like WebP or AVIF, sized to how they are actually displayed.
-- **Too much code loading at once.** Defer scripts that are not needed for the first paint, and drop plugins you no longer use.
-- **No caching.** A content delivery network keeps a copy of your site close to each visitor, so it arrives fast whether they are down the street or across the country.
-- **Unreserved space for images and ads.** Set width and height so the layout does not lurch as things load, which fixes most layout shift.
-
-## Measure, then improve
-
-You cannot fix what you do not watch. Run your homepage and top landing pages through a free tool like PageSpeed Insights, note the three scores, make one change, and measure again. Treat it like a monthly habit rather than a one-time project, because new photos and features can slow a fast site back down.
-
-## The bottom line
-
-A fast website is not a luxury. It is table stakes for being chosen. Hit the three Core Web Vitals targets, keep your images lean, and re-check your key pages every month. The reward is a site that both ranks better and turns more of its hard-won visitors into paying customers.`,
+Doing the small things well is slower and quietly more expensive than not bothering. It is also the most durable advantage there is, because it cannot be copied with a discount or a slogan — it has to be lived, day after day. We would rather earn your trust one small, well-kept detail at a time than win it once and let it fade. That is the standard we hold ourselves to, and we are grateful every time you notice.`,
   },
   {
-    slug: 'local-seo-checklist-2026',
-    title: 'The local SEO checklist every small business needs in 2026',
-    excerpt: 'Ranking in your own town is mostly blocking and tackling. Here is the local SEO checklist that gets a small business into the map results and keeps it there.',
+    slug: 'the-people-behind-the-work',
+    title: 'The people behind the work',
+    excerpt: 'A place is only ever as good as the people in it. Here is a little about the hands and hearts behind what we do, and why that matters to you.',
     date: '2026-08-04',
-    author: 'Editorial Team',
-    category: 'Local SEO guide',
-    readMinutes: 6,
-    body: `When someone nearby searches for what you sell, you want to be one of the three businesses in the map at the top of the results. That spot drives calls, direction requests, and walk-ins. Getting there is less about clever tricks and more about doing a handful of unglamorous things well and consistently. Here is the checklist.
+    author: 'The Team',
+    category: 'Our people',
+    readMinutes: 4,
+    body: `Behind every good experience is a person who cared enough to make it that way. It is tempting to talk about a business as if it runs itself, but nothing here happens without the people who show up, learn the craft, and take pride in getting it right. We think you deserve to know who they are.
 
-## Get your basics identical everywhere
+## Craft is passed hand to hand
 
-Search engines trust businesses whose details line up across the web. Your name, address, and phone number should be written exactly the same way on your website, your Google Business Profile, and every directory that lists you. A suite number on one and not the other, or an old phone number lingering on a review site, sends a small signal of doubt. Pick one format and make everything match.
+Skill is not downloaded; it is taught, slowly, by people who have done the work for years. The newest member of our team learns from the most seasoned, and in time becomes the one doing the teaching. That chain is how standards survive — not written on a wall, but carried in the habits of people who were shown the right way and chose to keep it. When you are here, you are on the receiving end of all of that accumulated care.
 
-## Claim and complete your Google Business Profile
+## Good work needs good people to stay
 
-This is the single highest-leverage thing a local business can do. Claim the profile, then fill in every field: hours, categories, services, service areas, and a genuine description. Add real photos of your space, your team, and your work. Businesses with complete profiles and fresh photos consistently earn more views and clicks than half-finished ones.
+The best thing we can do for you is to be a place where good people want to stay. Turnover is quietly the enemy of quality: every time someone leaves, a little hard-won knowledge walks out with them. So we try to treat our team the way we hope they will treat you — with respect, fairness, and room to take pride in what they do. A team that feels valued shows it in a hundred small ways you can feel.
 
-## Build pages that match local intent
+## Faces, not a logo
 
-Your website should make it obvious where you are and what you do:
-
-- **A clear location.** Put your city and neighborhood in your homepage copy, your page titles, and your footer, next to an embedded map.
-- **A page per major service.** One strong page about each service beats a single page that lists everything in a sentence.
-- **Local proof.** Mention the neighborhoods you serve and the kinds of customers you help, in plain language a real person would use.
-
-## Earn reviews and answer them
-
-Reviews are both a ranking factor and a deciding factor for the human reading them. Ask happy customers at the natural moment, right after a good experience, and make it easy with a direct link. Then reply to every review, positive or negative, in a calm and human voice. A thoughtful response to a complaint often impresses future readers more than a wall of five-star ratings.
-
-## Get listed where it counts
-
-You do not need hundreds of directory listings. You need the ones people and search engines actually trust: the big general directories, plus the two or three that matter in your industry. Make sure each one carries your identical details and a link back to your site.
-
-## Keep it fresh
-
-Local SEO is not a one-time setup. Post an update or a photo to your profile now and then, refresh your hours around holidays, and add a new service page when your business grows. A profile that shows recent activity outranks one that has sat untouched for two years.
-
-## The bottom line
-
-Winning locally is a checklist, not a secret. Make your details identical everywhere, complete your Google Business Profile, build clear service and location pages, earn and answer reviews, and keep it all fresh. Do those five things and you will steadily climb into the map results where your neighbors are already looking.`,
+It is easy to be loyal to people; it is hard to be loyal to a logo. We would rather you remember a name and a smile than a brand. When you come in, you are not a transaction to be processed — you are a person being looked after by other people who genuinely want you to leave better than you arrived. That is the whole job, and the people who do it are the reason any of this works.`,
   },
   {
-    slug: 'repeat-customers-retention-2026',
-    title: 'Turning first-time visitors into repeat customers',
-    excerpt: 'Winning a new customer costs far more than keeping one. Here are the follow-up habits and small touches that turn a single visit into a lasting relationship.',
+    slug: 'the-regulars-who-feel-like-family',
+    title: 'The regulars who feel like family',
+    excerpt: 'The people who keep coming back are the heart of any local place. Here is what our regulars have taught us about doing this well.',
     date: '2026-07-21',
-    author: 'Editorial Team',
-    category: 'Growth guide',
-    readMinutes: 5,
-    body: `Most small businesses pour their energy into attracting new customers and almost none into keeping the ones they already earned. That is backwards. Winning a new customer typically costs several times more than keeping an existing one, and repeat customers spend more, refer friends, and forgive the occasional off day. Here is how to turn a first visit into a habit.
+    author: 'The Team',
+    category: 'Community',
+    readMinutes: 4,
+    body: `Every local place has them — the familiar faces who turn up often enough that you know their name, their usual, and a little about their week. They are more than customers; over time they become part of the fabric of the place. We are lucky to have ours, and they have taught us most of what we know about doing this well.
 
-## Make the first experience easy to repeat
+## Being known is underrated
 
-Retention starts before anyone thinks about coming back. The smoother the first experience, the more likely a second one becomes. Remove friction wherever you can: a booking page that works on a phone, clear pricing, a checkout that does not demand an account, and a genuine thank-you at the end. People return to places that respect their time.
+In a world that keeps getting more automated and anonymous, there is something quietly powerful about walking into a place where someone recognizes you. It is a small thing that has become rare, and rare things are valuable. We work to remember — a name, a preference, a detail from last time — not as a trick, but because paying attention is how you tell someone they matter.
 
-## Follow up while you are still remembered
+## Loyalty is earned in the ordinary moments
 
-The window to cement a relationship is short. A simple, well-timed follow-up does most of the work:
+No one becomes a regular because of a grand gesture. They become one because a place was reliably good, day after day, and treated them like a person rather than a number. The bar is not perfection; it is consistency and genuine care. Get the ordinary moments right often enough and, without any loyalty program, people simply decide this is their place.
 
-- **A thank-you within a day.** A short, personal note beats a generic receipt.
-- **A helpful nudge at the right moment.** A reminder when a service is due again, or a tip that helps them get more from what they bought.
-- **A reason to return.** A small offer, early access, or a members-only perk that rewards coming back rather than shopping around.
+## We do not take it for granted
 
-None of this needs an expensive platform. A tidy email list and a calendar reminder will carry a small business a long way.
-
-## Build a simple reason to stay
-
-Loyalty does not require a points app. It requires a reason. That might be a punch card, a standing appointment, a subscription for something people buy regularly, or simply being the place that remembers their name and their usual order. The mechanism matters less than the feeling that they belong here and are recognized.
-
-## Ask, then act on what you hear
-
-Your repeat customers will tell you how to keep them if you ask. A one-question survey after a purchase, or a quick conversation at the counter, surfaces the small annoyances that quietly push people away. The businesses that grow are the ones that close the loop: they hear the feedback, fix the thing, and mention that they fixed it.
-
-## Turn regulars into advocates
-
-Your happiest repeat customers are your cheapest and most credible marketing. Make it easy for them to spread the word with a referral perk, a shareable link, or simply by asking for a review at the right moment. A recommendation from a friend outperforms any ad you could buy.
-
-## The bottom line
-
-Growth is not only about the top of the funnel. Deliver a smooth first experience, follow up while you are still fresh in mind, give people a real reason to return, and act on what they tell you. A modest lift in how many customers come back a second time compounds into steadier revenue than any single burst of new traffic.`,
+Every regular is a choice made over and over again, and we never want to be the reason someone stops choosing us. So we listen when they tell us something is off, we thank them in ways that are real rather than automatic, and we try to make the place feel a little more like theirs each time. If you are one of the faces we have come to know, thank you — you are the reason we love what we do.`,
   },
   {
-    slug: 'online-reviews-trust-signals-2026',
-    title: 'Online reviews: the trust signals that win new customers',
-    excerpt: 'Most buyers read reviews before they ever call. Here is how to earn more of them, respond well, and turn your reputation into your best salesperson.',
+    slug: 'why-a-warm-welcome-matters',
+    title: 'Why a warm welcome still matters most',
+    excerpt: 'The first thirty seconds set the tone for everything that follows. Here is why we put so much care into how it feels to walk through the door.',
     date: '2026-07-14',
-    author: 'Editorial Team',
-    category: 'Reputation guide',
-    readMinutes: 6,
-    body: `Before a new customer calls you, they check what other people say about you. Reviews have quietly become the most persuasive marketing you have, and unlike an ad, you do not write them. What you can do is earn more of them, shape how you respond, and make your reputation easy to find. Here is how to treat reviews as the asset they are.
+    author: 'The Team',
+    category: 'Hospitality',
+    readMinutes: 4,
+    body: `You can tell a great deal about a place in the first thirty seconds. Not from the decor or the prices, but from how it feels to be noticed — or not — when you walk in. A genuine welcome is the simplest form of hospitality and, strangely, one of the easiest to get wrong. We put a lot of care into getting it right, because everything that follows takes its cue from that first moment.
 
-## Why reviews carry so much weight
+## A welcome is attention, not a script
 
-A stranger trusts other customers far more than they trust your own marketing. The number of reviews, how recent they are, your average rating, and how you respond all feed a quick gut judgment: is this business reliable or risky. That judgment happens in seconds, often on a phone, and it decides whether the call ever comes.
+A memorized greeting delivered without eye contact is not a welcome; it is a formality. What actually lands is attention — the sense that a real person clocked that you arrived and is glad you did. That can be a warm hello, a nod that says "I see you, I will be right with you," or simply not making someone stand there feeling invisible. Attention costs nothing and it is felt instantly.
 
-## Earn more reviews without begging
+## Making room for everyone
 
-The businesses with the most reviews are rarely the biggest. They are the ones who ask well:
+A good welcome meets people where they are. The regular who wants to be known and the newcomer who wants to quietly find their footing both deserve to feel at ease, and reading which is which is part of the craft. So is patience with the person who is unsure, generosity with the one having a hard day, and warmth that does not depend on how much someone is about to spend. Everyone gets the good version.
 
-- **Ask at the peak moment.** Right after a job done well, when the customer is happiest, is when they are most willing.
-- **Make it one tap.** Send a direct link to the review page. Every extra step loses people.
-- **Ask everyone, not just the delighted.** A steady trickle of honest reviews reads as more trustworthy than a sudden pile of perfect ones.
+## The tone carries all the way through
 
-A simple, consistent habit of asking beats any one-time campaign.
-
-## Respond to every review, especially the hard ones
-
-Responding is where reputation is truly built, because future customers read the responses more closely than the reviews. Thank people for the good ones briefly and warmly. For the critical ones, stay calm, take responsibility for anything that was yours, and offer to make it right offline. A gracious reply to a one-star review often wins more trust than the five-star reviews around it, because it shows how you treat people when things go wrong.
-
-## Turn a bad review into a better business
-
-A negative review is uncomfortable, but it is also free market research. If the same complaint shows up twice, it is not a fluke, it is a signal. Fix the underlying problem, then mention in your response that you have changed it. Prospective customers reading later see a business that listens and improves rather than one that argues.
-
-## Put your reputation where people look
-
-Once you are earning reviews, do not hide them. Feature a few genuine ones on your homepage and service pages, keep your review profiles complete, and make sure the star rating shows up when someone searches your name. Real quotes from real customers, with their first name and context, carry more weight than any slogan you could write about yourself.
-
-## The bottom line
-
-Reviews are the closest thing a small business has to a salesperson who works around the clock and costs nothing. Ask for them at the right moment, make leaving one effortless, respond to every one with grace, and fix what the critical ones reveal. Do that steadily and your reputation becomes the reason new customers choose you over the business next door.`,
+The reason we care so much about the first moment is that it sets the temperature for the whole visit. Start warm and small hiccups later feel forgivable; start cold and even a flawless experience feels transactional. We would rather you remember how a place made you feel than any single thing about it — and that feeling almost always begins at the door. So when you arrive, we mean it: welcome. We are genuinely glad you are here.`,
   },
   {
-    slug: 'google-business-profile-optimization-2026',
-    title: 'Your Google Business Profile, optimized for 2026',
-    excerpt: 'Your Google Business Profile is often the first thing a customer sees. Here is how to fill it out completely, keep it fresh, and turn views into visits.',
+    slug: 'rooted-in-the-neighborhood',
+    title: 'Rooted in the neighborhood',
+    excerpt: 'A local business is part of a place, not just located in it. Here is what being rooted in this neighborhood means to us.',
     date: '2026-07-02',
-    author: 'Editorial Team',
-    category: 'Local guide',
-    readMinutes: 6,
-    body: `For a local business, your Google Business Profile is often more important than your website, because it is what appears first when someone searches your name or your service nearby. It shows your hours, photos, reviews, and a map, all before anyone clicks through to your site. A complete, active profile earns more calls and visits than a neglected one. Here is how to get it right.
+    author: 'The Team',
+    category: 'Community',
+    readMinutes: 4,
+    body: `There is a difference between a business that happens to sit on a street and one that is genuinely part of the neighborhood around it. The first could be anywhere; the second could only be here. We have always wanted to be the second kind — woven into the daily life of this place, recognizable, and ours to the people who live nearby.
 
-## Claim it and complete every field
+## Local is a relationship, not an address
 
-Start by claiming and verifying the profile so you control it. Then fill in everything, because empty fields cost you. Set your exact hours, choose the most accurate primary category, add secondary categories for the other things you do, and list your services with short descriptions. Write a genuine business description in plain language. Google rewards completeness, and so do customers scanning for a reason to trust you.
+Being local is more than a pin on a map. It is knowing the rhythm of the street, recognizing the people who pass by every day, and showing up for the neighborhood in small, unglamorous ways. It is the standing hello with the shop next door, the regulars who feel like neighbors because they are, and a sense that this place belongs to the community as much as the community belongs to it.
 
-## Choose your categories carefully
+## Supporting the people around us
 
-Your primary category is one of the strongest signals for which searches you show up in, so pick the one that describes your core business most precisely rather than the broadest option. Add secondary categories for legitimate additional services. A profile that claims to be everything ranks for nothing, so keep the list honest and specific.
+A healthy local block lifts everyone on it. Where we can, we would rather source, hire, and partner close to home, because the money and goodwill that stay in a neighborhood tend to come back around. Every nearby business that thrives makes the whole street a little more alive, and a lively street is good for all of us. We are glad to be one small part of that.
 
-## Add real photos, and keep adding them
+## Here for the long run
 
-Photos are the first thing most people look at, and profiles with fresh, genuine images consistently earn more clicks. Show what a customer actually wants to see:
-
-- **Your space,** so people recognize it when they arrive.
-- **Your team,** because faces build trust.
-- **Your work or products,** shown honestly rather than staged.
-
-Add a few new photos every month. A profile that keeps posting looks alive and open for business.
-
-## Use posts, questions, and messaging
-
-The profile is more than a listing. Use posts to share an offer, an event, or an update, which keeps the profile active and gives searchers a reason to act now. Watch the questions section and answer them yourself before someone else answers wrong. If you can reply quickly, turn on messaging so an interested customer can reach you in the moment they are ready.
-
-## Keep it accurate and fresh
-
-Nothing erodes trust like wrong information. Update your hours before every holiday, fix your phone number the day it changes, and remove services you no longer offer. Google may also let customers suggest edits, so check the profile now and then to make sure no one has changed your details incorrectly.
-
-## The bottom line
-
-Your Google Business Profile is a storefront that most of your future customers will see before anything else you own. Claim it, complete every field, choose precise categories, add fresh photos, stay active with posts and answers, and keep every detail accurate. It is free, it takes an hour to set up and minutes a week to maintain, and it is one of the highest-return investments a local business can make.`,
+Chains come and go on a spreadsheet's schedule. A rooted local business plays a longer game, because it is not just a location — it is a fixture people count on. We want to still be here years from now, a little worn in and well loved, the kind of place newcomers get pointed to and old-timers never stopped visiting. That only happens by earning our place in the neighborhood, patiently, one day at a time. Thank you for making room for us in yours.`,
   },
   {
-    slug: 'google-ai-overviews-seo-small-business-2026',
-    title: 'How small businesses rank in Google AI Overviews in 2026',
-    excerpt: 'Google AI Overviews now appear on nearly half of searches. Ranking #1 no longer guarantees clicks — being a cited source does. Here is how small businesses get cited.',
+    slug: 'the-seasons-worth-marking',
+    title: 'The seasons worth marking',
+    excerpt: 'The year has a rhythm, and the best local places move with it. Here is why we lean into the seasons and the small moments worth celebrating.',
     date: '2026-07-08',
-    author: 'Editorial Team',
-    category: 'Marketing guide',
-    readMinutes: 7,
-    body: `Search changed under your feet. Google AI Overviews — the AI-generated answer box at the top of results — now appear on roughly half of all queries, and they are reshaping who gets traffic. Ranking first no longer guarantees clicks; being cited inside the AI answer does. For small businesses, that is both a threat and an opening. Here is how to earn those citations in 2026.
+    author: 'The Team',
+    category: 'Seasons',
+    readMinutes: 4,
+    body: `The calendar is not just a way to track appointments; it is a rhythm worth living by. The best local places have always moved with the seasons — changing with the weather, marking the holidays, and finding small reasons to celebrate along the way. We try to do the same, because a place that pays attention to the moment feels alive in a way that a place stuck in one gear never does.
 
-## What actually changed
+## Moving with the year
 
-Two facts drive everything else. First, AI Overviews pull from the same search index you have always optimized for — not a separate pool. Nearly all pages cited in an AI Overview come from the top organic results, so you have to rank organically first to have any chance of being quoted. Second, the clicks moved. Queries with an AI Overview see a large drop in click-through for the top blue links, but brands cited inside the overview earn meaningfully more clicks. The game is now about being source-worthy, not just being ranked.
+Each season brings its own mood, and we lean into it rather than pretend every month is the same. What feels right in the bright energy of summer is different from what comforts on a grey winter afternoon, and part of the craft is reading the room the season creates. Following that rhythm keeps things fresh for us and gives you a reason to see what has changed since last time.
 
-The upside for small businesses: the traffic that does come through arrives with more context and higher intent, and cited brands report higher trust and more branded searches.
+## Small occasions, taken seriously
 
-## Rank organically first — SEO still matters
+You do not need a major holiday to mark a moment. A first warm day, a local milestone, the quiet week when everyone needs a lift — these small occasions are worth noticing. Marking them, even in a small way, is how a place says it is paying attention to the same life its customers are living. It turns an ordinary visit into a little bit of an event.
 
-Because AI Overviews draw from the organic index, the fundamentals still apply, and arguably matter more. Google itself frames "answer engine optimization" and "generative engine optimization" as part of ordinary SEO. If you are not in the top organic results for a query, you will not be cited in its AI answer. Solid technical SEO, fast pages, and relevant content remain the price of entry.
+## An open invitation
 
-## Write for extraction, not word count
-
-AI systems reward content they can lift cleanly:
-
-- **Lead with the question, then answer it.** Use question-forward headings and put a concise, direct answer right underneath before you expand.
-- **Structure for scanning.** Tables, numbered steps, and short lists are easy for a model to extract. Walls of text are not.
-- **Favor substance over length.** A tight, data-rich 800-word guide can outrank a padded 4,000-word post if the shorter piece answers the question immediately.
-- **Add structured data.** Article, FAQPage, Product, and Organization schema clarify context and help models parse your page.
-
-## Build entity authority and E-E-A-T
-
-To be treated as a trustworthy source, show experience, expertise, authority, and trust. Add author bylines, keep updated dates visible, cite verifiable references, and publish first-party data — the numbers only you have. Precise claims and clear entities beat vague, keyword-stuffed prose, which does nothing to help a model understand your page.
-
-## Your local edge
-
-This is where small businesses win. AI systems lean heavily on local entity data for recommendations, so a complete, active Google Business Profile is one of your strongest levers. Keep your hours, services, categories, and photos current, and answer the specific questions real customers ask. Local intent plus a well-maintained profile is a combination big national competitors cannot easily match on your home turf.
-
-## Measure what matters now
-
-Rankings are no longer the whole story. Track AI citation frequency and share of voice — how often you appear as a cited source and how you compare with competitors. Google Search Console has added AI Overview reporting to help. Treat AI Overviews and the newer conversational AI Mode as separate targets, since a page cited in one is frequently not cited in the other.
-
-Rank organically, structure every page around clear questions and extractable answers, build first-party authority, and keep that Google Business Profile pristine. In 2026, visibility is earned by being the source the AI trusts.`,
+The nice thing about a place that moves with the seasons is that there is always a reason to return. Something is a little different than it was, tuned to right now, waiting to be discovered. So consider this a standing invitation: come see what the season has brought. Whatever time of year you find us, we will have done our best to make the moment feel like it matters — because to us, it does.`,
   },
 ];
 

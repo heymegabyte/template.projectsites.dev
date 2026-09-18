@@ -5,47 +5,47 @@
     <link>{BUSINESS_URL}</link>
     <description>{BUSINESS_TAGLINE}</description>
     <language>en-US</language>
-    <lastBuildDate>Tue, 01 Sep 2026 10:51:26 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 18 Sep 2026 07:55:17 GMT</lastBuildDate>
     <atom:link href="{BUSINESS_URL}/feed.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Website speed in 2026: how Core Web Vitals win or lose customers</title>
-      <link>{BUSINESS_URL}/blog/website-speed-core-web-vitals-2026</link>
-      <guid isPermaLink="true">{BUSINESS_URL}/blog/website-speed-core-web-vitals-2026</guid>
+      <title>The small things, done well</title>
+      <link>{BUSINESS_URL}/blog/small-things-done-well</link>
+      <guid isPermaLink="true">{BUSINESS_URL}/blog/small-things-done-well</guid>
       <description></description>
       <pubDate>Tue, 18 Aug 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
-      <title>The local SEO checklist every small business needs in 2026</title>
-      <link>{BUSINESS_URL}/blog/local-seo-checklist-2026</link>
-      <guid isPermaLink="true">{BUSINESS_URL}/blog/local-seo-checklist-2026</guid>
+      <title>The people behind the work</title>
+      <link>{BUSINESS_URL}/blog/the-people-behind-the-work</link>
+      <guid isPermaLink="true">{BUSINESS_URL}/blog/the-people-behind-the-work</guid>
       <description></description>
       <pubDate>Tue, 04 Aug 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
-      <title>Turning first-time visitors into repeat customers</title>
-      <link>{BUSINESS_URL}/blog/repeat-customers-retention-2026</link>
-      <guid isPermaLink="true">{BUSINESS_URL}/blog/repeat-customers-retention-2026</guid>
+      <title>The regulars who feel like family</title>
+      <link>{BUSINESS_URL}/blog/the-regulars-who-feel-like-family</link>
+      <guid isPermaLink="true">{BUSINESS_URL}/blog/the-regulars-who-feel-like-family</guid>
       <description></description>
       <pubDate>Tue, 21 Jul 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
-      <title>Online reviews: the trust signals that win new customers</title>
-      <link>{BUSINESS_URL}/blog/online-reviews-trust-signals-2026</link>
-      <guid isPermaLink="true">{BUSINESS_URL}/blog/online-reviews-trust-signals-2026</guid>
+      <title>Why a warm welcome still matters most</title>
+      <link>{BUSINESS_URL}/blog/why-a-warm-welcome-matters</link>
+      <guid isPermaLink="true">{BUSINESS_URL}/blog/why-a-warm-welcome-matters</guid>
       <description></description>
       <pubDate>Tue, 14 Jul 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
-      <title>Your Google Business Profile, optimized for 2026</title>
-      <link>{BUSINESS_URL}/blog/google-business-profile-optimization-2026</link>
-      <guid isPermaLink="true">{BUSINESS_URL}/blog/google-business-profile-optimization-2026</guid>
+      <title>Rooted in the neighborhood</title>
+      <link>{BUSINESS_URL}/blog/rooted-in-the-neighborhood</link>
+      <guid isPermaLink="true">{BUSINESS_URL}/blog/rooted-in-the-neighborhood</guid>
       <description></description>
       <pubDate>Thu, 02 Jul 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
-      <title>How small businesses rank in Google AI Overviews in 2026</title>
-      <link>{BUSINESS_URL}/blog/google-ai-overviews-seo-small-business-2026</link>
-      <guid isPermaLink="true">{BUSINESS_URL}/blog/google-ai-overviews-seo-small-business-2026</guid>
+      <title>The seasons worth marking</title>
+      <link>{BUSINESS_URL}/blog/the-seasons-worth-marking</link>
+      <guid isPermaLink="true">{BUSINESS_URL}/blog/the-seasons-worth-marking</guid>
       <description></description>
       <pubDate>Wed, 08 Jul 2026 00:00:00 GMT</pubDate>
     </item>
@@ -54,21 +54,21 @@
       <link>{BUSINESS_URL}/blog/latch-saas-landing</link>
       <guid isPermaLink="true">{BUSINESS_URL}/blog/latch-saas-landing</guid>
       <description></description>
-      <pubDate>Tue, 01 Sep 2026 00:00:00 GMT</pubDate>
+      <pubDate>Fri, 18 Sep 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
       <title>Northern Lights Bakery — local SEO that brought 73% more bookings</title>
       <link>{BUSINESS_URL}/blog/northern-lights-bakery</link>
       <guid isPermaLink="true">{BUSINESS_URL}/blog/northern-lights-bakery</guid>
       <description></description>
-      <pubDate>Tue, 01 Sep 2026 00:00:00 GMT</pubDate>
+      <pubDate>Fri, 18 Sep 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
       <title>Doe Law — WCAG 2.2 AA in one sprint</title>
       <link>{BUSINESS_URL}/blog/doe-law-wcag</link>
       <guid isPermaLink="true">{BUSINESS_URL}/blog/doe-law-wcag</guid>
       <description></description>
-      <pubDate>Tue, 01 Sep 2026 00:00:00 GMT</pubDate>
+      <pubDate>Fri, 18 Sep 2026 00:00:00 GMT</pubDate>
     </item>
   </channel>
 </rss>
