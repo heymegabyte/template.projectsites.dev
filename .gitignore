@@ -12,3 +12,6 @@ playwright-report/
 storybook-static/
 tsconfig.tsbuildinfo
 *.tsbuildinfo
+
+# Probe/QA scratch screenshots (e2e _*.png captures) — disposable, never committed.
+e2e/_*.png
