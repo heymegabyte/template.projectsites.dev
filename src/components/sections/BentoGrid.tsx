@@ -80,6 +80,13 @@ export function BentoGrid({ tiles, className, eyebrow, headline, description }: 
     }))
     .filter((t) => t.title.length > 0);
   if (safeTiles.length === 0) return null;
+  // Heading-hierarchy correctness: the tile titles are subordinate to the section
+  // headline. When a headline renders (an <h2> below), tiles are <h3>. When the
+  // generator passes NO headline (common for the first-after-hero highlights grid),
+  // there is no section <h2> — so tiles must be <h2> themselves, else the page skips
+  // H1 → H3 (a WCAG 1.3.1 / axe heading-order defect that shipped fleet-wide). The
+  // eyebrow is a decorative <span>, not a heading, so only `safeHeadline` counts.
+  const TileTitle = safeHeadline ? 'h3' : 'h2';
   return (
     <section className={cn('py-24 md:py-32 max-w-container-wide mx-auto px-6', className)}>
       {(safeEyebrow || safeHeadline) && (
@@ -148,9 +155,9 @@ export function BentoGrid({ tiles, className, eyebrow, headline, description }: 
                     {t.icon}
                   </div>
                 )}
-                <h3 className="bento-tile__title font-bold font-heading text-text mb-2 underline-hover inline-block">
+                <TileTitle className="bento-tile__title font-bold font-heading text-text mb-2 underline-hover inline-block">
                   {t.title}
-                </h3>
+                </TileTitle>
                 {t.description && (
                   <p className="text-text-muted text-sm md:text-base leading-relaxed">{t.description}</p>
                 )}
