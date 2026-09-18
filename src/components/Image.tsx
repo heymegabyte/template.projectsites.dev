@@ -46,7 +46,7 @@ function siblingPath(src: string, ext: string): string | null {
  * If siblings don't exist, the browser falls through to the original.
  */
 export const Image = forwardRef<HTMLImageElement, Props>(
-  ({ src, alt, priority, aspect, srcSet, sizes = '100vw', className, ...rest }, ref) => {
+  ({ src, alt, priority, aspect, srcSet, sizes = '100vw', className, onError, ...rest }, ref) => {
     const avif = siblingPath(src, '.avif');
     const webp = siblingPath(src, '.webp');
 
@@ -69,6 +69,16 @@ export const Image = forwardRef<HTMLImageElement, Props>(
           decoding={priority ? 'sync' : 'async'}
           className={cn(className)}
           style={aspect ? { aspectRatio: aspect, ...rest.style } : rest.style}
+          onError={(e) => {
+            // Fail-soft: a broken image (a flaked stock URL, a 200 that isn't a decodable image,
+            // a wrong content-type, a truncated file) hides its whole <picture> instead of painting
+            // the browser's broken-image glyph — the surrounding flex/grid reflows cleanly, never a
+            // broken icon to the visitor. Guarded by e2e/site-quality/verify-image-render.mjs (§ C.13).
+            const pic = e.currentTarget.closest('picture');
+            if (pic instanceof HTMLElement) pic.style.display = 'none';
+            else e.currentTarget.style.display = 'none';
+            onError?.(e);
+          }}
           {...rest}
         />
       </picture>
