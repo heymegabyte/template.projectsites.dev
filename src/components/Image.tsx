@@ -1,5 +1,6 @@
 import { forwardRef, type ImgHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
+import { hideBrokenImage } from '@/lib/img-failsoft';
 
 interface Props extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'srcSet'> {
   /** Required path to a source image. Looks for `.avif` + `.webp` siblings. */
@@ -70,13 +71,11 @@ export const Image = forwardRef<HTMLImageElement, Props>(
           className={cn(className)}
           style={aspect ? { aspectRatio: aspect, ...rest.style } : rest.style}
           onError={(e) => {
-            // Fail-soft: a broken image (a flaked stock URL, a 200 that isn't a decodable image,
-            // a wrong content-type, a truncated file) hides its whole <picture> instead of painting
-            // the browser's broken-image glyph — the surrounding flex/grid reflows cleanly, never a
-            // broken icon to the visitor. Guarded by e2e/site-quality/verify-image-render.mjs (§ C.13).
-            const pic = e.currentTarget.closest('picture');
-            if (pic instanceof HTMLElement) pic.style.display = 'none';
-            else e.currentTarget.style.display = 'none';
+            // Fail-soft: a broken image hides its whole <picture> instead of painting the browser's
+            // broken-image glyph — the surrounding flex/grid reflows cleanly (§ C.13). Shares the one
+            // implementation with the global capture-phase listener in lib/img-failsoft.ts, then runs
+            // the caller's own onError. Guarded by e2e/site-quality/verify-image-render.mjs.
+            hideBrokenImage(e.currentTarget);
             onError?.(e);
           }}
           {...rest}

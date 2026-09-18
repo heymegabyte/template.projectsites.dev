@@ -5,6 +5,7 @@ import App from './App';
 import { applyBrand } from './brand';
 import { initCursorRipple } from './lib/cursor';
 import { initPerfMonitor } from './lib/perfMonitor';
+import { installGlobalImageFailSoft } from './lib/img-failsoft';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import './index.css';
 
@@ -32,6 +33,9 @@ function boot(): void {
     document.documentElement.classList.add('js-reveal-active');
   }
   initCursorRipple();
+  // Fail-soft EVERY broken <img> site-wide (§ C.13) — one capture-phase listener covers
+  // the raw content-section images that have no per-element onError, plus any future ones.
+  installGlobalImageFailSoft();
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
       <ErrorBoundary>
