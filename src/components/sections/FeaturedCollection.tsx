@@ -1,4 +1,5 @@
 import { brand } from '@/brand';
+import { DepthCascade } from '@/components/DepthCascade';
 import { JsonLd } from '@/components/JsonLd';
 import { TiltCard } from '@/components/TiltCard';
 import { cdnImageProps } from '@/lib/cdn-image';
@@ -140,24 +141,25 @@ export function FeaturedCollection({
         {safeDescription && <p className="text-text-muted max-w-2xl mx-auto text-lg">{safeDescription}</p>}
       </div>
 
-      <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
+      {/* CINEMATIC-3D: product cards CASCADE forward out of Z-depth as the grid scrolls in (the
+          motion.so / Awwwards "content emerges from depth" signature) instead of the flat
+          reveal-on-view rise. DepthCascade is the grid element — its DIRECT children (the cards)
+          cascade — so the cards drop `reveal-on-view` (the cascade owns the entrance; stacking both
+          would double-transform). Same native `animation-timeline: view()` + static-visible fallback
+          as reveal-on-view → zero regression on Firefox / reduced-motion. */}
+      <DepthCascade className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
         {safeItems.map((it, i) =>
           it.href ? (
-            <a
-              key={`${it.name}-${i}`}
-              href={it.href}
-              data-bcl="product-view"
-              className="group reveal-on-view"
-            >
+            <a key={`${it.name}-${i}`} href={it.href} data-bcl="product-view" className="group">
               <Card it={it} />
             </a>
           ) : (
-            <div key={`${it.name}-${i}`} className="group reveal-on-view">
+            <div key={`${it.name}-${i}`} className="group">
               <Card it={it} />
             </div>
           ),
         )}
-      </div>
+      </DepthCascade>
 
       {safeShop && (
         <div className="mt-12 text-center reveal-on-view">

@@ -3,16 +3,17 @@
 // direct children cascade forward out of Z-depth (perspective + rotateX + translateZ, staggered)
 // as it scrolls into view, via native `animation-timeline: view()` — ZERO JS, compositor-driven.
 //
-// Proven in a REAL browser against the actual built bundle (flag ON). The raw template skeleton
-// carries no NATURAL `[data-depth-cascade]` group yet (the primitive is dark + adopters convert a
-// flat `.reveal-on-view` group to <DepthCascade> as they promote — like clip_reveal's natural
-// element only appearing on a filled build), so this proves the CSS CONTRACT the browser applies:
-// a bare `.ps-depth-cascade > *` element (no inline style) inherits `animation-name:
-// ps-depth-cascade-in` from the shipped stylesheet under fine-motion, and NOTHING (static, never
-// stuck-in-depth) under `prefers-reduced-motion: reduce` — AND it stays LCP-safe (the flag-on
-// build's LCP is ≤ 2.0s and the LCP element is never inside a cascade).
+// Proven in a REAL browser against the actual built bundle built with the SHIPPED DEFAULT (no env
+// override) — scroll_cinema is now PROMOTED to default-on (CINEMATIC-3D), so this proves what every
+// generated site actually gets. FeaturedCollection (the retail product grid) is the first NATURAL
+// <DepthCascade> adopter; whether its `[data-depth-cascade]` group is present on THIS build depends
+// on the demo brand being retail (it self-hides otherwise), so the always-on assertion is the CSS
+// CONTRACT the browser applies to a bare `.ps-depth-cascade > *` element (no inline style): it
+// inherits `animation-name: ps-depth-cascade-in` from the shipped stylesheet under fine-motion, and
+// NOTHING (static, never stuck-in-depth) under `prefers-reduced-motion: reduce` — AND the build
+// stays LCP-safe (LCP ≤ 2.0s and the LCP element is never inside a cascade).
 //
-// Usage: node e2e/verify-scroll-cinema.mjs   (builds with VITE_SCROLL_CINEMA=1, previews, probes)
+// Usage: node e2e/verify-scroll-cinema.mjs   (builds with the shipped default, previews, probes)
 import { spawn, spawnSync } from 'node:child_process';
 import { chromium } from 'playwright';
 
@@ -35,10 +36,11 @@ async function waitForServer(url, tries = 60) {
   throw new Error(`preview never came up at ${url}`);
 }
 
-console.log('Building with VITE_SCROLL_CINEMA=1 …');
+console.log('Building with the shipped DEFAULT (scroll_cinema promoted to default-on) …');
 const build = spawnSync('npx', ['vite', 'build'], {
   cwd: process.cwd(),
-  env: { ...process.env, VITE_SCROLL_CINEMA: '1' },
+  // No VITE_SCROLL_CINEMA override — prove what ships by default (the promotion).
+  env: process.env,
   stdio: 'ignore',
 });
 if (build.status !== 0) {

@@ -61,8 +61,10 @@ export function exitIntentEnabled(): boolean {
  * "content emerges from depth" signature. A below-fold group's items don't just fade+rise flat
  * (the existing `.reveal-on-view`); they CASCADE forward out of Z-depth — each item enters with a
  * subtle `rotateX` + `translateZ` (parent `perspective`) staggered per position, so the section
- * reads as a layered 3D scene assembling itself, not a flat list sliding up. Dark by default
- * (experimental); opt a build in with `VITE_SCROLL_CINEMA=1`.
+ * reads as a layered 3D scene assembling itself, not a flat list sliding up. **PROMOTED to
+ * default-ON (CINEMATIC-3D)** — its safety profile is IDENTICAL to the always-on `.reveal-on-view`
+ * (both native scroll-driven with the same static-visible fallback), so keeping it dark was the
+ * built-but-unwired anti-pattern; `VITE_SCROLL_CINEMA=0` is the killswitch.
  *
  * Safe BY CONSTRUCTION — pure native `animation-timeline: view()`, ZERO JS / no scroll listener
  * (unlike GSAP/Lenis): LCP-safe (below-fold + the keyframe's settled frame is identity, and it
@@ -73,7 +75,7 @@ export function exitIntentEnabled(): boolean {
  * Codrops 2026 scroll-depth trend — the cinematic layer the one-click AI builders don't ship.
  */
 export function scrollCinemaEnabled(): boolean {
-  return import.meta.env.VITE_SCROLL_CINEMA === '1';
+  return import.meta.env.VITE_SCROLL_CINEMA !== '0';
 }
 
 /**

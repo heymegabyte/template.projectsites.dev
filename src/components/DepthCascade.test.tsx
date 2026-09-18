@@ -12,16 +12,20 @@ import { scrollCinemaEnabled } from '@/lib/featureFlags';
  */
 afterEach(() => vi.unstubAllEnvs());
 
-describe('scrollCinemaEnabled — VITE_SCROLL_CINEMA gate (dark by default)', () => {
-  it('is OFF unless VITE_SCROLL_CINEMA=1 (experimental, promote-to-enable)', () => {
-    expect(scrollCinemaEnabled()).toBe(false);
-    vi.stubEnv('VITE_SCROLL_CINEMA', '1');
+describe('scrollCinemaEnabled — VITE_SCROLL_CINEMA gate (default-on, killswitch via =0)', () => {
+  it('is ON by default (promoted to stable — safe-by-construction like reveal-on-view), OFF only when VITE_SCROLL_CINEMA=0', () => {
+    // Promoted (CINEMATIC-3D): the effect is pure native `animation-timeline: view()` with a
+    // static-visible fallback — the SAME safety profile as the always-on `.reveal-on-view` — so it
+    // ships on by default; VITE_SCROLL_CINEMA=0 is the killswitch.
     expect(scrollCinemaEnabled()).toBe(true);
+    vi.stubEnv('VITE_SCROLL_CINEMA', '0');
+    expect(scrollCinemaEnabled()).toBe(false);
   });
 });
 
 describe('DepthCascade', () => {
-  it('is a PLAIN wrapper when the flag is OFF (no cascade class, no data hook) — fleet unchanged', () => {
+  it('is a PLAIN wrapper under the killswitch (VITE_SCROLL_CINEMA=0) — no cascade class, no data hook', () => {
+    vi.stubEnv('VITE_SCROLL_CINEMA', '0');
     const { container } = render(
       <DepthCascade className="grid gap-6">
         <div>one</div>
@@ -37,8 +41,8 @@ describe('DepthCascade', () => {
     expect(root.textContent).toContain('two');
   });
 
-  it('adds the cascade class + data hook when the flag is ON (content DOM unchanged)', () => {
-    vi.stubEnv('VITE_SCROLL_CINEMA', '1');
+  it('adds the cascade class + data hook BY DEFAULT (content DOM unchanged)', () => {
+    // No stub — default-on is the promoted behavior.
     const { container } = render(
       <DepthCascade className="grid gap-6">
         <div>one</div>
