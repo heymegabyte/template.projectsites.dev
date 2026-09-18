@@ -6,6 +6,7 @@ import { MagneticButton } from '@/components/MagneticButton';
 import { cn } from '@/lib/utils';
 import { brand } from '@/brand';
 import { scrubText, scrubImage } from '@/lib/placeholders';
+import { cdnImageProps } from '@/lib/cdn-image';
 import { WebGLHeroBackdrop, backdropForPreset, type HeroBackdropVariant } from '@/components/sections/WebGLHeroBackdrop';
 import { TiltCard } from '@/components/TiltCard';
 import { ScrollParallax } from '@/components/ScrollParallax';
@@ -205,6 +206,11 @@ export function HeroSplit({ eyebrow, headline, subheadline, primary, secondary, 
   // Drop a placeholder hero image so `{HERO_IMAGE_URL}` never 404s. When there
   // is no real image the copy column spans full width (still a valid hero).
   const safeImage = scrubImage(image);
+  // Responsive + modern-format props for the LCP hero photo: raw Unsplash `fm=jpg` full-width
+  // URLs → `auto=format` (AVIF/WebP) + a per-width srcSet, so a phone loads a small image, not a
+  // 1000px JPEG. In a 2-col split the image is ~50vw ≥lg, 100vw below. Falls back to src (no-op)
+  // for non-CDN URLs. The srcSet is additive — the browser always has `src` to fall back to.
+  const heroImg = safeImage ? cdnImageProps(safeImage.src, '(max-width: 1024px) 100vw, 50vw') : null;
   // Auto-derive the per-industry backdrop from the site personality when no explicit
   // override is passed (see HeroCenter) — LCP-safe: the eager hero <img> stays the LCP.
   const resolvedBackdrop = webglBackdrop ?? backdropForPreset(brand.themeStyle);
@@ -275,7 +281,9 @@ export function HeroSplit({ eyebrow, headline, subheadline, primary, secondary, 
                 LCP; tilt + glare are fine-pointer + motion-gated (touch/reduced-motion → static). */}
             <TiltCard className="card-tactile relative overflow-hidden rounded-2xl aspect-[5/4] shadow-lg ring-1 ring-border">
               <img
-                src={safeImage.src}
+                src={heroImg?.src ?? safeImage.src}
+                srcSet={heroImg?.srcSet}
+                sizes={heroImg?.sizes}
                 alt={safeImage.alt}
                 loading="eager"
                 fetchPriority="high"
