@@ -181,15 +181,15 @@ export default function Header({ links, ctaLabel, ctaHref }: Props) {
               decoding="async"
               // drop-shadow halo (not a box): keeps the mark TRANSPARENT while staying
               // legible over a busy/low-contrast hero when the header is transparent
-              // (unscrolled) — per the logo-contrast rule. Sized BIG (h-12→h-14, 48→56px)
-              // so the brand mark is PROMINENT + easy to see — never a tiny 44px afterthought
-              // (cafe-dim-sum shipped a 44px icon lost against the hero; AL-392).
-              className="site-logo h-12 w-12 sm:h-14 sm:w-14 object-contain shrink-0 drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]"
+              // (unscrolled) — per the logo-contrast rule. Sized LARGE (h-14→h-16, 56→64px in
+              // the 80px header) so the brand mark is unmistakably PROMINENT — never a tiny
+              // afterthought (cafe-dim-sum shipped a 44px icon lost against the hero; AL-392).
+              className="site-logo h-14 w-14 sm:h-16 sm:w-16 object-contain shrink-0 drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]"
               onError={() => setIconIdx((i) => i + 1)}
             />
           ) : (
             <span
-              className="site-logo h-12 w-12 sm:h-14 sm:w-14 rounded-lg grid place-items-center bg-accent text-[var(--color-on-accent)] font-heading font-extrabold text-lg shadow-sm shrink-0"
+              className="site-logo h-14 w-14 sm:h-16 sm:w-16 rounded-lg grid place-items-center bg-accent text-[var(--color-on-accent)] font-heading font-extrabold text-xl shadow-sm shrink-0"
               aria-hidden="true"
             >
               {initials}
