@@ -141,6 +141,24 @@ export function AiChat({
           }
         }
       }
+    } catch {
+      // A fetch rejection (offline / DNS / CORS / ad-blocker) or a mid-stream reader throw
+      // would otherwise leave the empty assistant bubble (pushed above) hanging FOREVER and
+      // surface an unhandled promise rejection (a console-error-gate failure). Fill it with a
+      // graceful fallback — preserving any already-streamed partial so a LATE disconnect keeps
+      // the half-answer instead of wiping it.
+      setMessages((m) => {
+        const copy = [...m];
+        const last = copy[copy.length - 1];
+        const partial = last?.role === 'assistant' ? last.content : '';
+        copy[copy.length - 1] = {
+          role: 'assistant',
+          content: partial
+            ? `${partial}\n\n(Connection lost — email us and we'll pick up where this left off.)`
+            : "I can't reach the AI service right now. Email us instead — we reply within a day.",
+        };
+        return copy;
+      });
     } finally {
       setStreaming(false);
     }
