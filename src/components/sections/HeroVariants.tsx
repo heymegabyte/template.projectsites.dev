@@ -2,6 +2,7 @@ import { type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Shield, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { MagneticButton } from '@/components/MagneticButton';
 import { cn } from '@/lib/utils';
 import { brand } from '@/brand';
 import { scrubText, scrubImage } from '@/lib/placeholders';
@@ -160,11 +161,13 @@ export function HeroCenter({ eyebrow, headline, subheadline, primary, secondary,
             style={{ ['--enter-i' as string]: 3 }}
           >
             {safePrimary && (
-              <Button asChild size="xl">
-                <Link to={safePrimary.href}>
-                  {safePrimary.label} <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
+              <MagneticButton>
+                <Button asChild size="xl">
+                  <Link to={safePrimary.href}>
+                    {safePrimary.label} <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+              </MagneticButton>
             )}
             {safeSecondary && (
               <Button asChild variant="outline" size="xl">
@@ -247,11 +250,13 @@ export function HeroSplit({ eyebrow, headline, subheadline, primary, secondary, 
               style={{ ['--enter-i' as string]: 3 }}
             >
               {safePrimary && (
-                <Button asChild size="lg">
-                  <Link to={safePrimary.href}>
-                    {safePrimary.label} <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
+                <MagneticButton>
+                  <Button asChild size="lg">
+                    <Link to={safePrimary.href}>
+                      {safePrimary.label} <ArrowRight className="ml-2 h-5 w-5" />
+                    </Link>
+                  </Button>
+                </MagneticButton>
               )}
               {safeSecondary && (
                 <Button asChild size="lg" variant="outline">

@@ -4614,6 +4614,52 @@ main#main { view-transition-name: ps-main; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   MAGNETIC CTA (CINEMATIC-3D) — the Framer / Awwwards / motion.so signature:
+   the primary button LEANS toward the cursor as it nears (JS sets --mag-x/y via
+   MagneticButton) + a soft brand halo tracks the pointer, springing back at rest.
+   IDENTITY at rest (--mag-x/y unset → translate(0,0)) → LCP/CLS-safe; the pull
+   engages ONLY under prefers-reduced-motion:no-preference (touch + reduced-motion
+   visitors get the plain static button — MagneticButton attaches no listeners).
+   ───────────────────────────────────────────────────────────────────────── */
+.magnetic-cta {
+  position: relative;
+  display: inline-flex;
+  border-radius: inherit;
+  isolation: isolate; /* own stacking context so the -1 halo sits behind the button, not the page */
+}
+.magnetic-glow {
+  display: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .magnetic-cta[data-magnetic] {
+    transform: translate3d(var(--mag-x, 0), var(--mag-y, 0), 0);
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .magnetic-cta[data-magnetic='1'] {
+    transition: transform 0.14s ease-out;
+    will-change: transform;
+  }
+  .magnetic-glow {
+    display: block;
+    position: absolute;
+    inset: -10px;
+    z-index: -1; /* behind the button — a halo, never over the label */
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.45s ease;
+    background: radial-gradient(
+      120px circle at var(--mag-gx, 50%) var(--mag-gy, 50%),
+      color-mix(in oklch, var(--color-primary, oklch(0.7 0.18 250)) 55%, transparent),
+      transparent 62%
+    );
+  }
+  .magnetic-cta[data-magnetic='1'] .magnetic-glow {
+    opacity: 0.85;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
    SCROLL-DRIVEN 3D DEPTH-CASCADE (CINEMATIC-3D) — the motion.so / Awwwards
    "content emerges from depth" signature. A below-fold group's direct children
    CASCADE forward out of Z-depth as the group scrolls into view: each item
