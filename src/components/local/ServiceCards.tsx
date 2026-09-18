@@ -1,3 +1,5 @@
+import { cdnImageProps } from '@/lib/cdn-image';
+
 interface Service {
   name: string;
   description: string;
@@ -28,7 +30,13 @@ export default function ServiceCards({ services, heading = 'Our Services' }: Ser
         </h2>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((service) => (
+          {services.map((service) => {
+            // Responsive + modern-format props for the service photo. 3-col card grid
+            // (1-col phone / 2-col ≥sm / 3-col ≥lg). Additive; no-op for non-CDN URLs.
+            const rimg = service.image
+              ? cdnImageProps(service.image, '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw')
+              : null;
+            return (
             <div
               key={service.name}
               className="group card-tactile reveal-on-view rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-accent/40 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
@@ -36,8 +44,12 @@ export default function ServiceCards({ services, heading = 'Our Services' }: Ser
               {service.image && (
                 <div className="aspect-[16/10] overflow-hidden">
                   <img
-                    src={service.image}
+                    src={rimg?.src ?? service.image}
+                    srcSet={rimg?.srcSet}
+                    sizes={rimg?.sizes}
                     alt={service.name}
+                    width={800}
+                    height={500}
                     className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                     loading="lazy"
                     decoding="async"
@@ -70,7 +82,8 @@ export default function ServiceCards({ services, heading = 'Our Services' }: Ser
                 )}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

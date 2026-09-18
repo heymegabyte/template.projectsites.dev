@@ -1,6 +1,7 @@
 import { brand } from '@/brand';
 import { JsonLd } from '@/components/JsonLd';
 import { TiltCard } from '@/components/TiltCard';
+import { cdnImageProps } from '@/lib/cdn-image';
 import { hasRealImage, scrubText } from '@/lib/placeholders';
 import { cn } from '@/lib/utils';
 
@@ -85,13 +86,23 @@ export function FeaturedCollection({
     }),
   };
 
-  const Card = ({ it }: { it: (typeof safeItems)[number] }) => (
+  const Card = ({ it }: { it: (typeof safeItems)[number] }) => {
+    // Responsive + modern-format props for the product photo. 2→3→4-col card grid.
+    // Additive (falls back to src); no-op for non-CDN URLs.
+    const rimg = it.image
+      ? cdnImageProps(it.image, '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw')
+      : null;
+    return (
     <>
       <TiltCard className="relative aspect-square overflow-hidden rounded-xl bg-accent/5" max={7}>
         {it.image ? (
           <img
-            src={it.image}
+            src={rimg?.src ?? it.image}
+            srcSet={rimg?.srcSet}
+            sizes={rimg?.sizes}
             alt=""
+            width={600}
+            height={600}
             loading="lazy"
             decoding="async"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -115,7 +126,8 @@ export function FeaturedCollection({
         {it.price && <span className="shrink-0 font-mono text-sm text-accent">{it.price}</span>}
       </div>
     </>
-  );
+    );
+  };
 
   return (
     <section className={cn('py-24 md:py-32 max-w-container-wide mx-auto px-6', className)}>

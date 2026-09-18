@@ -1,5 +1,6 @@
 import { Star, MessageSquare, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
+import { cdnImageProps } from '@/lib/cdn-image';
 
 interface ReviewCTAProps {
   placeId: string;
@@ -24,6 +25,11 @@ export default function ReviewCTA({ placeId, businessName, qrCodeSrc }: ReviewCT
   const [submitted, setSubmitted] = useState(false);
 
   const googleReviewUrl = `https://search.google.com/local/writereview?placeid=${placeId}`;
+
+  // Responsive + modern-format props for the QR image if it's ever a remote CDN URL. QR codes are
+  // normally local/data-URIs, so this is a safe no-op (returns { src } unchanged) in the common case.
+  // Additive (falls back to src); no-op for non-CDN URLs.
+  const qrImg = qrCodeSrc ? cdnImageProps(qrCodeSrc, '(max-width: 768px) 40vw, 160px') : null;
 
   const track = (event: string, props?: Record<string, unknown>) => {
     window.gtag?.('event', event, props);
@@ -119,7 +125,9 @@ export default function ReviewCTA({ placeId, businessName, qrCodeSrc }: ReviewCT
                   <div className="mt-6 pt-6 border-t border-border">
                     <p className="text-text-muted text-xs mb-3">Or scan to review</p>
                     <img
-                      src={qrCodeSrc}
+                      src={qrImg?.src ?? qrCodeSrc}
+                      srcSet={qrImg?.srcSet}
+                      sizes={qrImg?.sizes}
                       alt="Scan to leave a review"
                       className="w-28 h-28 mx-auto rounded-lg bg-surface p-1"
                       loading="lazy"

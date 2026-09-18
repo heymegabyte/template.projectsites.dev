@@ -1,6 +1,7 @@
 import { Quote as QuoteIcon } from 'lucide-react';
 import { JsonLd } from '@/components/JsonLd';
 import { cn } from '@/lib/utils';
+import { cdnImageProps } from '@/lib/cdn-image';
 
 interface Props {
   /** The quoted text. */
@@ -28,6 +29,10 @@ interface Props {
  * Google AI Overviews and Perplexity for citation.
  */
 export function Quote({ text, author, role, photo, source, eyebrow, jsonLd = true, className }: Props) {
+  // Responsive + modern-format props for the author portrait: raw Unsplash `fm=jpg` URLs →
+  // `auto=format` (AVIF/WebP) + a per-width srcSet. This is a small ~48px round portrait.
+  // Additive (falls back to src); no-op for non-CDN URLs.
+  const rimg = photo ? cdnImageProps(photo, '(max-width: 768px) 40vw, 160px') : null;
   return (
     <section className={cn('py-24 md:py-32 max-w-container-prose mx-auto px-6', className)}>
       {jsonLd && (
@@ -63,7 +68,9 @@ export function Quote({ text, author, role, photo, source, eyebrow, jsonLd = tru
         <figcaption className="mt-10 flex items-center justify-center gap-4">
           {photo && (
             <img
-              src={photo}
+              src={rimg?.src ?? photo}
+              srcSet={rimg?.srcSet}
+              sizes={rimg?.sizes}
               alt=""
               loading="lazy"
               decoding="async"

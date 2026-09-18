@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
+import { cdnImageProps } from '@/lib/cdn-image';
 
 interface BeforeAfterSliderProps {
   beforeSrc: string;
@@ -67,6 +68,10 @@ export default function BeforeAfterSlider({
 
   const accentGlow = 'color-mix(in oklch, var(--color-accent) 55%, transparent)';
 
+  // Full-bleed comparison images → responsive, modern-format srcSet (no-op on local URLs).
+  const afterImg = afterSrc ? cdnImageProps(afterSrc, '100vw') : null;
+  const beforeImg = beforeSrc ? cdnImageProps(beforeSrc, '100vw') : null;
+
   return (
     <div className="py-12">
       <div className="max-w-4xl mx-auto px-6">
@@ -95,7 +100,9 @@ export default function BeforeAfterSlider({
         >
           {/* After image (full, underneath) */}
           <img
-            src={afterSrc}
+            src={afterImg?.src ?? afterSrc}
+            srcSet={afterImg?.srcSet}
+            sizes={afterImg?.sizes}
             alt={afterAlt}
             className="absolute inset-0 w-full h-full object-cover"
             loading="lazy"
@@ -106,7 +113,9 @@ export default function BeforeAfterSlider({
           {/* Before image (clipped) */}
           <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}>
             <img
-              src={beforeSrc}
+              src={beforeImg?.src ?? beforeSrc}
+              srcSet={beforeImg?.srcSet}
+              sizes={beforeImg?.sizes}
               alt={beforeAlt}
               className="absolute inset-0 w-full h-full object-cover"
               loading="lazy"

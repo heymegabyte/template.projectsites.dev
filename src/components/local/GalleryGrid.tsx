@@ -1,3 +1,5 @@
+import { cdnImageProps } from '@/lib/cdn-image';
+
 interface GalleryImage {
   src: string;
   alt: string;
@@ -38,14 +40,20 @@ export default function GalleryGrid({
 
         {/* Masonry grid — the whole grid is one PhotoSwipe gallery scope. */}
         <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4" data-gallery={galleryId}>
-          {images.map((img, i) => (
+          {images.map((img, i) => {
+            const rimg = img.src
+              ? cdnImageProps(img.src, '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw')
+              : null;
+            return (
             <figure
               key={img.src}
               style={{ ['--tile-i' as string]: i }}
               className="gallery-tile group relative m-0 mb-4 break-inside-avoid overflow-hidden rounded-2xl border border-border bg-surface focus-within:outline-none"
             >
               <img
-                src={img.src}
+                src={rimg?.src ?? img.src}
+                srcSet={rimg?.srcSet}
+                sizes={rimg?.sizes}
                 alt={img.alt}
                 data-gallery={galleryId}
                 data-caption={img.caption ?? img.alt}
@@ -81,7 +89,8 @@ export default function GalleryGrid({
                 </svg>
               </span>
             </figure>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

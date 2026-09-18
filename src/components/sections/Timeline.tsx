@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { cn } from '@/lib/utils';
+import { cdnImageProps } from '@/lib/cdn-image';
 
 export interface TimelineEvent {
   year: string;
@@ -113,7 +114,11 @@ export function Timeline({
 
       {orientation === 'vertical' ? (
         <ol className="tl-list">
-          {events.map((e, i) => (
+          {events.map((e, i) => {
+            // Responsive + modern-format props for the entry photo (medium: full-width on phone,
+            // ~1/2 beside the entry text on desktop). Additive (falls back to src); no-op non-CDN.
+            const eimg = e.image ? cdnImageProps(e.image, '(max-width: 768px) 100vw, 50vw') : null;
+            return (
             <li key={`${e.year}-${i}`} className="tl-item" style={{ '--tl-i': i } as CSSProperties}>
               <span aria-hidden="true" className="tl-node" />
               <time className="tl-year font-mono text-accent" dateTime={e.year}>
@@ -122,7 +127,14 @@ export function Timeline({
               <h3 className="tl-title text-text font-heading">{e.title}</h3>
               {e.image && (
                 <figure className="tl-fig">
-                  <img src={e.image} alt={e.imageAlt ?? ''} decoding="async" loading="lazy" />
+                  <img
+                    src={eimg?.src ?? e.image}
+                    srcSet={eimg?.srcSet}
+                    sizes={eimg?.sizes}
+                    alt={e.imageAlt ?? ''}
+                    decoding="async"
+                    loading="lazy"
+                  />
                 </figure>
               )}
               <p className="tl-desc text-text-muted">{e.description}</p>
@@ -136,7 +148,8 @@ export function Timeline({
                 </a>
               )}
             </li>
-          ))}
+            );
+          })}
         </ol>
       ) : (
         <ol className="tl-track">

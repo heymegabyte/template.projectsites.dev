@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { isPlaceholder } from '@/lib/placeholders';
+import { cdnImageProps } from '@/lib/cdn-image';
 
 export interface CaseStudy {
   slug: string;
@@ -38,7 +39,14 @@ export function CaseStudyGrid({ studies, eyebrow, headline, className, basePath 
         </div>
       )}
       <ul className="grid md:grid-cols-2 gap-8">
-        {shown.map((s) => (
+        {shown.map((s) => {
+          // Responsive + modern-format props for the card cover: raw Unsplash `fm=jpg` full-width
+          // URLs → `auto=format` (AVIF/WebP) + a per-width srcSet. Cards are ~1/2 the grid ≥md,
+          // full-width on phone. Additive (falls back to src); no-op for non-CDN URLs.
+          const rimg = s.cover
+            ? cdnImageProps(s.cover, '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw')
+            : null;
+          return (
           <li key={s.slug}>
             <Link
               to={`${basePath}/${s.slug}`}
@@ -47,7 +55,9 @@ export function CaseStudyGrid({ studies, eyebrow, headline, className, basePath 
               {s.cover && (
                 <div className="aspect-[16/10] overflow-hidden">
                   <img
-                    src={s.cover}
+                    src={rimg?.src ?? s.cover}
+                    srcSet={rimg?.srcSet}
+                    sizes={rimg?.sizes}
                     alt=""
                     loading="lazy"
                     decoding="async"
@@ -77,7 +87,8 @@ export function CaseStudyGrid({ studies, eyebrow, headline, className, basePath 
               </div>
             </Link>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </section>
   );

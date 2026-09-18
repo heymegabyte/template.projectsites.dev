@@ -1,4 +1,5 @@
 import { Phone, MapPin, Star, ChevronDown } from 'lucide-react';
+import { cdnImageProps } from '@/lib/cdn-image';
 
 interface HeroWithPhotoProps {
   businessName: string;
@@ -27,11 +28,15 @@ export default function HeroWithPhoto({
   rating,
   reviewCount,
 }: HeroWithPhotoProps) {
+  // Full-bleed hero photo → responsive, modern-format srcSet (no-op on local URLs).
+  const rimg = heroImage ? cdnImageProps(heroImage, '100vw') : null;
   return (
     <section className="hero-photo relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background image — Ken-Burns drift */}
       <img
-        src={heroImage}
+        src={rimg?.src ?? heroImage}
+        srcSet={rimg?.srcSet}
+        sizes={rimg?.sizes}
         alt={`${businessName} storefront`}
         className="hero-photo-img absolute inset-0 w-full h-full object-cover"
         fetchPriority="high"

@@ -4,6 +4,7 @@ import { ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { scrubText, scrubList, scrubImage } from '@/lib/placeholders';
+import { cdnImageProps } from '@/lib/cdn-image';
 import { clipRevealEnabled } from '@/lib/featureFlags';
 
 interface Props {
@@ -42,6 +43,10 @@ export function FeatureSplit({
   const safeDescription = scrubText(description);
   const safeBullets = scrubList(bullets);
   const safeImage = scrubImage(image);
+  // Responsive + modern-format props for the framed feature photo. This is a 2-column
+  // split (image beside copy ≥lg, full-width on phone) → 50vw desktop / 100vw mobile.
+  // Additive (falls back to src); no-op for non-CDN URLs.
+  const rimg = safeImage ? cdnImageProps(safeImage.src, '(max-width: 1024px) 100vw, 50vw') : null;
   // Nothing real to show on the copy side AND no headline → skip the whole
   // section rather than render an empty husk (SafeSection-style fail-soft).
   if (!safeHeadline && !safeDescription && safeBullets.length === 0 && !visual && !safeImage) {
@@ -107,8 +112,12 @@ export function FeatureSplit({
                     the img keeps its hover-scale — nested transforms compose, no conflict. */}
                 <div className="ps-ken-burns h-full w-full">
                   <img
-                    src={safeImage.src}
+                    src={rimg?.src ?? safeImage.src}
+                    srcSet={rimg?.srcSet}
+                    sizes={rimg?.sizes}
                     alt={safeImage.alt}
+                    width={800}
+                    height={600}
                     loading="lazy"
                     decoding="async"
                     className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transition-none motion-reduce:group-hover:scale-100"

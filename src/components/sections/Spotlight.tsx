@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { cdnImageProps } from '@/lib/cdn-image';
 
 interface Props {
   /** Eyebrow / label above the headline. */
@@ -49,22 +50,27 @@ export function Spotlight({
   badge,
   className,
 }: Props) {
-  const visualNode =
-    visual !== null && typeof visual === 'object' && 'src' in visual ? (
-      <div className="relative card-tactile overflow-hidden rounded-2xl aspect-[5/4]">
-        <img
-          src={visual.src}
-          alt={visual.alt}
-          loading="lazy"
-          decoding="async"
-          width={1200}
-          height={960}
-          className="h-full w-full object-cover"
-        />
-      </div>
-    ) : (
-      visual
-    );
+  const isImageVisual =
+    visual !== null && typeof visual === 'object' && 'src' in visual;
+  // Image-beside-text (~2-col) → responsive, modern-format srcSet (no-op on local URLs).
+  const rimg = isImageVisual ? cdnImageProps(visual.src, '(max-width: 1024px) 100vw, 50vw') : null;
+  const visualNode = isImageVisual ? (
+    <div className="relative card-tactile overflow-hidden rounded-2xl aspect-[5/4]">
+      <img
+        src={rimg?.src ?? visual.src}
+        srcSet={rimg?.srcSet}
+        sizes={rimg?.sizes}
+        alt={visual.alt}
+        loading="lazy"
+        decoding="async"
+        width={1200}
+        height={960}
+        className="h-full w-full object-cover"
+      />
+    </div>
+  ) : (
+    visual
+  );
 
   if (variant === 'overlay') {
     return (

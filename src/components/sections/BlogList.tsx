@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { cdnImageProps } from '@/lib/cdn-image';
 
 export interface BlogPostSummary {
   slug: string;
@@ -28,6 +29,11 @@ export function BlogList({ posts, eyebrow, headline, className, basePath = '/blo
   if (!posts.length) return null;
   const [hero, ...rest] = posts;
   const Heading = as;
+  // Responsive + modern-format props for the featured/lead cover photo (large: full-width on
+  // phone, ~66vw beside the text on desktop). Additive (falls back to src); no-op for non-CDN URLs.
+  const heroImg = hero.cover
+    ? cdnImageProps(hero.cover, '(max-width: 1024px) 100vw, 66vw')
+    : null;
   return (
     <section className={cn('py-24 md:py-32 max-w-container-wide mx-auto px-6', className)}>
       {(eyebrow || headline) && (
@@ -47,7 +53,9 @@ export function BlogList({ posts, eyebrow, headline, className, basePath = '/blo
           {hero.cover && (
             <div className="aspect-video md:aspect-auto overflow-hidden">
               <img
-                src={hero.cover}
+                src={heroImg?.src ?? hero.cover}
+                srcSet={heroImg?.srcSet}
+                sizes={heroImg?.sizes}
                 alt=""
                 loading="eager"
                 decoding="async"
@@ -73,13 +81,21 @@ export function BlogList({ posts, eyebrow, headline, className, basePath = '/blo
       </Link>
 
       <ul className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {rest.map((p) => (
+        {rest.map((p) => {
+          // Responsive + modern-format props for the card thumbnail (full-width phone, 1/2 tablet,
+          // 1/3 desktop). Additive (falls back to src); no-op for non-CDN URLs.
+          const cardImg = p.cover
+            ? cdnImageProps(p.cover, '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw')
+            : null;
+          return (
           <li key={p.slug}>
             <Link to={`${basePath}/${p.slug}`} className="block group card-tactile overflow-hidden interactive-4 h-full">
               {p.cover && (
                 <div className="aspect-video overflow-hidden">
                   <img
-                    src={p.cover}
+                    src={cardImg?.src ?? p.cover}
+                    srcSet={cardImg?.srcSet}
+                    sizes={cardImg?.sizes}
                     alt=""
                     loading="lazy"
                     decoding="async"
@@ -102,7 +118,8 @@ export function BlogList({ posts, eyebrow, headline, className, basePath = '/blo
               </div>
             </Link>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </section>
   );

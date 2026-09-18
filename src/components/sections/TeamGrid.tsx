@@ -2,6 +2,7 @@ import { type CSSProperties } from 'react';
 import { JsonLd } from '@/components/JsonLd';
 import { cn } from '@/lib/utils';
 import { isPlaceholder } from '@/lib/placeholders';
+import { cdnImageProps } from '@/lib/cdn-image';
 
 export interface TeamMember {
   name: string;
@@ -72,7 +73,12 @@ export function TeamGrid({
         {description && <p className="text-text-muted max-w-2xl mx-auto text-lg text-pretty">{description}</p>}
       </div>
       <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {shown.map((m, i) => (
+        {shown.map((m, i) => {
+          // Responsive + modern-format props for the headshot: raw Unsplash `fm=jpg` URLs →
+          // `auto=format` (AVIF/WebP) + a per-width srcSet. Headshots are ~260px avatars in a
+          // 3-col grid (half-width on phone). Additive (falls back to src); no-op for non-CDN URLs.
+          const rimg = m.photo ? cdnImageProps(m.photo, '(max-width: 768px) 50vw, 260px') : null;
+          return (
           <li
             key={`${m.name}-${i}`}
             style={{ '--tm-i': i } as CSSProperties}
@@ -84,7 +90,9 @@ export function TeamGrid({
             <div className="team-card-media relative aspect-square bg-surface-elevated overflow-hidden">
               {m.photo ? (
                 <img
-                  src={m.photo}
+                  src={rimg?.src ?? m.photo}
+                  srcSet={rimg?.srcSet}
+                  sizes={rimg?.sizes}
                   alt={`Portrait of ${m.name}`}
                   loading="lazy"
                   decoding="async"
@@ -129,7 +137,8 @@ export function TeamGrid({
               )}
             </div>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </section>
   );

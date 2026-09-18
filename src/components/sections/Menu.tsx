@@ -1,5 +1,6 @@
 import { brand } from '@/brand';
 import { JsonLd } from '@/components/JsonLd';
+import { cdnImageProps } from '@/lib/cdn-image';
 import { hasRealImage, scrubList, scrubText } from '@/lib/placeholders';
 import { cn } from '@/lib/utils';
 
@@ -103,11 +104,17 @@ export function Menu({ categories, eyebrow = 'Menu', headline, description, menu
               <h3 className="font-heading text-xl font-bold text-text mb-6 pb-3 border-b border-border">{c.name}</h3>
             )}
             <ul className="space-y-5">
-              {c.items.map((it) => (
+              {c.items.map((it) => {
+                // Responsive + modern-format props for the dish thumbnail (fixed 64px
+                // square). Additive; no-op for non-CDN URLs.
+                const rimg = it.image ? cdnImageProps(it.image, '64px') : null;
+                return (
                 <li key={it.name} className="flex gap-4">
                   {it.image && (
                     <img
-                      src={it.image}
+                      src={rimg?.src ?? it.image}
+                      srcSet={rimg?.srcSet}
+                      sizes={rimg?.sizes}
                       alt=""
                       loading="lazy"
                       decoding="async"
@@ -138,7 +145,8 @@ export function Menu({ categories, eyebrow = 'Menu', headline, description, menu
                     )}
                   </div>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </div>
         ))}
