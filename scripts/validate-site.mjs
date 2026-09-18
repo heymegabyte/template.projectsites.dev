@@ -27,7 +27,10 @@ function walk(dir) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, e.name);
     if (e.isDirectory()) out.push(...walk(p));
-    else if (/\.(tsx|ts)$/.test(e.name)) out.push(p);
+    // Ship-only: skip test / spec / story files — they are never part of the deployed site, so a
+    // `<a href="/x">` fixture inside one must NOT trip the internal-link 404 gate and fail the build
+    // (AL-738: a MagneticButton.test.tsx `/x` fixture broke EVERY new site build fleet-wide).
+    else if (/\.(tsx|ts)$/.test(e.name) && !/\.(test|spec|stories)\.(tsx|ts)$/.test(e.name)) out.push(p);
   }
   return out;
 }

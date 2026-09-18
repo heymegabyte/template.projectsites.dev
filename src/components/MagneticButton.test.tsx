@@ -52,7 +52,7 @@ describe('MagneticButton — structural contract', () => {
     stubMatchMedia(true, true); // fine pointer, motion OK
     const { container, getByText } = render(
       <MagneticButton>
-        <a href="/x">Claim your site</a>
+        <a href="/contact">Claim your site</a>
       </MagneticButton>,
     );
     expect(getByText('Claim your site')).toBeTruthy();
@@ -68,7 +68,7 @@ describe('MagneticButton — structural contract', () => {
     stubMatchMedia(false, false); // coarse pointer + reduced motion → gated OFF
     const { getByText, container } = render(
       <MagneticButton>
-        <a href="/x">Book now</a>
+        <a href="/contact">Book now</a>
       </MagneticButton>,
     );
     expect(getByText('Book now')).toBeTruthy();
