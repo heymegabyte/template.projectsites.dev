@@ -3,6 +3,7 @@ import { MapPin, Navigation, Clock, Phone, Mail } from 'lucide-react';
 import { brand } from '@/brand';
 import { cn } from '@/lib/utils';
 import { hoursToWeek, describeToday, formatTime12 } from '@/lib/businessSchema';
+import { cityFromAddress } from '@/lib/placeholders';
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -48,13 +49,12 @@ export function LocationMap(props: Props = {}) {
   const mapSrc = `https://maps.google.com/maps?q=${q}&z=14&output=embed`;
   const dirHref = `https://www.google.com/maps/dir/?api=1&destination=${q}`;
 
-  // Best-effort city for the service-area line: "4500 Federal Blvd, Denver, CO 80211"
-  // → "Denver". Falls back to a warm generic line when the shape isn't parseable.
-  const parts = address
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const city = parts.length >= 3 ? parts[parts.length - 2] : parts[0] || '';
+  // City for the service-area line, robust to BOTH a compact Places address
+  // ("4500 Federal Blvd, Denver, CO 80211" → "Denver") AND the verbose OSM
+  // display_name the AL-729 fallback returns (whose [length-2] is the ZIP — the old
+  // `parts[length-2]` shipped "Proudly serving 94109"). Same cityFromAddress the H1 +
+  // meta use (AL-736). Falls back to a warm generic line when unparseable.
+  const city = cityFromAddress(address);
   const areaLine = city
     ? `Proudly serving ${city} and the surrounding area — come see us.`
     : 'Come see us — we would love to welcome you in person.';

@@ -143,6 +143,68 @@ export function scrubText(value: unknown, fallback = ''): string {
 }
 
 /**
+ * Parse the CITY from a business address, robust to BOTH a compact Google-Places
+ * `formattedAddress` (`"1517 Polk St, San Francisco, CA 94109"` → `"San Francisco"`)
+ * AND a verbose OSM/Nominatim `display_name`
+ * (`"Swan Oyster Depot, 1517, Polk Street, …, San Francisco, California, 94109, United States"`
+ * → `"San Francisco"`).
+ *
+ * @remarks
+ * The naive "second comma field" heuristic this replaces grabbed the STREET NUMBER
+ * (`"1517"`) out of an OSM `display_name` — leaking a bare number into `<title>` and
+ * `<meta description>` on every OSM-sourced site's sub-pages
+ * ("Proudly serving 1517 …", "… · 1517 · get in touch to learn more"). Mirrors the
+ * worker's `hero_copy.ts` `cityFromAddress` (AL-733b) so the H1 and the SEO title/meta
+ * derive the SAME city. Works from the END of the comma fields — dropping country →
+ * postcode → state → administrative-area — then takes the last remaining city-like
+ * field; rejects a pure-number field so a street number / ZIP can never survive as the
+ * "city". Returns `''` when no real city is found (callers then skip the city pad rather
+ * than print junk). Pure — same input, same output.
+ *
+ * @param address - the business address (Places or OSM shape), may be null/undefined
+ * @returns the city name, or `''` when none can be confidently parsed
+ * @example cityFromAddress('Swan Oyster Depot, 1517, Polk Street, San Francisco, California, 94109, United States') // → 'San Francisco'
+ * @example cityFromAddress('1517 Polk St, San Francisco, CA 94109') // → 'San Francisco'
+ * @example cityFromAddress('') // → ''
+ */
+export function cityFromAddress(address: string | null | undefined): string {
+  const parts = (address || '')
+    .split(',')
+    .map((p) => p.trim())
+    .filter(Boolean);
+  if (parts.length < 2) return '';
+  const at = (k: number): string => parts[k] ?? '';
+  const COUNTRY =
+    /^(united states(?: of america)?|usa|u\.?s\.?a?\.?|canada|united kingdom|uk|australia|england|scotland|wales)$/i;
+  // ZIP / ZIP+4 / "NY 10002" (state+ZIP) / Canadian "A1A 1A1" / UK-ish alnum postcodes.
+  const POSTCODE = /^(?:[A-Za-z]{2}\s+)?\d{4,6}(?:-\d{4})?$|^[A-Za-z]\d[A-Za-z]\s?\d[A-Za-z]\d$/;
+  const ADMIN =
+    /\b(county|community board|borough|district|province|parish|census|metropolitan|greater|region|township|prefecture)\b/i;
+  // Full US state / DC / common CA-province names — OSM display_names spell the state out
+  // ("…, San Francisco, California, 94110, …"), so a ZIP-only drop would leave "California".
+  const STATE =
+    /^(alabama|alaska|arizona|arkansas|california|colorado|connecticut|delaware|florida|georgia|hawaii|idaho|illinois|indiana|iowa|kansas|kentucky|louisiana|maine|maryland|massachusetts|michigan|minnesota|mississippi|missouri|montana|nebraska|nevada|new hampshire|new jersey|new mexico|new york|north carolina|north dakota|ohio|oklahoma|oregon|pennsylvania|rhode island|south carolina|south dakota|tennessee|texas|utah|vermont|virginia|washington|west virginia|wisconsin|wyoming|district of columbia|ontario|quebec|british columbia|alberta|manitoba|saskatchewan|nova scotia|new brunswick)$/i;
+  // A street line (house number / road suffix) — the field BEFORE a candidate state in a
+  // COMPACT "179 E Houston St, New York, NY 10002" address, where "New York" is the CITY.
+  const STREETISH =
+    /\d|\b(st|street|ave|avenue|rd|road|blvd|boulevard|dr|drive|ln|lane|way|ct|court|pl|place|hwy|highway|pkwy|suite|ste|fl|floor|unit)\b/i;
+  let i = parts.length - 1;
+  // Drop trailing country + postcode.
+  while (i >= 0 && (COUNTRY.test(at(i)) || POSTCODE.test(at(i)))) i--;
+  // Drop a trailing full-state / bare-2-letter-state — but ONLY when the field before it is
+  // another locality (not the street line): a verbose "…, San Francisco, California, …" drops
+  // the STATE to reveal "San Francisco", while a compact "…St, New York, NY 10002" KEEPS the
+  // CITY "New York" (its predecessor is the street, so "New York" is the city, not the state).
+  if (i >= 1 && (STATE.test(at(i)) || /^[A-Za-z]{2}$/.test(at(i))) && !STREETISH.test(at(i - 1))) i--;
+  // Drop administrative-area names between the state and the city ("Travis County").
+  while (i >= 1 && ADMIN.test(at(i))) i--;
+  const city = i >= 0 ? at(i) : '';
+  // A real city has letters and is NOT a bare number (a street number / ZIP).
+  if (city && /[A-Za-z]{2,}/.test(city) && !/^\d+$/.test(city)) return city;
+  return '';
+}
+
+/**
  * Guarantee a meta description in the SEO sweet spot (120–156 chars) — the
  * `meta.description_length` build invariant. Generation reliably fills a rich
  * HOMEPAGE description but often ships SHORT sub-page ones (`{ABOUT_META_DESCRIPTION}`
@@ -176,7 +238,7 @@ export function fitMetaDescription(
   let d = (description || '').trim();
   if (d.length >= MIN) return clampMax(d);
 
-  const city = business.address ? (business.address.split(',')[1] || '').trim() : '';
+  const city = cityFromAddress(business.address);
   const pads = [
     (business.tagline || '').trim(),
     city ? `Proudly serving ${city} and the surrounding area.` : '',
@@ -273,7 +335,7 @@ export function fitMetaTitle(
     return out;
   };
 
-  const city = business.address ? (business.address.split(',')[1] || '').trim() : '';
+  const city = cityFromAddress(business.address);
 
   let t = (title || '').trim();
   if (t.length >= MIN) {
