@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { BadgeCheck, ShieldCheck, Clock, Star, Phone, MapPin, Award, HeartHandshake } from 'lucide-react';
 import { brand, featureOn } from '@/brand';
+import { cityFromAddress } from '@/lib/placeholders';
 
 /**
  * Trust strip rendered directly beneath the hero — wordless credibility above the
@@ -46,7 +47,9 @@ function defaultItems(): TrustItem[] {
   // Fold in real contact facts when we actually have them.
   if (brand.business.phone) base.push({ icon: <Phone size={16} />, label: brand.business.phone });
   if (brand.business.address) {
-    const city = brand.business.address.split(',').slice(-2, -1)[0]?.trim();
+    // Robust to the verbose OSM display_name (whose [length-2] is the ZIP, not the city) —
+    // the old `.split(',').slice(-2,-1)[0]` shipped "Serving 70130 & nearby" (AL-736).
+    const city = cityFromAddress(brand.business.address);
     if (city) base.push({ icon: <MapPin size={16} />, label: `Serving ${city} & nearby` });
   }
   return base;

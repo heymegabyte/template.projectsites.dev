@@ -7,7 +7,7 @@ import { useSEO } from '@/hooks/useSEO';
 import { brand, featureOn } from '@/brand';
 import { buildSiteJsonLd, parseAddress, parseHours, type BusinessClass } from '@/lib/businessSchema';
 import { GalleryGrid } from '@/components/local';
-import { hasRealImage } from '@/lib/placeholders';
+import { hasRealImage, cityFromAddress } from '@/lib/placeholders';
 import { cinematicProcessEnabled } from '@/lib/featureFlags';
 
 import {
@@ -317,7 +317,9 @@ export default function Home() {
   const baseTitle = seoTagline
     ? `${brand.business.name} — ${seoTagline}`
     : brand.business.name;
-  const seoCity = (brand.business.address || '').split(',').slice(-2, -1)[0]?.trim() || '';
+  // Robust city (AL-736): the old `.split(',').slice(-2,-1)[0]` grabbed the ZIP from the
+  // verbose OSM display_name → shipped "Commander's Palace … | 70130" in the homepage <title>.
+  const seoCity = cityFromAddress(brand.business.address);
   const seoTitle =
     seoCity && baseTitle.length < 48 && `${baseTitle} | ${seoCity}`.length <= 60
       ? `${baseTitle} | ${seoCity}`

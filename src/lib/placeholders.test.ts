@@ -31,6 +31,16 @@ describe('cityFromAddress (Places + OSM robust)', () => {
     expect(cityFromAddress('Franklin Barbecue, 900, East 11th Street, Austin, Texas, 78702, United States')).toBe('Austin');
   });
 
+  it('drops an OSM PARISH/neighborhood chain to the real city (Commander\'s Palace delivery, AL-737)', () => {
+    // The live delivery's OSM display_name — [1] is the street number "1403", [length-2] the ZIP
+    // "70130", and there are TWO neighborhood fields + "Orleans Parish" before the city.
+    expect(
+      cityFromAddress(
+        "Commander's Palace, 1403, Washington Avenue, Central City Historic District, Garden District, New Orleans, Orleans Parish, Louisiana, 70130, United States",
+      ),
+    ).toBe('New Orleans');
+  });
+
   it('KEEPS a state-named city in a compact address via the street-peek guard', () => {
     // predecessor of "New York" is the street line → "New York" is the CITY, not the state.
     expect(cityFromAddress('179 E Houston St, New York, NY 10002')).toBe('New York');
