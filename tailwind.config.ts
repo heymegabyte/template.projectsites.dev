@@ -89,9 +89,12 @@ export default {
         gradientShift:{ '0%': { backgroundPosition: '0% 50%' }, '50%': { backgroundPosition: '100% 50%' }, '100%': { backgroundPosition: '0% 50%' } },
         glowPulse:    { '0%, 100%': { boxShadow: '0 0 20px oklch(var(--brand-hue) 0.18 0.6 / 0.15)' }, '50%': { boxShadow: '0 0 40px oklch(var(--brand-hue) 0.18 0.6 / 0.30)' } },
         shimmer:      { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
-        bounceIn:     { '0%': { opacity: '0', transform: 'scale(0.3)' }, '50%': { transform: 'scale(1.05)' }, '70%': { transform: 'scale(0.95)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
-        rotateIn:     { '0%': { opacity: '0', transform: 'rotate(-10deg) scale(0.9)' }, '100%': { opacity: '1', transform: 'rotate(0) scale(1)' } },
-        blurIn:       { '0%': { opacity: '0', filter: 'blur(12px)' }, '100%': { opacity: '1', filter: 'blur(0)' } },
+        // Same 0.9 reveal-opacity floor (AL-770 completes AL-769): these are text-capable via
+        // AnimatedSection's open `animation` prop, so a 0→1 fade would composite reveal text below
+        // AA mid-flight. The DRAMA is the transform (bounce-scale / rotate / blur), left untouched.
+        bounceIn:     { '0%': { opacity: '0.9', transform: 'scale(0.3)' }, '50%': { transform: 'scale(1.05)' }, '70%': { transform: 'scale(0.95)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
+        rotateIn:     { '0%': { opacity: '0.9', transform: 'rotate(-10deg) scale(0.9)' }, '100%': { opacity: '1', transform: 'rotate(0) scale(1)' } },
+        blurIn:       { '0%': { opacity: '0.9', filter: 'blur(12px)' }, '100%': { opacity: '1', filter: 'blur(0)' } },
       },
       animation: {
         fadeInUp:      'fadeInUp 0.7s var(--ease) forwards',

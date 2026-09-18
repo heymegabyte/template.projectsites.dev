@@ -223,6 +223,36 @@ describe('scroll-reveal opacity floor keeps muted body copy AA (§C.3 team-role-
       expect(parseFloat(m![1]), `${name} reveal opacity floor ≥0.9`).toBeGreaterThanOrEqual(0.9);
     }
   });
+
+  // The SAME floor must hold for the reveal keyframes defined in tailwind.config.ts — the
+  // `animate-fadeInUp` (+ fadeInDown / slideInLeft / slideInRight / scaleIn) that AnimatedSection
+  // uses. AL-440 floored the index.css keyframes, but THIS guard read only index.css — so these
+  // config siblings shipped from opacity:0 and composited /contact reveal TEXT below AA until
+  // AL-769 floored them (surfaced by the generated-site visitor journey). Reading BOTH sources
+  // closes the gap: a tailwind-config reveal keyframe can no longer regress to opacity:0 unguarded.
+  // DRIFT-PROOF: auto-discover EVERY tailwind.config.ts keyframe with a `0%` frame that declares
+  // opacity and assert it floors ≥0.9 — so a keyframe added LATER is covered WITHOUT editing a list
+  // (the AL-769 gap was precisely a hardcoded guard missing a sibling; AL-770 makes it self-updating).
+  // Every config entrance animation is text-capable via AnimatedSection's open `animation` prop, so
+  // none may fade text below AA. Frames with no opacity (transform/bg-only: subtleFloat/gradientShift)
+  // are not fades → skipped. A sanity floor asserts the known keyframes were actually discovered, so a
+  // broken regex can't pass vacuously.
+  it('tailwind.config.ts: EVERY fade keyframe floors 0%{opacity} ≥ 0.9 (auto-discovered, drift-proof)', () => {
+    const cfg = readFileSync('tailwind.config.ts', 'utf8');
+    const re = /(\w+):\s*\{\s*'0%'\s*:\s*\{([^}]*)\}/g;
+    const checked: string[] = [];
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(cfg)) !== null) {
+      const name = m[1];
+      const op = m[2].match(/opacity:\s*'?([\d.]+)'?/);
+      if (!op) continue; // no opacity in the 0% frame → transform/bg-only, not a fade reveal
+      checked.push(name);
+      expect(parseFloat(op[1]), `${name} reveal opacity floor ≥0.9`).toBeGreaterThanOrEqual(0.9);
+    }
+    for (const known of ['fadeInUp', 'slideInLeft', 'scaleIn', 'bounceIn', 'rotateIn', 'blurIn']) {
+      expect(checked, `${known} must be auto-discovered + checked (guard is wired)`).toContain(known);
+    }
+  });
 });
 
 /**
