@@ -64,3 +64,20 @@ describe('HeroVariants — per-industry WebGL backdrop wired ON by default', () 
     expect(['aurora', 'waves', 'mesh', 'ember', 'grid']).toContain(backdropForPreset(brand.themeStyle));
   });
 });
+
+describe('Cinematic hero DOLLY — recede-on-scroll wired on the hero content (LCP-safe by CSS range)', () => {
+  it('HeroCenter content wrapper carries .hero-cinematic-dolly', () => {
+    const { container } = renderIn(<HeroCenter headline="A real, specific headline" />);
+    expect(container.querySelector('.hero-cinematic-dolly')).not.toBeNull();
+  });
+
+  it('HeroSplit content wrapper carries .hero-cinematic-dolly', () => {
+    const { container } = renderIn(
+      <HeroSplit
+        headline="A real, specific headline"
+        image={{ src: 'https://example.com/hero.jpg', alt: 'Storefront' }}
+      />,
+    );
+    expect(container.querySelector('.hero-cinematic-dolly')).not.toBeNull();
+  });
+});

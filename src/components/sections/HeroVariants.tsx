@@ -132,7 +132,7 @@ export function HeroCenter({ eyebrow, headline, subheadline, primary, secondary,
           WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 45%, #000 30%, transparent 75%)',
         }}
       />
-      <div className="relative z-10 max-w-container-wide mx-auto px-6 text-center pt-32 pb-20">
+      <div className="hero-cinematic-dolly relative z-10 max-w-container-wide mx-auto px-6 text-center pt-32 pb-20">
         {safeEyebrow && (
           <span
             className="hero-enter inline-block text-accent text-xs md:text-sm font-mono tracking-[0.3em] uppercase mb-6 px-4 py-2 rounded-full border border-accent/20 bg-accent/5"
@@ -227,7 +227,7 @@ export function HeroSplit({ eyebrow, headline, subheadline, primary, secondary, 
       <ScrollParallax depth={0.55} className="absolute -bottom-20 left-[4%] -z-10 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
       <div aria-hidden="true" className="grain pointer-events-none absolute inset-0 -z-10" />
       <div className={cn('grid gap-16 items-center', safeImage ? 'lg:grid-cols-2' : 'max-w-3xl mx-auto text-center')}>
-        <div className="relative z-10">
+        <div className="hero-cinematic-dolly relative z-10">
           {safeEyebrow && (
             <span className="hero-enter text-accent text-sm font-mono tracking-widest uppercase" style={{ ['--enter-i' as string]: 0 }}>
               <ScrambleText text={safeEyebrow} />

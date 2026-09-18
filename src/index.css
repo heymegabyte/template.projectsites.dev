@@ -417,6 +417,29 @@ main#main { view-transition-name: ps-main; }
       to   { font-variation-settings: 'wght' 500, 'wdth' 90;  letter-spacing: 0;       }
     }
 
+    /* ── Cinematic hero DOLLY ──────────────────────────────────────────────
+       The hero CONTENT recedes (subtle scale-down + soft fade + tiny lift) as the
+       hero scrolls out of view — the Apple / Awwwards "camera pulls back into the
+       page" signature. Distinct from ScrollParallax (which drifts decorative orbs on
+       Y): this dollies the hero as a coordinated unit on EXIT.
+       LCP-SAFE by construction: animation-range exit means the timeline sits at 0%
+       (identity: transform none, opacity 1) while the hero is fully in view at first
+       paint (no scroll yet), so the LCP h1 paints unchanged; the recede only plays as
+       the visitor scrolls the hero off the top. Transform + opacity only, so it is
+       compositor-driven OFF the main thread (INP-safe) and never reflows (CLS-safe).
+       Base state (no animation-timeline support / reduced-motion) is perfectly static. */
+    .hero-cinematic-dolly {
+      animation: hero-dolly-recede linear both;
+      animation-timeline: view();
+      animation-range: exit 0% exit 85%;
+      transform-origin: center 28%;
+      will-change: transform, opacity;
+    }
+    @keyframes hero-dolly-recede {
+      from { transform: none;                        opacity: 1;    }
+      to   { transform: scale(0.94) translateY(-2%); opacity: 0.45; }
+    }
+
     .reveal-on-view {
       animation: rise-in linear both;
       animation-timeline: view();
