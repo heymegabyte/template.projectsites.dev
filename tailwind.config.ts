@@ -73,11 +73,18 @@ export default {
         'container-prose':  'var(--container-prose)',
       },
       keyframes: {
-        fadeInUp:     { '0%': { opacity: '0', transform: 'translateY(24px)' },  '100%': { opacity: '1', transform: 'translateY(0)' } },
-        fadeInDown:   { '0%': { opacity: '0', transform: 'translateY(-24px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-        slideInLeft:  { '0%': { opacity: '0', transform: 'translateX(-40px)' },'100%': { opacity: '1', transform: 'translateX(0)' } },
-        slideInRight: { '0%': { opacity: '0', transform: 'translateX(40px)' }, '100%': { opacity: '1', transform: 'translateX(0)' } },
-        scaleIn:      { '0%': { opacity: '0', transform: 'scale(0.9)' },        '100%': { opacity: '1', transform: 'scale(1)' } },
+        // Reveal keyframes FLOOR `0%` opacity at 0.9 (not 0): the visible motion is the
+        // transform (translate/scale), and a 0→1 opacity fade composites reveal TEXT below WCAG
+        // AA mid-flight (axe scans it as a "serious" color-contrast fail that settles AA-safe in
+        // <1s). Starting at 0.9 keeps text legible the whole reveal for default-motion visitors
+        // while the entrance motion reads identically. Mirrors the AL-440 fix for the index.css
+        // reveal keyframes (rise-in etc.); this closes the tailwind-config siblings AnimatedSection
+        // uses (AL-769 — surfaced by the generated-site visitor journey on /contact).
+        fadeInUp:     { '0%': { opacity: '0.9', transform: 'translateY(24px)' },  '100%': { opacity: '1', transform: 'translateY(0)' } },
+        fadeInDown:   { '0%': { opacity: '0.9', transform: 'translateY(-24px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+        slideInLeft:  { '0%': { opacity: '0.9', transform: 'translateX(-40px)' },'100%': { opacity: '1', transform: 'translateX(0)' } },
+        slideInRight: { '0%': { opacity: '0.9', transform: 'translateX(40px)' }, '100%': { opacity: '1', transform: 'translateX(0)' } },
+        scaleIn:      { '0%': { opacity: '0.9', transform: 'scale(0.9)' },        '100%': { opacity: '1', transform: 'scale(1)' } },
         subtleFloat:  { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-8px)' } },
         gradientShift:{ '0%': { backgroundPosition: '0% 50%' }, '50%': { backgroundPosition: '100% 50%' }, '100%': { backgroundPosition: '0% 50%' } },
         glowPulse:    { '0%, 100%': { boxShadow: '0 0 20px oklch(var(--brand-hue) 0.18 0.6 / 0.15)' }, '50%': { boxShadow: '0 0 40px oklch(var(--brand-hue) 0.18 0.6 / 0.30)' } },
