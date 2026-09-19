@@ -1,8 +1,8 @@
-import { type CSSProperties } from 'react';
-import { JsonLd } from '@/components/JsonLd';
-import { cn } from '@/lib/utils';
-import { isPlaceholder } from '@/lib/placeholders';
-import { cdnImageProps } from '@/lib/cdn-image';
+import { type CSSProperties } from "react";
+import { JsonLd } from "@/components/JsonLd";
+import { cn } from "@/lib/utils";
+import { isPlaceholder, scrubText, hasRealImage } from "@/lib/placeholders";
+import { cdnImageProps } from "@/lib/cdn-image";
 
 export interface TeamMember {
   name: string;
@@ -40,103 +40,145 @@ interface Props {
  */
 export function TeamGrid({
   members,
-  eyebrow = 'Our team',
-  headline = 'The humans behind the work',
+  eyebrow = "Our team",
+  headline = "The humans behind the work",
   description,
   className,
 }: Props) {
   // Drop unfilled `{TEAM_N_*}` slot members (a business with fewer people than the template's slots)
   // so a partial fill never renders a broken/empty card OR emits a `{TEAM_3_NAME}` Person JSON-LD.
-  // If NONE are filled (raw template skeleton / unit fixtures), keep all so the dev build renders.
+  // If NONE are filled: in DEV keep the fixtures so Storybook/dev renders; in PROD render NOTHING —
+  // a business must NEVER ship fabricated placeholder-named people (build-breaking per CLAUDE.md).
   const filled = members.filter((m) => !isPlaceholder(m.name));
-  const shown = filled.length > 0 ? filled : members;
+  const shown = filled.length > 0 ? filled : import.meta.env.DEV ? members : [];
+  if (shown.length === 0) return null;
   return (
-    <section className={cn('py-24 md:py-32 max-w-container-wide mx-auto px-6', className)}>
+    <section
+      className={cn(
+        "py-24 md:py-32 max-w-container-wide mx-auto px-6",
+        className,
+      )}
+    >
       <JsonLd
         data={shown.map((m) => ({
-          '@context': 'https://schema.org',
-          '@type': 'Person',
+          "@context": "https://schema.org",
+          "@type": "Person",
           name: m.name,
-          jobTitle: m.role,
-          image: m.photo,
+          jobTitle: scrubText(m.role) || undefined,
+          image: hasRealImage(m.photo) ? m.photo : undefined, // never a {TEAM_N_PHOTO} token in JSON-LD
           sameAs: m.links?.map((l) => l.href),
         }))}
       />
       <div className="text-center mb-16 reveal-on-view">
-        <span className="text-accent text-sm font-mono tracking-widest uppercase">{eyebrow}</span>
+        <span className="text-accent text-sm font-mono tracking-widest uppercase">
+          {eyebrow}
+        </span>
         <h2
           className="font-bold font-heading mt-4 mb-4 text-text text-balance tracking-[-0.02em]"
-          style={{ fontSize: 'clamp(1.75rem, 3vw + 0.5rem, 3rem)', lineHeight: 1.1 }}
+          style={{
+            fontSize: "clamp(1.75rem, 3vw + 0.5rem, 3rem)",
+            lineHeight: 1.1,
+          }}
         >
           {headline}
         </h2>
-        {description && <p className="text-text-muted max-w-2xl mx-auto text-lg text-pretty">{description}</p>}
+        {description && (
+          <p className="text-text-muted max-w-2xl mx-auto text-lg text-pretty">
+            {description}
+          </p>
+        )}
       </div>
       <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {shown.map((m, i) => {
           // Responsive + modern-format props for the headshot: raw Unsplash `fm=jpg` URLs →
           // `auto=format` (AVIF/WebP) + a per-width srcSet. Headshots are ~260px avatars in a
           // 3-col grid (half-width on phone). Additive (falls back to src); no-op for non-CDN URLs.
-          const rimg = m.photo ? cdnImageProps(m.photo, '(max-width: 768px) 50vw, 260px') : null;
+          // hasRealImage rejects `{TEAM_N_PHOTO}` tokens + empties → a placeholder never becomes a
+          // 404 <img>; the monogram fallback shows instead. role/bio scrubbed so a leaked
+          // `{TEAM_N_ROLE}`/`{TEAM_N_BIO}` never renders on a member with an otherwise-real name.
+          const safePhoto = hasRealImage(m.photo) ? m.photo : undefined;
+          const rimg = safePhoto
+            ? cdnImageProps(safePhoto, "(max-width: 768px) 50vw, 260px")
+            : null;
+          const role = scrubText(m.role);
+          const bio = scrubText(m.bio);
           return (
-          <li
-            key={`${m.name}-${i}`}
-            style={{ '--tm-i': i } as CSSProperties}
-            className="team-card card-tactile relative overflow-hidden reveal-on-view group transition-transform duration-300 hover:-translate-y-1 focus-within:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:focus-within:translate-y-0"
-          >
-            {/* Gradient top-accent bar — draws in + brightens on hover/focus. Decorative,
+            <li
+              key={`${m.name}-${i}`}
+              style={{ "--tm-i": i } as CSSProperties}
+              className="team-card card-tactile relative overflow-hidden reveal-on-view group transition-transform duration-300 hover:-translate-y-1 focus-within:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:focus-within:translate-y-0"
+            >
+              {/* Gradient top-accent bar — draws in + brightens on hover/focus. Decorative,
                 transform/opacity-only, motion-gated (keyed on --tm-lift). */}
-            <span aria-hidden="true" className="team-card-bar pointer-events-none" />
-            <div className="team-card-media relative aspect-square bg-surface-elevated overflow-hidden">
-              {m.photo ? (
-                <img
-                  src={rimg?.src ?? m.photo}
-                  srcSet={rimg?.srcSet}
-                  sizes={rimg?.sizes}
-                  alt={`Portrait of ${m.name}`}
-                  loading="lazy"
-                  decoding="async"
-                  className="team-card-photo h-full w-full object-cover"
+              <span
+                aria-hidden="true"
+                className="team-card-bar pointer-events-none"
+              />
+              <div className="team-card-media relative aspect-square bg-surface-elevated overflow-hidden">
+                {safePhoto ? (
+                  <img
+                    src={rimg?.src ?? safePhoto}
+                    srcSet={rimg?.srcSet}
+                    sizes={rimg?.sizes}
+                    alt={`Portrait of ${m.name}`}
+                    loading="lazy"
+                    decoding="async"
+                    className="team-card-photo h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="team-card-photo h-full w-full flex items-center justify-center text-6xl font-heading font-extrabold text-accent/30">
+                    {m.name
+                      .split(/\s+/)
+                      .slice(0, 2)
+                      .map((s) => s[0])
+                      .join("")}
+                  </div>
+                )}
+                {/* Accent scrim — warms in from the bottom on hover/focus for depth. */}
+                <span
+                  aria-hidden="true"
+                  className="team-card-scrim pointer-events-none absolute inset-0"
                 />
-              ) : (
-                <div className="team-card-photo h-full w-full flex items-center justify-center text-6xl font-heading font-extrabold text-accent/30">
-                  {m.name
-                    .split(/\s+/)
-                    .slice(0, 2)
-                    .map((s) => s[0])
-                    .join('')}
-                </div>
-              )}
-              {/* Accent scrim — warms in from the bottom on hover/focus for depth. */}
-              <span aria-hidden="true" className="team-card-scrim pointer-events-none absolute inset-0" />
-            </div>
-            <div className="p-6">
-              <h3
-                className="team-card-name font-heading font-bold text-text"
-                style={{ fontSize: 'clamp(1.125rem, 1rem + 0.5vw, 1.35rem)' }}
-              >
-                {m.name}
-              </h3>
-              <p className="text-accent text-sm font-mono">{m.role}</p>
-              {m.bio && <p className="mt-3 text-text-muted text-sm leading-relaxed">{m.bio}</p>}
-              {m.links && m.links.length > 0 && (
-                <ul className="mt-4 flex gap-3 flex-wrap">
-                  {m.links.map((l) => (
-                    <li key={l.href}>
-                      <a
-                        href={l.href}
-                        target={l.href.startsWith('http') ? '_blank' : undefined}
-                        rel={l.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                        className="text-text-muted hover:text-accent text-sm underline-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded"
-                      >
-                        {l.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </li>
+              </div>
+              <div className="p-6">
+                <h3
+                  className="team-card-name font-heading font-bold text-text"
+                  style={{ fontSize: "clamp(1.125rem, 1rem + 0.5vw, 1.35rem)" }}
+                >
+                  {m.name}
+                </h3>
+                {role && (
+                  <p className="text-accent text-sm font-mono">{role}</p>
+                )}
+                {bio && (
+                  <p className="mt-3 text-text-muted text-sm leading-relaxed">
+                    {bio}
+                  </p>
+                )}
+                {m.links && m.links.length > 0 && (
+                  <ul className="mt-4 flex gap-3 flex-wrap">
+                    {m.links.map((l) => (
+                      <li key={l.href}>
+                        <a
+                          href={l.href}
+                          target={
+                            l.href.startsWith("http") ? "_blank" : undefined
+                          }
+                          rel={
+                            l.href.startsWith("http")
+                              ? "noopener noreferrer"
+                              : undefined
+                          }
+                          className="text-text-muted hover:text-accent text-sm underline-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded"
+                        >
+                          {l.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </li>
           );
         })}
       </ul>

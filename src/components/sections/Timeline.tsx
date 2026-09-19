@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { cn } from '@/lib/utils';
-import { cdnImageProps } from '@/lib/cdn-image';
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { cn } from "@/lib/utils";
+import { cdnImageProps } from "@/lib/cdn-image";
+import { scrubText, hasRealImage } from "@/lib/placeholders";
 
 export interface TimelineEvent {
   year: string;
@@ -18,7 +19,7 @@ interface Props {
   description?: string;
   className?: string;
   /** Direction the timeline grows. Default `vertical`. */
-  orientation?: 'vertical' | 'horizontal';
+  orientation?: "vertical" | "horizontal";
 }
 
 /**
@@ -45,10 +46,11 @@ interface Props {
  * event renders in its final state. SSR-safe (returns `false` without `window`).
  */
 function motionAllowed(): boolean {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function")
+    return false;
   return (
-    window.matchMedia('(prefers-reduced-motion: no-preference)').matches &&
-    window.matchMedia('(prefers-reduced-data: no-preference)').matches
+    window.matchMedia("(prefers-reduced-motion: no-preference)").matches &&
+    window.matchMedia("(prefers-reduced-data: no-preference)").matches
   );
 }
 
@@ -70,7 +72,7 @@ export function Timeline({
   eyebrow,
   headline,
   description,
-  orientation = 'vertical',
+  orientation = "vertical",
   className,
 }: Props) {
   const rootRef = useRef<HTMLElement>(null);
@@ -80,7 +82,7 @@ export function Timeline({
   // motion is allowed (otherwise items are shown immediately by the CSS gate).
   useEffect(() => {
     const el = rootRef.current;
-    if (!el || !motionAllowed() || !('IntersectionObserver' in window)) return;
+    if (!el || !motionAllowed() || !("IntersectionObserver" in window)) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -96,72 +98,124 @@ export function Timeline({
 
   if (events.length === 0) return null;
 
+  // Scrub at source so BOTH orientation branches are token-safe: a leaked `{TIMELINE_N_TITLE}` /
+  // `{..._DESCRIPTION}` never renders, and a `{..._IMAGE}` token never becomes a 404 <img>.
+  const safeEvents = events.map((e) => ({
+    ...e,
+    title: scrubText(e.title),
+    description: scrubText(e.description),
+    image: hasRealImage(e.image) ? e.image : undefined,
+  }));
+
   return (
     <section
       ref={rootRef}
-      data-inview={inView ? 'true' : 'false'}
-      className={cn('tl-root py-24 md:py-32 max-w-container-normal mx-auto px-6', className)}
+      data-inview={inView ? "true" : "false"}
+      className={cn(
+        "tl-root py-24 md:py-32 max-w-container-normal mx-auto px-6",
+        className,
+      )}
     >
       {(eyebrow || headline) && (
         <div className="text-center mb-16 reveal-on-view">
-          {eyebrow && <span className="text-accent text-sm font-mono tracking-widest uppercase">{eyebrow}</span>}
-          {headline && (
-            <h2 className="text-balance text-3xl md:text-5xl font-bold font-heading mt-4 mb-4 text-text">{headline}</h2>
+          {eyebrow && (
+            <span className="text-accent text-sm font-mono tracking-widest uppercase">
+              {eyebrow}
+            </span>
           )}
-          {description && <p className="text-pretty text-text-muted max-w-2xl mx-auto">{description}</p>}
+          {headline && (
+            <h2 className="text-balance text-3xl md:text-5xl font-bold font-heading mt-4 mb-4 text-text">
+              {headline}
+            </h2>
+          )}
+          {description && (
+            <p className="text-pretty text-text-muted max-w-2xl mx-auto">
+              {description}
+            </p>
+          )}
         </div>
       )}
 
-      {orientation === 'vertical' ? (
+      {orientation === "vertical" ? (
         <ol className="tl-list">
-          {events.map((e, i) => {
+          {safeEvents.map((e, i) => {
             // Responsive + modern-format props for the entry photo (medium: full-width on phone,
             // ~1/2 beside the entry text on desktop). Additive (falls back to src); no-op non-CDN.
-            const eimg = e.image ? cdnImageProps(e.image, '(max-width: 768px) 100vw, 50vw') : null;
+            const eimg = e.image
+              ? cdnImageProps(e.image, "(max-width: 768px) 100vw, 50vw")
+              : null;
             return (
-            <li key={`${e.year}-${i}`} className="tl-item" style={{ '--tl-i': i } as CSSProperties}>
-              <span aria-hidden="true" className="tl-node" />
-              <time className="tl-year font-mono text-accent" dateTime={e.year}>
-                {e.year}
-              </time>
-              <h3 className="tl-title text-text font-heading">{e.title}</h3>
-              {e.image && (
-                <figure className="tl-fig">
-                  <img
-                    src={eimg?.src ?? e.image}
-                    srcSet={eimg?.srcSet}
-                    sizes={eimg?.sizes}
-                    alt={e.imageAlt ?? ''}
-                    decoding="async"
-                    loading="lazy"
-                  />
-                </figure>
-              )}
-              <p className="tl-desc text-text-muted">{e.description}</p>
-              {e.link && (
-                <a
-                  href={e.link.href}
-                  className="inline-block mt-3 text-sm text-accent underline-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 rounded"
-                  {...(e.link.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              <li
+                key={`${e.year}-${i}`}
+                className="tl-item"
+                style={{ "--tl-i": i } as CSSProperties}
+              >
+                <span aria-hidden="true" className="tl-node" />
+                <time
+                  className="tl-year font-mono text-accent"
+                  dateTime={e.year}
                 >
-                  {e.link.label} →
-                </a>
-              )}
-            </li>
+                  {e.year}
+                </time>
+                {e.title && (
+                  <h3 className="tl-title text-text font-heading">{e.title}</h3>
+                )}
+                {e.image && (
+                  <figure className="tl-fig">
+                    <img
+                      src={eimg?.src ?? e.image}
+                      srcSet={eimg?.srcSet}
+                      sizes={eimg?.sizes}
+                      alt={e.imageAlt ?? ""}
+                      decoding="async"
+                      loading="lazy"
+                    />
+                  </figure>
+                )}
+                {e.description && (
+                  <p className="tl-desc text-text-muted">{e.description}</p>
+                )}
+                {e.link && (
+                  <a
+                    href={e.link.href}
+                    className="inline-block mt-3 text-sm text-accent underline-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 rounded"
+                    {...(e.link.href.startsWith("http")
+                      ? { target: "_blank", rel: "noopener noreferrer" }
+                      : {})}
+                  >
+                    {e.link.label} →
+                  </a>
+                )}
+              </li>
             );
           })}
         </ol>
       ) : (
         <ol className="tl-track">
-          {events.map((e, i) => (
-            <li key={`${e.year}-${i}`} className="tl-card tl-item" style={{ '--tl-i': i } as CSSProperties}>
+          {safeEvents.map((e, i) => (
+            <li
+              key={`${e.year}-${i}`}
+              className="tl-card tl-item"
+              style={{ "--tl-i": i } as CSSProperties}
+            >
               <time className="tl-year font-mono text-accent" dateTime={e.year}>
                 {e.year}
               </time>
-              <h3 className="tl-title text-text font-heading" style={{ fontSize: 'clamp(1.05rem, 0.95rem + 0.5vw, 1.3rem)' }}>
-                {e.title}
-              </h3>
-              <p className="tl-desc text-text-muted text-sm">{e.description}</p>
+              {e.title && (
+                <h3
+                  className="tl-title text-text font-heading"
+                  style={{
+                    fontSize: "clamp(1.05rem, 0.95rem + 0.5vw, 1.3rem)",
+                  }}
+                >
+                  {e.title}
+                </h3>
+              )}
+              {e.description && (
+                <p className="tl-desc text-text-muted text-sm">
+                  {e.description}
+                </p>
+              )}
             </li>
           ))}
         </ol>
