@@ -11,6 +11,7 @@ import { WebGLHeroBackdrop, backdropForPreset, type HeroBackdropVariant } from '
 import { TiltCard } from '@/components/TiltCard';
 import { ScrollParallax } from '@/components/ScrollParallax';
 import { ScrambleText } from '@/components/ScrambleText';
+import { RotatingSubhead } from '@/components/RotatingSubhead';
 import { kineticHeadlineEnabled } from '@/lib/featureFlags';
 
 type Trust = { icon?: 'star' | 'shield' | 'award'; label: string };
@@ -35,6 +36,12 @@ interface CommonProps {
   eyebrow?: string;
   headline: string;
   subheadline?: string;
+  /**
+   * The business's top value props (site-gen filled). When the `rotating_subhead` flag is on AND
+   * ≥2 are present, the hero subhead cross-fades through them (three reasons to convert, not one).
+   * Omitted / <2 / flag-dark → the single `subheadline` renders unchanged. See {@link RotatingSubhead}.
+   */
+  valueProps?: string[];
   primary?: { label: string; href: string };
   secondary?: { label: string; href: string };
   trustBadges?: Trust[];
@@ -91,7 +98,7 @@ function TrustRow({ items }: { items?: Trust[] }) {
  * none) and sit behind the z-10 content. All motion is gated behind
  * `prefers-reduced-motion` — base states stay fully visible + legible.
  */
-export function HeroCenter({ eyebrow, headline, subheadline, primary, secondary, trustBadges, className, webglBackdrop }: CommonProps) {
+export function HeroCenter({ eyebrow, headline, subheadline, valueProps, primary, secondary, trustBadges, className, webglBackdrop }: CommonProps) {
   // The headline is the only <h1> — it must ALWAYS render, so fall back to the
   // real business name when the generation token is unresolved. Everything else
   // scrubs to empty/undefined and is hidden by its own guard.
@@ -153,12 +160,12 @@ export function HeroCenter({ eyebrow, headline, subheadline, primary, secondary,
           {safeHeadline}
         </h1>
         {safeSubheadline && (
-          <p
+          <RotatingSubhead
+            text={safeSubheadline}
+            items={valueProps}
             className="hero-enter text-lg md:text-xl text-text-muted max-w-2xl mx-auto mt-8 leading-relaxed"
             style={{ ['--enter-i' as string]: 2 }}
-          >
-            {safeSubheadline}
-          </p>
+          />
         )}
         {(safePrimary || safeSecondary) && (
           <div
@@ -200,7 +207,7 @@ interface SplitProps extends CommonProps {
 }
 
 /** Asymmetric hero: copy left, image right. Good for storefronts + services. */
-export function HeroSplit({ eyebrow, headline, subheadline, primary, secondary, image, trustBadges, className, webglBackdrop }: SplitProps) {
+export function HeroSplit({ eyebrow, headline, subheadline, valueProps, primary, secondary, image, trustBadges, className, webglBackdrop }: SplitProps) {
   const safeHeadline = scrubText(headline, brand.business.name);
   const safeEyebrow = scrubText(eyebrow);
   const safeSubheadline = scrubText(subheadline);
@@ -253,9 +260,12 @@ export function HeroSplit({ eyebrow, headline, subheadline, primary, secondary, 
             <span className="gradient-text">{safeHeadline}</span>
           </h1>
           {safeSubheadline && (
-            <p className="hero-enter mt-6 text-lg md:text-xl text-text-muted leading-relaxed max-w-xl" style={{ ['--enter-i' as string]: 2 }}>
-              {safeSubheadline}
-            </p>
+            <RotatingSubhead
+              text={safeSubheadline}
+              items={valueProps}
+              className="hero-enter mt-6 text-lg md:text-xl text-text-muted leading-relaxed max-w-xl"
+              style={{ ['--enter-i' as string]: 2 }}
+            />
           )}
           {(safePrimary || safeSecondary) && (
             <div

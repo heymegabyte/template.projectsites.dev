@@ -402,6 +402,32 @@ main#main { view-transition-name: ps-main; }
 .interactive-4:active { transform: translateY(0) scale(0.98); }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   ROTATING SUBHEAD (AI value-proposition rotator — flag rotating_subhead)
+   The hero subhead cross-fades through the business's top value props. The props
+   render in a GRID-STACK (all in one grid cell) so the <p> sizes to the tallest
+   prop → ZERO CLS as they rotate. Opacity-only transition → compositor-driven,
+   INP-safe, never reflows. prop[0] paints opaque at first render (LCP-safe: the
+   subhead sits below the <h1>). reduced-motion → the JS holds on prop[0] AND the
+   fade is disabled here, so the resting state is a fully-legible static value prop.
+   ─────────────────────────────────────────────────────────────────────── */
+.rotating-subhead__stack {
+  display: grid;
+}
+.rotating-subhead__stack > .rotating-subhead__item {
+  grid-area: 1 / 1; /* stack every prop in the same cell → container = tallest prop */
+  opacity: 0;
+  transition: opacity 700ms ease;
+}
+.rotating-subhead__stack > .rotating-subhead__item[data-active='1'] {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rotating-subhead__stack > .rotating-subhead__item {
+    transition: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
    KINETIC HERO (scroll-driven typography)
    Falls back gracefully where animation-timeline isn't supported.
    ─────────────────────────────────────────────────────────────────────── */

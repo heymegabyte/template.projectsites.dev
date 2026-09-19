@@ -109,3 +109,53 @@ describe('Kinetic display headline (kinetic_headline flag) — LCP-safe hero <h1
     expect(c1.querySelector('h1.hero-headline-fluid.kinetic-headline')).not.toBeNull();
   });
 });
+
+describe('Rotating AI value-prop subhead (rotating_subhead flag) — conversion, LCP-safe, a11y-complete', () => {
+  afterEach(() => vi.unstubAllEnvs());
+  const PROPS = ['Fresh-roasted daily', 'Ethically sourced', 'Neighborhood favorite'];
+
+  it('is DARK by default — the subhead renders the single line, NO rotating stack (fleet unchanged)', () => {
+    const { container } = renderIn(
+      <HeroCenter headline="H" subheadline="Great coffee, every day." valueProps={PROPS} />,
+    );
+    expect(container.querySelector('[data-rotating]')).toBeNull();
+    expect(container.querySelector('.rotating-subhead__stack')).toBeNull();
+    expect(container.textContent).toContain('Great coffee, every day.');
+  });
+
+  it('VITE_ROTATING_SUBHEAD=1 + ≥2 props → cross-fade stack (both variants); prop[0] active, all props in DOM, sr-complete', () => {
+    vi.stubEnv('VITE_ROTATING_SUBHEAD', '1');
+    for (const container of [
+      renderIn(<HeroCenter headline="H" subheadline="fallback" valueProps={PROPS} />).container,
+      renderIn(
+        <HeroSplit
+          headline="H"
+          subheadline="fallback"
+          valueProps={PROPS}
+          image={{ src: 'https://example.com/hero.jpg', alt: 'Storefront' }}
+        />,
+      ).container,
+    ]) {
+      const stack = container.querySelector('[data-rotating="1"] .rotating-subhead__stack');
+      expect(stack).not.toBeNull();
+      // every value prop is in the DOM (CLS-safe grid-stack), exactly ONE is active (prop[0] at first paint)
+      const items = stack!.querySelectorAll('.rotating-subhead__item');
+      expect(items.length).toBe(PROPS.length);
+      const active = stack!.querySelectorAll('.rotating-subhead__item[data-active="1"]');
+      expect(active.length).toBe(1);
+      expect(active[0].textContent).toBe('Fresh-roasted daily');
+      // the animated layer is aria-hidden; a screen reader reads the COMPLETE list once (not the flashing one)
+      expect(stack!.getAttribute('aria-hidden')).toBe('true');
+      expect(container.querySelector('.sr-only')?.textContent).toBe('Fresh-roasted daily. Ethically sourced. Neighborhood favorite.');
+    }
+  });
+
+  it('flag ON but <2 props → falls back to the single subheadline (rotation needs ≥2 reasons)', () => {
+    vi.stubEnv('VITE_ROTATING_SUBHEAD', '1');
+    const { container } = renderIn(
+      <HeroCenter headline="H" subheadline="Just the one line." valueProps={['Only one prop']} />,
+    );
+    expect(container.querySelector('[data-rotating]')).toBeNull();
+    expect(container.textContent).toContain('Just the one line.');
+  });
+});

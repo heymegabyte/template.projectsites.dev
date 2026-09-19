@@ -210,3 +210,19 @@ export function scrollStackEnabled(): boolean {
 export function kineticHeadlineEnabled(): boolean {
   return import.meta.env.VITE_KINETIC_HEADLINE === '1';
 }
+
+/**
+ * Rotating AI value-proposition sub-headline (`rotating_subhead` / VITE_ROTATING_SUBHEAD) — the
+ * Stripe / Linear "rotating headline" pattern made AI-native + conversion-lifting: when site-gen
+ * supplies ≥2 value props (the business's top reasons-to-buy, e.g. "Fresh-roasted daily" ·
+ * "Ethically sourced" · "Neighborhood favorite"), the hero subhead cross-fades through them so a
+ * visitor sees THREE reasons to convert instead of one — the AI does the work, the owner just
+ * confirms. Falls back to the single subheadline when dark, reduced-motion, or fewer than 2 props,
+ * so it is ZERO-RISK and byte-identical to today until a build opts in. LCP-safe (the subhead is
+ * below the <h1> LCP element; prop[0] paints immediately in a CLS-safe grid-stack; the cross-fade
+ * only starts post-hydration) + a11y (the full prop list is always in the DOM for screen readers,
+ * the animated layer is aria-hidden). Dark by default; opt a build in with `VITE_ROTATING_SUBHEAD=1`.
+ */
+export function rotatingSubheadEnabled(): boolean {
+  return import.meta.env.VITE_ROTATING_SUBHEAD === '1';
+}
