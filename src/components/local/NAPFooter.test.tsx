@@ -71,3 +71,36 @@ describe("NAPFooter — visitor conversion links (embarrassingly-easy)", () => {
     expect(container.querySelector('[itemprop="telephone"]')).not.toBeNull();
   });
 });
+
+describe("NAPFooter — placeholder/empty NAP data renders NO dead controls", () => {
+  const placeholder = {
+    businessName: "New Business",
+    address: "{ADDRESS}", // unfilled token
+    phone: "Call for hours", // digitless — telHref → ''
+    email: "{EMAIL}", // token
+    hours: { Monday: "9am–5pm" },
+    socialLinks: [{ platform: "facebook", url: "#" }], // dead link
+  };
+
+  it("renders no dead tel:/mailto:/maps/social + leaks no {TOKEN} when data is placeholder", () => {
+    const { container } = render(<NAPFooter {...placeholder} />);
+    expect(container.querySelector('a[href^="tel:"]')).toBeNull(); // digitless → no Call row
+    expect(container.querySelector('a[href^="mailto:"]')).toBeNull(); // token email → no email row
+    expect(container.querySelector('a[href*="maps/dir"]')).toBeNull(); // token address → no directions
+    expect(container.querySelector('a[href="#"]')).toBeNull(); // '#' social dropped
+    expect(container.textContent).not.toContain("{ADDRESS}");
+    expect(container.textContent).not.toContain("{EMAIL}");
+    expect(container.textContent).not.toContain("Connect With Us"); // heading hidden with no real socials
+  });
+
+  it("renders ONLY the real controls in a mixed set (real phone, token address/email)", () => {
+    const { container } = render(
+      <NAPFooter {...placeholder} phone="(415) 555-0123" />,
+    );
+    expect(
+      container.querySelector('a[href^="tel:"]')?.getAttribute("href"),
+    ).toBe("tel:4155550123");
+    expect(container.querySelector('a[href^="mailto:"]')).toBeNull();
+    expect(container.querySelector('a[href*="maps/dir"]')).toBeNull();
+  });
+});

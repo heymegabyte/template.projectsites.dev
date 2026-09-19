@@ -9,6 +9,7 @@ import {
   Linkedin,
   Youtube,
 } from "lucide-react";
+import { telHref } from "../../lib/phone";
 
 interface SocialLink {
   platform: string;
@@ -81,6 +82,19 @@ export default function NAPFooter({
   logoSrc,
 }: NAPFooterProps) {
   const today = getTodayDay();
+  // Fail-safe every NAP control: render a contact link ONLY when its datum is real, never a dead
+  // href on a placeholder/empty value (a doomed control — the visitor taps and nothing happens, or
+  // an unfilled {TOKEN} leaks as text). Mirrors LocationMap's guards + the shared telHref helper.
+  const hasAddress = Boolean(
+    address && !address.startsWith("{") && address.trim().length >= 6,
+  );
+  const phoneHref = telHref(phone); // '' unless dialable (≥7 digits, not a {token})
+  const hasEmail = Boolean(
+    email && !email.startsWith("{") && email.includes("@"),
+  );
+  const validSocials = (socialLinks ?? []).filter(
+    (s) => typeof s.url === "string" && s.url.startsWith("http"),
+  ); // drops '#' / '' / '{token}' — no dead social link
   // One-tap turn-by-turn DIRECTIONS (not a search-results page) — matches the
   // `direction_click` event fired below, the template's AGENTS.md convention, and every
   // sibling (Footer/AddressLink/LocationMap). A visitor tapping the address wants to
@@ -131,37 +145,43 @@ export default function NAPFooter({
             </h2>
 
             <div className="space-y-3">
-              <a
-                href={mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`${rowClass} items-start`}
-                onClick={() => track("direction_click", { address })}
-                itemProp="address"
-                itemScope
-                itemType="https://schema.org/PostalAddress"
-              >
-                <MapPin size={18} className={`${iconClass} mt-0.5`} />
-                <span itemProp="streetAddress">{address}</span>
-              </a>
+              {hasAddress && (
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${rowClass} items-start`}
+                  onClick={() => track("direction_click", { address })}
+                  itemProp="address"
+                  itemScope
+                  itemType="https://schema.org/PostalAddress"
+                >
+                  <MapPin size={18} className={`${iconClass} mt-0.5`} />
+                  <span itemProp="streetAddress">{address}</span>
+                </a>
+              )}
 
-              <a
-                href={`tel:${phone.replace(/[^+\d]/g, "")}`}
-                className={rowClass}
-                onClick={() => track("phone_click", { phone })}
-              >
-                <Phone size={18} className={iconClass} />
-                <span itemProp="telephone">{phone}</span>
-              </a>
+              {phoneHref && (
+                <a
+                  href={phoneHref}
+                  className={rowClass}
+                  onClick={() => track("phone_click", { phone })}
+                >
+                  <Phone size={18} className={iconClass} />
+                  <span itemProp="telephone">{phone}</span>
+                </a>
+              )}
 
-              <a
-                href={`mailto:${email}`}
-                className={rowClass}
-                onClick={() => track("email_click", { email })}
-              >
-                <Mail size={18} className={iconClass} />
-                <span itemProp="email">{email}</span>
-              </a>
+              {hasEmail && (
+                <a
+                  href={`mailto:${email}`}
+                  className={rowClass}
+                  onClick={() => track("email_click", { email })}
+                >
+                  <Mail size={18} className={iconClass} />
+                  <span itemProp="email">{email}</span>
+                </a>
+              )}
             </div>
           </div>
 
@@ -211,11 +231,13 @@ export default function NAPFooter({
             className="nap-col reveal-on-view"
             style={{ ["--col-i" as string]: 2 } as React.CSSProperties}
           >
-            <h3 className="text-lg font-heading font-bold text-text mb-4">
-              Connect With Us
-            </h3>
+            {validSocials.length > 0 && (
+              <h3 className="text-lg font-heading font-bold text-text mb-4">
+                Connect With Us
+              </h3>
+            )}
             <div className="flex flex-wrap gap-3">
-              {socialLinks.map(({ platform, url }) => {
+              {validSocials.map(({ platform, url }) => {
                 const key = platform.toLowerCase();
                 const Icon = SOCIAL_ICONS[key];
                 return (
