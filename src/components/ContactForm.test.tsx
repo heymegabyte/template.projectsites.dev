@@ -93,8 +93,46 @@ describe('ContactForm — clears controlled fields on a successful send', () => 
       expect(email).toHaveValue('');
       expect(message).toHaveValue('');
     });
-    // Exactly one POST to the slug endpoint (contract intact).
+    // Exactly one POST to the CORRECT public ingest endpoint. REGRESSION: the old default posted to
+    // `/api/contact/{slug}` — a route that does NOT exist (only `/api/contact` slug-less +
+    // `/api/contact-form/:slug`) → 404 whenever this React path ran without app.js's hijack. Must be
+    // `/api/contact-form/{slug}`, the same endpoint app.js + <QuoteForm> use. `toContain('test-slug')`
+    // alone was BLIND to the wrong path (it matches both), so assert the full endpoint.
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect((fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0][0]).toContain('test-slug');
+    expect((fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0][0]).toBe(
+      '/api/contact-form/test-slug',
+    );
+  });
+});
+
+describe('ContactForm — a network failure shows friendly copy, never raw error jargon', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('a rejected fetch shows a plain retry message (not "Failed to fetch") + keeps fields for retry', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('Failed to fetch');
+      }),
+    );
+    render(<ContactForm slug="test-slug" />);
+    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'Jane Doe' } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'jane@example.com' } });
+    const message = screen.getByLabelText(/message/i) as HTMLTextAreaElement;
+    fireEvent.change(message, { target: { value: 'Hello — a genuine enquiry about your hours.' } });
+
+    const submit = screen.getByRole('button', { name: /send message/i });
+    await waitFor(() => expect(submit).not.toBeDisabled());
+    fireEvent.click(submit);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toMatch(/check your connection/i); // friendly, guides the visitor
+    expect(alert.textContent).not.toMatch(/failed to fetch/i); // never leaks raw Error.message
+    // Fields are KEPT (only the success path clears) so the visitor retries without re-typing.
+    expect(screen.getByLabelText(/name/i)).toHaveValue('Jane Doe');
+    expect(message).toHaveValue('Hello — a genuine enquiry about your hours.');
   });
 });

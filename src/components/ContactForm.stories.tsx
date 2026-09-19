@@ -44,7 +44,7 @@ export const Default: Story = {
 };
 
 /**
- * Points at an explicit `endpoint`, overriding the `/api/contact/{slug}` default
+ * Points at an explicit `endpoint`, overriding the `/api/contact-form/{slug}` default
  * — useful for a preview environment or a mock server.
  */
 export const CustomEndpoint: Story = {

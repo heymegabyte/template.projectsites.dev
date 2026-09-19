@@ -31,8 +31,9 @@ import { z } from 'zod';
  * so the edge-injected app.js form-hijack that POSTs to `/api/contact-form/{slug}`
  * still works. The live affordances only wrap the existing fields.
  *
- * Drop into any `Contact.tsx`-style page. Posts to `/api/contact/{slug}` by
- * default; override via the `endpoint` prop.
+ * Drop into any `Contact.tsx`-style page. Posts to `/api/contact-form/{slug}` by
+ * default (the exact endpoint app.js's hijack + `<QuoteForm>` use); override via the
+ * `endpoint` prop.
  */
 
 const ContactSchema = z.object({
@@ -108,8 +109,15 @@ async function submit(
   _prev: ContactState,
   formData: FormData,
 ): Promise<ContactState> {
+  // Default to the SAME public ingest endpoint app.js's form-hijack + <QuoteForm> use
+  // (`/api/contact-form/:slug`) — there is no `/api/contact/:slug` route, so the old fallback 404'd
+  // whenever this React path ran without app.js (local preview / Storybook / a failed inject). An
+  // explicit `__endpoint` override still wins. (Type-honest: `formData.get` is `string | File | null`.)
+  const rawEndpoint = formData.get('__endpoint');
   const endpoint =
-    (formData.get('__endpoint') as string) ?? `/api/contact/${formData.get('__slug') ?? 'default'}`;
+    typeof rawEndpoint === 'string' && rawEndpoint
+      ? rawEndpoint
+      : `/api/contact-form/${formData.get('__slug') ?? 'default'}`;
 
   const parsed = ContactSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
@@ -131,10 +139,14 @@ async function submit(
       return { status: 'error', message: data.error ?? 'Could not send. Please try again.' };
     }
     return { status: 'success', message: "Thanks. We'll reply within 24 hours." };
-  } catch (err) {
+  } catch {
+    // Never surface a raw Error.message ("Failed to fetch" / "NetworkError…") to a visitor — it
+    // reads as broken. Give a plain, reassuring next step (embarrassingly-easy: language that guides,
+    // not jargon). The field values are untouched (React 19 only resets on the success path), so the
+    // visitor can retry without re-typing.
     return {
       status: 'error',
-      message: err instanceof Error ? err.message : 'Network error. Please retry.',
+      message: "Couldn't send — please check your connection and try again.",
     };
   }
 }
