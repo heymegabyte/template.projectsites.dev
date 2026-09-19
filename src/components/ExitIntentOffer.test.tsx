@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { ExitIntentOffer, deriveOffer } from './ExitIntentOffer';
@@ -69,5 +69,121 @@ describe('ExitIntentOffer — dark until the exit signal (LCP-safe)', () => {
     );
     // Flag on, but no cursor-leaves-top signal yet → still nothing (only mounts on the real exit).
     expect(on.queryByTestId('exit-intent-offer')).toBeNull();
+  });
+});
+
+describe('ExitIntentOffer — MOBILE exit-intent (2026: scroll-up-after-engage on touch)', () => {
+  const ARM_MS = 4000; // mirrors ARM_DELAY_MS (module-private)
+  afterEach(() => {
+    vi.useRealTimers();
+    try {
+      sessionStorage.removeItem('ps_exit_offer_v1');
+    } catch {
+      /* ignore */
+    }
+  });
+
+  it('fires the recovery offer when a touch visitor scrolls deep then darts back to the top', async () => {
+    vi.useFakeTimers();
+    vi.stubEnv('VITE_EXIT_INTENT', '1');
+    try {
+      sessionStorage.removeItem('ps_exit_offer_v1');
+    } catch {
+      /* ignore */
+    }
+    // Emulate a TOUCH device: (pointer: fine) → false → the component takes the mobile branch.
+    const mm = vi.spyOn(window, 'matchMedia').mockImplementation(
+      (q: string) =>
+        ({
+          matches: !/pointer:\s*fine/.test(q),
+          media: q,
+          onchange: null,
+          addListener: () => {},
+          removeListener: () => {},
+          addEventListener: () => {},
+          removeEventListener: () => {},
+          dispatchEvent: () => false,
+        }) as unknown as MediaQueryList,
+    );
+    let y = 0;
+    Object.defineProperty(window, 'scrollY', { configurable: true, get: () => y });
+
+    const r = render(
+      <MemoryRouter>
+        <ExitIntentOffer />
+      </MemoryRouter>,
+    );
+    expect(r.queryByTestId('exit-intent-offer')).toBeNull(); // dark until the gesture
+
+    // BEFORE arming: even a perfect leave-gesture is ignored (no accidental early nag).
+    act(() => {
+      y = 800;
+      window.dispatchEvent(new Event('scroll'));
+      y = 40;
+      window.dispatchEvent(new Event('scroll'));
+    });
+    expect(r.queryByTestId('exit-intent-offer')).toBeNull();
+
+    // Arm (4s grace), then engage (scroll deep) → dart back up near the top = the leave signal.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(ARM_MS + 20);
+    });
+    act(() => {
+      y = 900;
+      window.dispatchEvent(new Event('scroll')); // engaged (deepest ≥ 600)
+      y = 30;
+      window.dispatchEvent(new Event('scroll')); // darting up toward the top → OPEN
+    });
+    expect(r.queryByTestId('exit-intent-offer')).not.toBeNull();
+    // AI-derived recovery CTA is present (zero owner config).
+    expect(r.queryByTestId('exit-intent-cta')).not.toBeNull();
+
+    mm.mockRestore();
+    r.unmount();
+  });
+
+  it('does NOT fire on a shallow scroll (never engaged past the depth floor)', async () => {
+    vi.useFakeTimers();
+    vi.stubEnv('VITE_EXIT_INTENT', '1');
+    try {
+      sessionStorage.removeItem('ps_exit_offer_v1');
+    } catch {
+      /* ignore */
+    }
+    const mm = vi.spyOn(window, 'matchMedia').mockImplementation(
+      (q: string) =>
+        ({
+          matches: !/pointer:\s*fine/.test(q),
+          media: q,
+          onchange: null,
+          addListener: () => {},
+          removeListener: () => {},
+          addEventListener: () => {},
+          removeEventListener: () => {},
+          dispatchEvent: () => false,
+        }) as unknown as MediaQueryList,
+    );
+    let y = 0;
+    Object.defineProperty(window, 'scrollY', { configurable: true, get: () => y });
+
+    const r = render(
+      <MemoryRouter>
+        <ExitIntentOffer />
+      </MemoryRouter>,
+    );
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(ARM_MS + 20);
+    });
+    // Shallow bob: down 200 (< 600 depth floor) then back up — NOT an engaged visitor → no offer.
+    act(() => {
+      y = 200;
+      window.dispatchEvent(new Event('scroll'));
+      y = 10;
+      window.dispatchEvent(new Event('scroll'));
+    });
+    expect(r.queryByTestId('exit-intent-offer')).toBeNull();
+
+    mm.mockRestore();
+    r.unmount();
   });
 });

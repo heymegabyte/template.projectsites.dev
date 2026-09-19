@@ -25,6 +25,14 @@ import { mailtoHref } from "@/lib/email";
  */
 const SESSION_KEY = "ps_exit_offer_v1";
 const ARM_DELAY_MS = 4000;
+// MOBILE exit-intent gesture (touch devices have no cursor-leaves-top signal): the visitor must
+// have ENGAGED — scrolled down past MOBILE_MIN_DEPTH_PX — and then dart back UP to within
+// MOBILE_TOP_PX of the very top (heading for the back button / tab bar). This is the 2026 mobile
+// abandonment signal the big AI builders don't ship; local-business traffic is majority-mobile, so
+// desktop-only recovery left the highest-value visitors uncovered. Session-once + 4s-armed exactly
+// like desktop, so a phone user sees the ONE recovery offer at most — never a nag.
+const MOBILE_MIN_DEPTH_PX = 600;
+const MOBILE_TOP_PX = 120;
 
 export interface OfferCta {
   readonly href: string;
@@ -75,15 +83,6 @@ export function ExitIntentOffer() {
 
   useEffect(() => {
     if (!exitIntentEnabled()) return;
-    // Coarse-pointer (touch) devices have no cursor exit signal — desktop only, so we never nag a
-    // phone user who can't produce the gesture.
-    let finePointer = true;
-    try {
-      finePointer = window.matchMedia?.("(pointer: fine)").matches !== false;
-    } catch {
-      /* matchMedia unavailable → assume desktop */
-    }
-    if (!finePointer) return;
 
     let seen = false;
     try {
@@ -93,23 +92,25 @@ export function ExitIntentOffer() {
     }
     if (seen) return;
 
+    // Fine pointer (mouse) → desktop cursor-leaves-top signal; coarse pointer (touch) → the mobile
+    // scroll-abandonment gesture. Either way the offer fires AT MOST ONCE (session-once + `fired`).
+    let finePointer = true;
+    try {
+      finePointer = window.matchMedia?.("(pointer: fine)").matches !== false;
+    } catch {
+      /* matchMedia unavailable → assume desktop */
+    }
+
     let armed = false;
     let fired = false; // fire at most ONCE per mount (sessionStorage guards across mounts)
     const armTimer = setTimeout(() => {
       armed = true;
     }, ARM_DELAY_MS);
 
-    const onMouseOut = (e: MouseEvent) => {
-      // Cursor left through the TOP edge (toward the tab bar / URL / close button), not into
-      // another element or out a side. `relatedTarget` null + clientY≤0 is the classic signal.
-      if (
-        fired ||
-        !armed ||
-        e.relatedTarget ||
-        (e as MouseEvent & { toElement?: unknown }).toElement
-      )
-        return;
-      if (e.clientY > 0) return;
+    // Shared recovery-offer trigger: session-once, arm-gated, single-shot — desktop + mobile both
+    // route through it so the "at most one nudge" guarantee holds regardless of the signal.
+    const trigger = () => {
+      if (fired || !armed) return;
       fired = true;
       lastFocus.current = document.activeElement;
       try {
@@ -120,10 +121,37 @@ export function ExitIntentOffer() {
       setOpen(true);
     };
 
-    document.addEventListener("mouseout", onMouseOut);
+    if (finePointer) {
+      const onMouseOut = (e: MouseEvent) => {
+        // Cursor left through the TOP edge (toward the tab bar / URL / close button), not into
+        // another element or out a side. `relatedTarget` null + clientY≤0 is the classic signal.
+        if (e.relatedTarget || (e as MouseEvent & { toElement?: unknown }).toElement) return;
+        if (e.clientY > 0) return;
+        trigger();
+      };
+      document.addEventListener("mouseout", onMouseOut);
+      return () => {
+        clearTimeout(armTimer);
+        document.removeEventListener("mouseout", onMouseOut);
+      };
+    }
+
+    // MOBILE: no cursor to leave the viewport, so watch for the abandonment gesture — engaged
+    // (scrolled down past MOBILE_MIN_DEPTH_PX) then darting back UP to within MOBILE_TOP_PX of the
+    // top. `passive` listener + null-until-open keeps it LCP/INP-safe (never blocks the scroll).
+    let deepest = 0;
+    let lastY = typeof window !== "undefined" ? window.scrollY || 0 : 0;
+    const onScroll = () => {
+      const y = window.scrollY || 0;
+      if (y > deepest) deepest = y;
+      const leavingUp = deepest >= MOBILE_MIN_DEPTH_PX && y < MOBILE_TOP_PX && y < lastY;
+      lastY = y;
+      if (leavingUp) trigger();
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       clearTimeout(armTimer);
-      document.removeEventListener("mouseout", onMouseOut);
+      window.removeEventListener("scroll", onScroll);
     };
   }, []);
 
