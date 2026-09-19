@@ -164,7 +164,7 @@ const teamRoles: TeamRole[] = [
  * Root-cause fix (journey 2026-08-22 — site scored 3/10, "zero conversion /
  * local-SEO scaffolding: no NAP, no phone/tel:/mailto:, forms=0, hero CTA had
  * no target"). The template already owned a working `<ContactForm>` (Zod-
- * validated, React 19 `useActionState`, POSTs to `/api/contact/{slug}`) and a
+ * validated, React 19 `useActionState`, POSTs to `/api/contact-form/{slug}`) and a
  * NAP-aware `<Footer>`, but the DEFAULT `Home` rendered NEITHER — so a naive
  * generation that only touched the hero shipped a page with no lead form, no
  * click-to-call, and no machine-readable local-business signal on the homepage.
