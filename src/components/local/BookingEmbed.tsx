@@ -1,4 +1,5 @@
 import { Calendar, Phone, Send, ChevronDown } from 'lucide-react';
+import { telHref } from '@/lib/phone';
 import { useState } from 'react';
 
 type BookingProvider = 'calendly' | 'acuity' | 'square' | 'custom';
@@ -54,6 +55,9 @@ export default function BookingEmbed({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Every "or call us" tel: link renders only for a dialable phone (never a {token}/empty).
+  const callHref = telHref(phone);
+
   // Iframe embed for known providers
   if (provider !== 'custom' && embedUrl) {
     const config = PROVIDER_CONFIG[provider] ?? { minHeight: '600px', title: 'Book Online' };
@@ -67,9 +71,9 @@ export default function BookingEmbed({
                 <Calendar size={20} className="text-[var(--color-accent)]" />
                 <h2 className="text-lg font-heading font-bold text-white">{config.title}</h2>
               </div>
-              {phone && (
+              {callHref && (
                 <a
-                  href={`tel:${phone}`}
+                  href={callHref}
                   className="flex items-center gap-1.5 text-white/60 hover:text-[var(--color-accent)] text-sm transition-colors"
                   onClick={() => track('phone_click', { phone, source: 'booking_header' })}
                 >
@@ -205,11 +209,11 @@ export default function BookingEmbed({
                 Request Booking
               </button>
 
-              {phone && (
+              {callHref && (
                 <p className="text-center text-white/40 text-xs mt-2">
                   Need immediate help?{' '}
                   <a
-                    href={`tel:${phone}`}
+                    href={callHref}
                     className="text-[var(--color-accent)] hover:text-[var(--color-accent)]/80 transition-colors"
                     onClick={() => track('phone_click', { phone, source: 'booking_form' })}
                   >
@@ -227,9 +231,9 @@ export default function BookingEmbed({
               <p className="text-white/60 text-sm mb-4">
                 We&apos;ll confirm your booking within 24 hours.
               </p>
-              {phone && (
+              {callHref && (
                 <a
-                  href={`tel:${phone}`}
+                  href={callHref}
                   className="text-[var(--color-accent)] hover:text-[var(--color-accent)]/80 text-sm font-medium transition-colors"
                   onClick={() => track('phone_click', { phone, source: 'booking_confirmation' })}
                 >

@@ -1,5 +1,6 @@
 import { Plus, Phone, Mail, MapPin, Calendar, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { telDigits, telHref } from '@/lib/phone';
 
 interface SpeedDialProps {
   phone?: string;
@@ -38,11 +39,13 @@ export default function SpeedDial({ phone, email, directionsUrl, bookingUrl }: S
 
   const actions: DialAction[] = [];
 
-  if (phone) {
+  // Call action ONLY for a dialable phone (telDigits rejects {token}/empty/<7-digit) so the FAB
+  // never opens a dead tel: — if that leaves no actions, the `actions.length === 0` guard hides it.
+  if (telDigits(phone)) {
     actions.push({
       label: 'Call',
       icon: Phone,
-      href: `tel:${phone}`,
+      href: telHref(phone),
       event: 'phone_click',
       color: 'bg-green-500 hover:bg-green-400',
     });

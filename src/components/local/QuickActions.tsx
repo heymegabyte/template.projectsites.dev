@@ -1,4 +1,5 @@
 import { Phone, MapPin, Calendar, UtensilsCrossed, Clock, MessageCircle } from 'lucide-react';
+import { telDigits, telHref } from '@/lib/phone';
 
 interface QuickActionsProps {
   phone?: string;
@@ -37,8 +38,8 @@ export default function QuickActions({
 
   const actions: ActionItem[] = [];
 
-  if (phone) {
-    actions.push({ label: 'Call', icon: Phone, href: `tel:${phone}`, event: 'phone_click', color: 'bg-green-500/20 text-green-400' });
+  if (telDigits(phone)) {
+    actions.push({ label: 'Call', icon: Phone, href: telHref(phone), event: 'phone_click', color: 'bg-green-500/20 text-green-400' });
   }
   if (directionsUrl) {
     actions.push({ label: 'Directions', icon: MapPin, href: directionsUrl, event: 'direction_click', color: 'bg-blue-500/20 text-blue-400' });
@@ -49,8 +50,8 @@ export default function QuickActions({
   if (menuUrl) {
     actions.push({ label: 'Menu', icon: UtensilsCrossed, href: menuUrl, event: 'menu_click', color: 'bg-orange-500/20 text-orange-400' });
   }
-  if (phone) {
-    actions.push({ label: 'Text', icon: MessageCircle, href: `sms:${phone}`, event: 'sms_click', color: 'bg-cyan-500/20 text-cyan-400' });
+  if (telDigits(phone)) {
+    actions.push({ label: 'Text', icon: MessageCircle, href: `sms:${telDigits(phone)}`, event: 'sms_click', color: 'bg-cyan-500/20 text-cyan-400' });
   }
   if (hoursOpen !== undefined) {
     actions.push({

@@ -1,5 +1,6 @@
 import { Phone, MapPin, Star, ChevronDown } from 'lucide-react';
 import { cdnImageProps } from '@/lib/cdn-image';
+import { telHref } from '@/lib/phone';
 
 interface HeroWithPhotoProps {
   businessName: string;
@@ -30,6 +31,8 @@ export default function HeroWithPhoto({
 }: HeroWithPhotoProps) {
   // Full-bleed hero photo → responsive, modern-format srcSet (no-op on local URLs).
   const rimg = heroImage ? cdnImageProps(heroImage, '100vw') : null;
+  // Call CTA only for a dialable phone — a hero "Call" button that dials nothing is a doomed control.
+  const callHref = telHref(phone);
   return (
     <section className="hero-photo relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background image — Ken-Burns drift */}
@@ -81,9 +84,9 @@ export default function HeroWithPhoto({
           className="hero-photo-in flex flex-col sm:flex-row gap-4 justify-center"
           style={{ ['--hero-i' as string]: 3 } as React.CSSProperties}
         >
-          {phone && (
+          {callHref && (
             <a
-              href={`tel:${phone}`}
+              href={callHref}
               className="group inline-flex items-center justify-center gap-2 bg-[var(--color-accent)] text-[var(--color-on-accent)] font-bold px-8 py-4 rounded-lg text-lg transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[var(--color-accent)]/30 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
               onClick={() => {
                 if (typeof gtag !== 'undefined') gtag('event', 'phone_click', { phone });

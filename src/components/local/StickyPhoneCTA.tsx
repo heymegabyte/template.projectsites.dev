@@ -1,5 +1,6 @@
 import { Phone } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { telHref } from '@/lib/phone';
 
 interface StickyPhoneCTAProps {
   phone: string;
@@ -27,12 +28,15 @@ export default function StickyPhoneCTA({ phone, label = 'Call Now' }: StickyPhon
     return () => observer.disconnect();
   }, []);
 
-  if (!visible) return null;
+  // Click-to-call integrity: a dialable `tel:` ONLY for a real phone (present, not a {token}, ≥7
+  // digits). A sticky call bar with a dead number is worse than none — self-hide when it can't dial.
+  const href = telHref(phone);
+  if (!visible || !href) return null;
 
   return (
     <>
       <a
-        href={`tel:${phone}`}
+        href={href}
         className="sticky-phone-cta md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center gap-2 bg-[var(--color-accent)] text-[var(--color-on-accent)] font-bold text-base py-4 transition-[filter] duration-200 hover:brightness-110 active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-on-accent)]/50 motion-reduce:transition-none"
         onClick={() => {
           if (typeof gtag !== 'undefined') gtag('event', 'phone_click', { phone });

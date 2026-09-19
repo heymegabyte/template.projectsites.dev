@@ -1,5 +1,6 @@
 import { Phone, AlertTriangle, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { telHref } from '@/lib/phone';
 
 interface EmergencyBannerProps {
   emergencyPhone: string;
@@ -71,7 +72,10 @@ export default function EmergencyBanner({
     return () => clearInterval(interval);
   }, [businessHours, timezone]);
 
-  if (!afterHours || dismissed) return null;
+  // Only ring a REAL emergency line — a dead `tel:{token}`/`tel:` after hours is the worst doomed
+  // control. telHref returns '' unless the phone is dialable (≥7 digits, not a token) → banner hides.
+  const href = telHref(emergencyPhone);
+  if (!afterHours || dismissed || !href) return null;
 
   const track = (event: string, props?: Record<string, unknown>) => {
     window.gtag?.('event', event, props);
@@ -87,7 +91,7 @@ export default function EmergencyBanner({
         <AlertTriangle size={18} className="emergency-pulse text-white shrink-0" aria-hidden="true" />
         <span className="text-white text-sm font-medium">After Hours?</span>
         <a
-          href={`tel:${emergencyPhone}`}
+          href={href}
           className="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-bold text-sm px-4 py-1.5 rounded-full transition-all hover:shadow-[0_0_14px_rgba(255,255,255,0.35)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 motion-reduce:transition-none"
           onClick={() => track('phone_click', { phone: emergencyPhone, after_hours: true })}
         >

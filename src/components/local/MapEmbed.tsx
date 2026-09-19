@@ -1,4 +1,5 @@
 import { MapPin, Clock, Phone as PhoneIcon } from 'lucide-react';
+import { telHref } from '@/lib/phone';
 
 interface HoursEntry {
   day: string;
@@ -28,6 +29,8 @@ export default function MapEmbed({ lat, lng, address, directionsUrl, phone, hour
   const mapSrc = mapsApiKey
     ? `https://www.google.com/maps/embed/v1/place?key=${mapsApiKey}&q=${lat},${lng}&maptype=roadmap`
     : `https://www.google.com/maps?q=${lat},${lng}&output=embed`;
+  // Phone row only for a dialable phone — never a dead `tel:{token}`/`tel:` in the location section.
+  const callHref = telHref(phone);
 
   const track = (event: string, props?: Record<string, unknown>) => {
     window.gtag?.('event', event, props);
@@ -74,9 +77,9 @@ export default function MapEmbed({ lat, lng, address, directionsUrl, phone, hour
             </a>
 
             {/* Phone */}
-            {phone && (
+            {callHref && (
               <a
-                href={`tel:${phone}`}
+                href={callHref}
                 className="group flex items-center gap-3 text-text-muted hover:text-accent transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
                 onClick={() => track('phone_click', { phone })}
               >

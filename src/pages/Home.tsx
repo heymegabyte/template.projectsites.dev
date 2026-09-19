@@ -8,6 +8,7 @@ import { brand, featureOn } from '@/brand';
 import { buildSiteJsonLd, parseAddress, parseHours, type BusinessClass } from '@/lib/businessSchema';
 import { GalleryGrid } from '@/components/local';
 import { hasRealImage, cityFromAddress } from '@/lib/placeholders';
+import { telDigits, telHref } from '@/lib/phone';
 import { cinematicProcessEnabled, kineticMarqueeEnabled, scrollStackEnabled } from '@/lib/featureFlags';
 import KineticMarquee from '@/components/KineticMarquee';
 
@@ -183,8 +184,12 @@ const teamRoles: TeamRole[] = [
  *     the JSON-LD `businessClass`.
  *
  * Wrapped by the caller in `<SafeSection>` so a crash here fails soft.
+ *
+ * Exported for `Home.test.tsx` — the NAP render-honesty contract (form always renders;
+ * empty brand → fallback not dead links; real brand → correct tel:/mailto:/maps; a
+ * filled-but-digitless phone renders NO Call control) is locked there.
  */
-function HomeContact() {
+export function HomeContact() {
   const { name, phone, email, address, hours } = brand.business;
   // Per-vertical contact headline (was a hardcoded "Request your free estimate" — a
   // local-service phrase wrong for realty/medical/legal/etc.). Reuses the pack's existing
@@ -192,11 +197,17 @@ function HomeContact() {
   // whenever you need us", …). Quoted-literal token keeps the local build valid; the
   // container fills it — and it self-heals from the safety net if ever unfilled.
   const contactHeadline = '{CONTACT_HEADLINE}';
-  const telHref = phone ? `tel:${phone.replace(/[^+\d]/g, '')}` : '';
+  // Click-to-call through the shared phone helper: a dialable `tel:` ONLY for a real phone
+  // (present, not a `{token}`, ≥7 digits). Gate the Call ROW on the SAME predicate so a
+  // filled-but-digitless phone ("Call for hours") renders NO dead `href="tel:"` — a doomed
+  // control the visitor taps and nothing dials. hasNap keys off `dialable` (not raw `phone`)
+  // so a garbage-only phone falls through to the reassurance message, not an empty column.
+  const dialable = telDigits(phone);
+  const callHref = telHref(phone);
   const mapHref = address
     ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`
     : '';
-  const hasNap = Boolean(phone || email || address || hours);
+  const hasNap = Boolean(dialable || email || address || hours);
 
   return (
     <section id="contact" className="relative py-24 border-t border-border">
@@ -224,9 +235,9 @@ function HomeContact() {
             <meta itemProp="name" content={name} />
             {hasNap ? (
               <>
-                {phone && (
+                {dialable && (
                   <a
-                    href={telHref}
+                    href={callHref}
                     className="glass rounded-2xl p-6 flex items-center gap-4 hover:border-accent/40 transition-colors"
                     aria-label={`Call ${name} at ${phone}`}
                   >
