@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import { brand } from '@/brand';
-import { exitIntentEnabled } from '@/lib/featureFlags';
+import { useEffect, useRef, useState } from "react";
+import { brand } from "@/brand";
+import { exitIntentEnabled } from "@/lib/featureFlags";
+import { telHref } from "@/lib/phone";
 
 /**
  * ExitIntentOffer — the 2026 conversion-recovery frontier the big AI builders (Framer / Lovable /
@@ -21,7 +22,7 @@ import { exitIntentEnabled } from '@/lib/featureFlags';
  *
  * Dark by default — only mounts its listeners when `exitIntentEnabled()` (`VITE_EXIT_INTENT=1`).
  */
-const SESSION_KEY = 'ps_exit_offer_v1';
+const SESSION_KEY = "ps_exit_offer_v1";
 const ARM_DELAY_MS = 4000;
 
 export interface OfferCta {
@@ -41,16 +42,27 @@ export function deriveOffer(business: {
   phone?: string;
   email?: string;
 }): OfferCta {
-  const phone = business.phone?.trim();
-  if (phone)
+  // Only offer "Call" when the phone is actually dialable (≥7 digits) — a digitless/placeholder
+  // phone falls through to the email/contact CTA instead of a dead tel: exit-intent offer.
+  const callHref = telHref(business.phone);
+  if (callHref)
     return {
-      href: `tel:${phone.replace(/[^\d+]/g, '')}`,
-      label: `Call ${business.shortName || business.name || 'us'}`,
-      event: 'exit_intent_call',
+      href: callHref,
+      label: `Call ${business.shortName || business.name || "us"}`,
+      event: "exit_intent_call",
     };
   const email = business.email?.trim();
-  if (email) return { href: `mailto:${email}`, label: 'Send us a message', event: 'exit_intent_email' };
-  return { href: '/contact', label: 'Get in touch', event: 'exit_intent_contact' };
+  if (email)
+    return {
+      href: `mailto:${email}`,
+      label: "Send us a message",
+      event: "exit_intent_email",
+    };
+  return {
+    href: "/contact",
+    label: "Get in touch",
+    event: "exit_intent_contact",
+  };
 }
 
 export function ExitIntentOffer() {
@@ -64,7 +76,7 @@ export function ExitIntentOffer() {
     // phone user who can't produce the gesture.
     let finePointer = true;
     try {
-      finePointer = window.matchMedia?.('(pointer: fine)').matches !== false;
+      finePointer = window.matchMedia?.("(pointer: fine)").matches !== false;
     } catch {
       /* matchMedia unavailable → assume desktop */
     }
@@ -72,7 +84,7 @@ export function ExitIntentOffer() {
 
     let seen = false;
     try {
-      seen = sessionStorage.getItem(SESSION_KEY) === '1';
+      seen = sessionStorage.getItem(SESSION_KEY) === "1";
     } catch {
       /* storage blocked → allow once, don't persist */
     }
@@ -87,23 +99,28 @@ export function ExitIntentOffer() {
     const onMouseOut = (e: MouseEvent) => {
       // Cursor left through the TOP edge (toward the tab bar / URL / close button), not into
       // another element or out a side. `relatedTarget` null + clientY≤0 is the classic signal.
-      if (fired || !armed || e.relatedTarget || (e as MouseEvent & { toElement?: unknown }).toElement)
+      if (
+        fired ||
+        !armed ||
+        e.relatedTarget ||
+        (e as MouseEvent & { toElement?: unknown }).toElement
+      )
         return;
       if (e.clientY > 0) return;
       fired = true;
       lastFocus.current = document.activeElement;
       try {
-        sessionStorage.setItem(SESSION_KEY, '1');
+        sessionStorage.setItem(SESSION_KEY, "1");
       } catch {
         /* ignore */
       }
       setOpen(true);
     };
 
-    document.addEventListener('mouseout', onMouseOut);
+    document.addEventListener("mouseout", onMouseOut);
     return () => {
       clearTimeout(armTimer);
-      document.removeEventListener('mouseout', onMouseOut);
+      document.removeEventListener("mouseout", onMouseOut);
     };
   }, []);
 
@@ -119,16 +136,16 @@ export function ExitIntentOffer() {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key === "Escape") setOpen(false);
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
   if (!open) return null;
 
   const offer = deriveOffer(brand.business);
-  const name = brand.business.shortName || brand.business.name || 'us';
+  const name = brand.business.shortName || brand.business.name || "us";
 
   return (
     <div

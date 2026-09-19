@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Phone, ClipboardList, MessageSquare } from 'lucide-react';
-import { brand, featureOn } from '@/brand';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Phone, ClipboardList, MessageSquare } from "lucide-react";
+import { brand, featureOn } from "@/brand";
+import { telHref } from "@/lib/phone";
 
 /**
  * Mobile-only sticky action bar — the single highest-leverage conversion win for
@@ -23,18 +24,28 @@ export function StickyActionBar() {
   const [visible, setVisible] = useState(false);
   const [typing, setTyping] = useState(false);
 
-  const phone = brand.business.phone;
-  const phoneHref = phone ? `tel:${phone.replace(/[^+\d]/g, '')}` : '';
-  const quote = featureOn('quote');
+  // telHref returns '' unless the phone is real (≥7 digits, not a {token}) — so a dead
+  // "Call" button (href="tel:" dialing nothing) is never rendered (gated on phoneHref below).
+  const phoneHref = telHref(brand.business.phone);
+  const quote = featureOn("quote");
   const cta = quote
-    ? { to: '/quote', label: 'Get a Quote', icon: <ClipboardList size={18} aria-hidden="true" /> }
-    : { to: '/contact', label: 'Contact Us', icon: <MessageSquare size={18} aria-hidden="true" /> };
+    ? {
+        to: "/quote",
+        label: "Get a Quote",
+        icon: <ClipboardList size={18} aria-hidden="true" />,
+      }
+    : {
+        to: "/contact",
+        label: "Contact Us",
+        icon: <MessageSquare size={18} aria-hidden="true" />,
+      };
 
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > window.innerHeight * 0.6);
+    const onScroll = () =>
+      setVisible(window.scrollY > window.innerHeight * 0.6);
     onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   // Collapse while the visitor is filling a form so the bar never covers inputs/keyboard.
@@ -43,11 +54,11 @@ export function StickyActionBar() {
       el instanceof HTMLElement && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName);
     const onFocus = (e: FocusEvent) => isField(e.target) && setTyping(true);
     const onBlur = (e: FocusEvent) => isField(e.target) && setTyping(false);
-    document.addEventListener('focusin', onFocus);
-    document.addEventListener('focusout', onBlur);
+    document.addEventListener("focusin", onFocus);
+    document.addEventListener("focusout", onBlur);
     return () => {
-      document.removeEventListener('focusin', onFocus);
-      document.removeEventListener('focusout', onBlur);
+      document.removeEventListener("focusin", onFocus);
+      document.removeEventListener("focusout", onBlur);
     };
   }, []);
 
@@ -56,9 +67,9 @@ export function StickyActionBar() {
   return (
     <div
       className={`md:hidden fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 ${
-        shown ? 'translate-y-0' : 'translate-y-full'
+        shown ? "translate-y-0" : "translate-y-full"
       }`}
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-hidden={!shown}
       // When hidden the bar is only slid off-screen (translate-y-full) — its CTA
       // links stay keyboard-focusable, so a Tab lands inside aria-hidden content
