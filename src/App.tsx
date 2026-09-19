@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
+import PageviewBeacon from './components/PageviewBeacon';
 import PageTransition from './components/PageTransition';
 import Home from './pages/Home';
 import Gallery from './pages/Gallery';
@@ -41,6 +42,7 @@ export default function App() {
   return (
     <Layout>
       <ScrollToTop />
+      <PageviewBeacon />
       <PageTransition>
         <Suspense fallback={<RouteLoader />}>
           <Routes>
