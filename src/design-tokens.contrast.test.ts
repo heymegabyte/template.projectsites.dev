@@ -1,5 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { describe, it, expect } from 'vitest';
+import { readFileSync } from "node:fs";
+import { describe, it, expect } from "vitest";
 
 /**
  * Regression for the delivered-site defect surfed 2026-08-27: the `--color-text-subtle`
@@ -30,7 +30,11 @@ const AA = 4.5; // WCAG 2.1 SC 1.4.3 — normal text (.cmdk-kbd is 12px, not "la
 
 // ── OKLCH → 8-bit sRGB → WCAG relative luminance → contrast (matches a browser/axe) ──
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
-function oklchToRgb255(L: number, C: number, Hdeg: number): [number, number, number] {
+function oklchToRgb255(
+  L: number,
+  C: number,
+  Hdeg: number,
+): [number, number, number] {
   const h = (Hdeg * Math.PI) / 180;
   const a = C * Math.cos(h);
   const b = C * Math.sin(h);
@@ -55,12 +59,18 @@ function relLum([r, g, b]: [number, number, number]): number {
   };
   return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
 }
-function contrast(fg: [number, number, number], bg: [number, number, number]): number {
+function contrast(
+  fg: [number, number, number],
+  bg: [number, number, number],
+): number {
   const [hi, lo] = [relLum(fg), relLum(bg)].sort((a, b) => b - a);
   return (hi + 0.05) / (lo + 0.05);
 }
 const ratio = (fg: OKLCH, bg: OKLCH, hue = 240) =>
-  contrast(oklchToRgb255(fg.L, fg.C, fg.H ?? hue), oklchToRgb255(bg.L, bg.C, bg.H ?? hue));
+  contrast(
+    oklchToRgb255(fg.L, fg.C, fg.H ?? hue),
+    oklchToRgb255(bg.L, bg.C, bg.H ?? hue),
+  );
 
 // ── Parse `oklch(L C H)` where H may be a literal or a var/DTCG hue reference ──
 interface OKLCH {
@@ -69,68 +79,90 @@ interface OKLCH {
   H: number | null;
 }
 function parseOklch(src: string): OKLCH {
-  const m = src.match(/oklch\(\s*([\d.]+)\s+([\d.]+)\s+(var\(--brand-hue\)|\{color\.brandHue\}|\$\{hue\}|[\d.]+)\s*\)/);
+  const m = src.match(
+    /oklch\(\s*([\d.]+)\s+([\d.]+)\s+(var\(--brand-hue\)|\{color\.brandHue\}|\$\{hue\}|[\d.]+)\s*\)/,
+  );
   if (!m) throw new Error(`no oklch() in: ${src}`);
   const H = /^[\d.]+$/.test(m[3]) ? Number(m[3]) : null; // null = hue-generic (var)
   return { L: Number(m[1]), C: Number(m[2]), H };
 }
 /** First `<prop>: oklch(...)` inside a scoped block of source text. */
 function tokenIn(block: string, prop: string): OKLCH {
-  const m = block.match(new RegExp(`${prop.replace(/[-[\]]/g, '\\$&')}[^;\\n]*?(oklch\\([^;]*\\))`));
+  const m = block.match(
+    new RegExp(`${prop.replace(/[-[\]]/g, "\\$&")}[^;\\n]*?(oklch\\([^;]*\\))`),
+  );
   if (!m) throw new Error(`token ${prop} not found`);
   return parseOklch(m[1]);
 }
 
-const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), 'utf8');
+const read = (rel: string) =>
+  readFileSync(new URL(rel, import.meta.url), "utf8");
 const HUES = [30, 195, 240, 340]; // warm, teal, blue, magenta — the brand-hue range
 
-describe('--color-text-subtle clears WCAG AA on the worst-case surface (all 3 sources)', () => {
-  it('index.css: dark subtle ≥ 4.5:1 on dark surface-elevated', () => {
-    const css = read('./index.css');
-    const dark = css.slice(0, css.indexOf("[data-theme='light']"));
-    const subtle = tokenIn(dark, '--color-text-subtle');
-    const surfElev = tokenIn(dark, '--color-surface-elevated');
+describe("--color-text-subtle clears WCAG AA on the worst-case surface (all 3 sources)", () => {
+  it("index.css: dark subtle ≥ 4.5:1 on dark surface-elevated", () => {
+    const css = read("./index.css");
+    const dark = css.slice(0, css.indexOf('[data-theme="light"]'));
+    const subtle = tokenIn(dark, "--color-text-subtle");
+    const surfElev = tokenIn(dark, "--color-surface-elevated");
     expect(ratio(subtle, surfElev)).toBeGreaterThanOrEqual(AA);
   });
 
-  it('index.css: light subtle ≥ 4.5:1 on light surface-elevated, every brand hue', () => {
-    const css = read('./index.css');
-    const light = css.slice(css.indexOf("[data-theme='light']"));
-    const subtle = tokenIn(light, '--color-text-subtle');
-    const surfElev = tokenIn(light, '--color-surface-elevated');
-    for (const hue of HUES) expect(ratio(subtle, surfElev, hue), `hue ${hue}`).toBeGreaterThanOrEqual(AA);
+  it("index.css: light subtle ≥ 4.5:1 on light surface-elevated, every brand hue", () => {
+    const css = read("./index.css");
+    const light = css.slice(css.indexOf('[data-theme="light"]'));
+    const subtle = tokenIn(light, "--color-text-subtle");
+    const surfElev = tokenIn(light, "--color-surface-elevated");
+    for (const hue of HUES)
+      expect(ratio(subtle, surfElev, hue), `hue ${hue}`).toBeGreaterThanOrEqual(
+        AA,
+      );
   });
 
-  it('brand.ts DEFAULT_BRAND (applied inline at boot) subtle ≥ 4.5:1 on its surface-elevated', () => {
-    const ts = read('./brand.ts');
+  it("brand.ts DEFAULT_BRAND (applied inline at boot) subtle ≥ 4.5:1 on its surface-elevated", () => {
+    const ts = read("./brand.ts");
     const subtle = parseOklch(ts.match(/textSubtle:\s*'(oklch\([^']*\))'/)![1]);
-    const surfElev = parseOklch(ts.match(/surfaceElevated:\s*'(oklch\([^']*\))'/)![1]);
+    const surfElev = parseOklch(
+      ts.match(/surfaceElevated:\s*'(oklch\([^']*\))'/)![1],
+    );
     expect(ratio(subtle, surfElev)).toBeGreaterThanOrEqual(AA);
   });
 
-  it('Studio.tsx runtime preview: both light & dark subtle ≥ 4.5:1 on matching surface-elevated', () => {
-    const tsx = read('./pages/Studio.tsx');
+  it("Studio.tsx runtime preview: both light & dark subtle ≥ 4.5:1 on matching surface-elevated", () => {
+    const tsx = read("./pages/Studio.tsx");
     // setProperty('--color-text-subtle', mode==='light' ? oklch(light) : oklch(dark))
     const line = tsx.match(/setProperty\('--color-text-subtle'[^;]*/)![0];
-    const [lightSubtle, darkSubtle] = [...line.matchAll(/oklch\([^`]*\)/g)].map((m) => parseOklch(m[0]));
-    const surfLine = tsx.match(/setProperty\('--color-surface-elevated'[^;]*/)![0];
-    const [lightSurf, darkSurf] = [...surfLine.matchAll(/oklch\([^`]*\)/g)].map((m) => parseOklch(m[0]));
+    const [lightSubtle, darkSubtle] = [...line.matchAll(/oklch\([^`]*\)/g)].map(
+      (m) => parseOklch(m[0]),
+    );
+    const surfLine = tsx.match(
+      /setProperty\('--color-surface-elevated'[^;]*/,
+    )![0];
+    const [lightSurf, darkSurf] = [...surfLine.matchAll(/oklch\([^`]*\)/g)].map(
+      (m) => parseOklch(m[0]),
+    );
     for (const hue of HUES) {
-      expect(ratio(lightSubtle, lightSurf, hue), `light hue ${hue}`).toBeGreaterThanOrEqual(AA);
-      expect(ratio(darkSubtle, darkSurf, hue), `dark hue ${hue}`).toBeGreaterThanOrEqual(AA);
+      expect(
+        ratio(lightSubtle, lightSurf, hue),
+        `light hue ${hue}`,
+      ).toBeGreaterThanOrEqual(AA);
+      expect(
+        ratio(darkSubtle, darkSurf, hue),
+        `dark hue ${hue}`,
+      ).toBeGreaterThanOrEqual(AA);
     }
   });
 
-  it('subtle stays less-contrast than muted (muted→subtle hierarchy preserved)', () => {
-    const css = read('./index.css');
-    const dark = css.slice(0, css.indexOf("[data-theme='light']"));
-    const surfElev = tokenIn(dark, '--color-surface-elevated');
-    const subtle = tokenIn(dark, '--color-text-subtle');
-    const muted = tokenIn(dark, '--color-text-muted');
+  it("subtle stays less-contrast than muted (muted→subtle hierarchy preserved)", () => {
+    const css = read("./index.css");
+    const dark = css.slice(0, css.indexOf('[data-theme="light"]'));
+    const surfElev = tokenIn(dark, "--color-surface-elevated");
+    const subtle = tokenIn(dark, "--color-text-subtle");
+    const muted = tokenIn(dark, "--color-text-muted");
     expect(ratio(subtle, surfElev)).toBeLessThan(ratio(muted, surfElev));
   });
 
-  it('near-gray token (chroma 0.01) is hue-independent — one L works for all brands', () => {
+  it("near-gray token (chroma 0.01) is hue-independent — one L works for all brands", () => {
     const subtle: OKLCH = { L: 0.49, C: 0.01, H: null };
     const surf: OKLCH = { L: 0.94, C: 0.01, H: null };
     const ratios = HUES.map((h) => ratio(subtle, surf, h));
@@ -148,17 +180,23 @@ describe('--color-text-subtle clears WCAG AA on the worst-case surface (all 3 so
    * can't darken it); assert it clears AA on PURE BLACK (dark) / PURE WHITE (light) so it
    * holds for ANY brand's surface, not just the neutral elevated one.
    */
-  it('MUTED body-copy clears 4.5:1 on the WORST-CASE brand surface per scheme (near-black / white)', () => {
-    const css = read('./index.css');
-    const dark = css.slice(0, css.indexOf("[data-theme='light']"));
-    const light = css.slice(css.indexOf("[data-theme='light']"));
-    const darkMuted = tokenIn(dark, '--color-text-muted');
-    const lightMuted = tokenIn(light, '--color-text-muted');
+  it("MUTED body-copy clears 4.5:1 on the WORST-CASE brand surface per scheme (near-black / white)", () => {
+    const css = read("./index.css");
+    const dark = css.slice(0, css.indexOf('[data-theme="light"]'));
+    const light = css.slice(css.indexOf('[data-theme="light"]'));
+    const darkMuted = tokenIn(dark, "--color-text-muted");
+    const lightMuted = tokenIn(light, "--color-text-muted");
     const black: OKLCH = { L: 0, C: 0, H: null };
     const white: OKLCH = { L: 1, C: 0, H: null };
     for (const hue of HUES) {
-      expect(ratio(darkMuted, black, hue), `dark muted on near-black, hue ${hue}`).toBeGreaterThanOrEqual(AA);
-      expect(ratio(lightMuted, white, hue), `light muted on white, hue ${hue}`).toBeGreaterThanOrEqual(AA);
+      expect(
+        ratio(darkMuted, black, hue),
+        `dark muted on near-black, hue ${hue}`,
+      ).toBeGreaterThanOrEqual(AA);
+      expect(
+        ratio(lightMuted, white, hue),
+        `light muted on white, hue ${hue}`,
+      ).toBeGreaterThanOrEqual(AA);
     }
   });
 });
@@ -174,33 +212,46 @@ describe('--color-text-subtle clears WCAG AA on the worst-case surface (all 3 so
  * shipped keyframe carries opacity ≥0.9. (generated-site-accent-text-contrast / opacity-on-
  * muted-token class — the reveal can never drop legibility below AA.)
  */
-describe('scroll-reveal opacity floor keeps muted body copy AA (§C.3 team-role-rise)', () => {
+describe("scroll-reveal opacity floor keeps muted body copy AA (§C.3 team-role-rise)", () => {
   const composite = (
     fg: [number, number, number],
     bg: [number, number, number],
     alpha: number,
   ): [number, number, number] =>
-    [0, 1, 2].map((i) => Math.round(alpha * fg[i] + (1 - alpha) * bg[i])) as [number, number, number];
+    [0, 1, 2].map((i) => Math.round(alpha * fg[i] + (1 - alpha) * bg[i])) as [
+      number,
+      number,
+      number,
+    ];
   // Read the light muted L from index.css (was hardcoded 0.42 → a token lightening would slip
   // past this lock). Now a regression that lightens --color-text-muted fails the test. (AL-434)
   const MUTED_L = (() => {
-    const c = read('./index.css');
-    return tokenIn(c.slice(c.indexOf("[data-theme='light']")), '--color-text-muted').L;
+    const c = read("./index.css");
+    return tokenIn(
+      c.slice(c.indexOf('[data-theme="light"]')),
+      "--color-text-muted",
+    ).L;
   })();
   const CREAM_L = 0.93; // the axe-measured card surface (#fcf0e3) — the tightest light bg
 
-  it('OLD 0.70 mid-fade FAILED AA on cream (documents the reopened bug)', () => {
+  it("OLD 0.70 mid-fade FAILED AA on cream (documents the reopened bug)", () => {
     for (const hue of HUES) {
       const muted = oklchToRgb255(MUTED_L, 0.01, hue);
       const cream = oklchToRgb255(CREAM_L, 0.02, hue);
-      expect(contrast(composite(muted, cream, 0.7), cream), `hue ${hue}`).toBeLessThan(AA);
+      expect(
+        contrast(composite(muted, cream, 0.7), cream),
+        `hue ${hue}`,
+      ).toBeLessThan(AA);
     }
   });
-  it('NEW 0.9 reveal floor CLEARS 4.5:1 on cream across every brand hue', () => {
+  it("NEW 0.9 reveal floor CLEARS 4.5:1 on cream across every brand hue", () => {
     for (const hue of HUES) {
       const muted = oklchToRgb255(MUTED_L, 0.01, hue);
       const cream = oklchToRgb255(CREAM_L, 0.02, hue);
-      expect(contrast(composite(muted, cream, 0.9), cream), `hue ${hue}`).toBeGreaterThanOrEqual(AA);
+      expect(
+        contrast(composite(muted, cream, 0.9), cream),
+        `hue ${hue}`,
+      ).toBeGreaterThanOrEqual(AA);
     }
   });
   // EVERY text-container scroll-reveal must floor from{opacity} ≥ 0.9 — not just team-role-rise.
@@ -209,18 +260,26 @@ describe('scroll-reveal opacity floor keeps muted body copy AA (§C.3 team-role-
   // keyframes AL-290 didn't cover. Generalized (AL-440): drift guard fails if any of these fades text
   // from below 0.9. Decorative pops with NO body text (process-node-pop dot) are intentionally exempt.
   const TEXT_REVEAL_KEYFRAMES = [
-    'team-role-rise', 'rise-in', 'trust-chip-rise',
-    'stat-rollup-rise', 'stat-tile-rise', 'process-card-rise', 'team-card-rise',
+    "team-role-rise",
+    "rise-in",
+    "trust-chip-rise",
+    "stat-rollup-rise",
+    "stat-tile-rise",
+    "process-card-rise",
+    "team-card-rise",
   ];
-  it('index.css: EVERY text-container reveal keyframe floors from{opacity} ≥ 0.9', () => {
-    const css = read('./index.css');
+  it("index.css: EVERY text-container reveal keyframe floors from{opacity} ≥ 0.9", () => {
+    const css = read("./index.css");
     for (const name of TEXT_REVEAL_KEYFRAMES) {
       const at = css.indexOf(`@keyframes ${name}`);
       expect(at, `${name} keyframe present`).toBeGreaterThan(-1);
-      const from = css.slice(at, css.indexOf('}', at));
+      const from = css.slice(at, css.indexOf("}", at));
       const m = from.match(/opacity:\s*([\d.]+)/);
       expect(m, `${name} from{opacity} present`).toBeTruthy();
-      expect(parseFloat(m![1]), `${name} reveal opacity floor ≥0.9`).toBeGreaterThanOrEqual(0.9);
+      expect(
+        parseFloat(m![1]),
+        `${name} reveal opacity floor ≥0.9`,
+      ).toBeGreaterThanOrEqual(0.9);
     }
   });
 
@@ -237,8 +296,8 @@ describe('scroll-reveal opacity floor keeps muted body copy AA (§C.3 team-role-
   // none may fade text below AA. Frames with no opacity (transform/bg-only: subtleFloat/gradientShift)
   // are not fades → skipped. A sanity floor asserts the known keyframes were actually discovered, so a
   // broken regex can't pass vacuously.
-  it('tailwind.config.ts: EVERY fade keyframe floors 0%{opacity} ≥ 0.9 (auto-discovered, drift-proof)', () => {
-    const cfg = readFileSync('tailwind.config.ts', 'utf8');
+  it("tailwind.config.ts: EVERY fade keyframe floors 0%{opacity} ≥ 0.9 (auto-discovered, drift-proof)", () => {
+    const cfg = readFileSync("tailwind.config.ts", "utf8");
     const re = /(\w+):\s*\{\s*'0%'\s*:\s*\{([^}]*)\}/g;
     const checked: string[] = [];
     let m: RegExpExecArray | null;
@@ -247,10 +306,23 @@ describe('scroll-reveal opacity floor keeps muted body copy AA (§C.3 team-role-
       const op = m[2].match(/opacity:\s*'?([\d.]+)'?/);
       if (!op) continue; // no opacity in the 0% frame → transform/bg-only, not a fade reveal
       checked.push(name);
-      expect(parseFloat(op[1]), `${name} reveal opacity floor ≥0.9`).toBeGreaterThanOrEqual(0.9);
+      expect(
+        parseFloat(op[1]),
+        `${name} reveal opacity floor ≥0.9`,
+      ).toBeGreaterThanOrEqual(0.9);
     }
-    for (const known of ['fadeInUp', 'slideInLeft', 'scaleIn', 'bounceIn', 'rotateIn', 'blurIn']) {
-      expect(checked, `${known} must be auto-discovered + checked (guard is wired)`).toContain(known);
+    for (const known of [
+      "fadeInUp",
+      "slideInLeft",
+      "scaleIn",
+      "bounceIn",
+      "rotateIn",
+      "blurIn",
+    ]) {
+      expect(
+        checked,
+        `${known} must be auto-discovered + checked (guard is wired)`,
+      ).toContain(known);
     }
   });
 });
@@ -264,21 +336,29 @@ describe('scroll-reveal opacity floor keeps muted body copy AA (§C.3 team-role-
  * dropped it to 0.38 (≈8–10:1). Nothing locked that L against a future lightening — this does,
  * reading the forced L from index.css and checking worst-case (vivid) accent chroma × hue.
  */
-describe('§C.3 accent-as-text (--color-accent-readable) clears AA on cream (AL-434)', () => {
+describe("§C.3 accent-as-text (--color-accent-readable) clears AA on cream (AL-434)", () => {
   const light = (() => {
-    const c = read('./index.css');
-    return c.slice(c.indexOf("[data-theme='light']"));
+    const c = read("./index.css");
+    return c.slice(c.indexOf('[data-theme="light"]'));
   })();
   const accReadableL = Number(
-    (light.match(/--color-accent-readable:\s*oklch\(from var\(--color-accent\)\s*([\d.]+)/) || [])[1],
+    (light.match(
+      /--color-accent-readable:\s*oklch\(from var\(--color-accent\)\s*([\d.]+)/,
+    ) || [])[1],
   );
-  const cream = tokenIn(light, '--color-background');
+  const cream = tokenIn(light, "--color-background");
 
-  it('the forced accent-readable lightness is present + dark enough to matter', () => {
-    expect(accReadableL, '--color-accent-readable forced L parsed from index.css light block').toBeGreaterThan(0);
-    expect(accReadableL, 'forced L stays dark (a light forced-L defeats the purpose)').toBeLessThanOrEqual(0.45);
+  it("the forced accent-readable lightness is present + dark enough to matter", () => {
+    expect(
+      accReadableL,
+      "--color-accent-readable forced L parsed from index.css light block",
+    ).toBeGreaterThan(0);
+    expect(
+      accReadableL,
+      "forced L stays dark (a light forced-L defeats the purpose)",
+    ).toBeLessThanOrEqual(0.45);
   });
-  it('accent-as-text clears 4.5:1 on cream at worst-case chroma, every brand hue', () => {
+  it("accent-as-text clears 4.5:1 on cream at worst-case chroma, every brand hue", () => {
     for (const hue of HUES) {
       const creamRgb = oklchToRgb255(cream.L, cream.C, cream.H ?? hue);
       for (const C of [0.06, 0.12, 0.18]) {
@@ -300,17 +380,23 @@ describe('§C.3 accent-as-text (--color-accent-readable) clears AA on cream (AL-
  * recedes via the AA-safe muted token + smaller font ALONE; re-adding an opacity dim (or
  * routing it back through text-subtle) reintroduces the latent AA failure. (AL-444.)
  */
-describe('stat caption does not opacity-double-dim on the glass tile (§C.3)', () => {
-  it('index.css .pst-caption carries NO opacity dim', () => {
-    const css = read('./index.css');
-    const at = css.indexOf('.pst-caption {');
-    expect(at, '.pst-caption rule present').toBeGreaterThan(-1);
-    const rule = css.slice(at, css.indexOf('}', at));
-    expect(/opacity\s*:/.test(rule), '.pst-caption must not dim a muted token with opacity').toBe(false);
+describe("stat caption does not opacity-double-dim on the glass tile (§C.3)", () => {
+  it("index.css .pst-caption carries NO opacity dim", () => {
+    const css = read("./index.css");
+    const at = css.indexOf(".pst-caption {");
+    expect(at, ".pst-caption rule present").toBeGreaterThan(-1);
+    const rule = css.slice(at, css.indexOf("}", at));
+    expect(
+      /opacity\s*:/.test(rule),
+      ".pst-caption must not dim a muted token with opacity",
+    ).toBe(false);
   });
-  it('Stats.tsx caption uses the AA-safe muted token, not the borderline subtle one', () => {
-    const tsx = read('./components/sections/Stats.tsx');
-    expect(tsx).toContain('pst-caption text-text-muted');
-    expect(tsx, 'caption must not use text-subtle on the glass tile').not.toContain('pst-caption text-text-subtle');
+  it("Stats.tsx caption uses the AA-safe muted token, not the borderline subtle one", () => {
+    const tsx = read("./components/sections/Stats.tsx");
+    expect(tsx).toContain("pst-caption text-text-muted");
+    expect(
+      tsx,
+      "caption must not use text-subtle on the glass tile",
+    ).not.toContain("pst-caption text-text-subtle");
   });
 });
