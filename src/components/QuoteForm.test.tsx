@@ -1,5 +1,5 @@
 import { render, fireEvent, waitFor, within } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { QuoteForm } from "./QuoteForm";
 
 /**
@@ -75,5 +75,54 @@ describe("QuoteForm — a11y error wiring (WCAG 3.3.1)", () => {
       name: /request my free quote/i,
     });
     expect(btn.getAttribute("type")).toBe("button");
+  });
+});
+
+describe("QuoteForm — a slug-less render posts to the REAL site slug (siteSlug), never dead 'default'", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    document
+      .querySelectorAll('script[src*="/app.js"]')
+      .forEach((n) => n.remove());
+  });
+
+  it("with NO slug prop, POSTs to /api/contact-form/{siteSlug} — not /api/contact-form/default", async () => {
+    // REGRESSION: the old default slug was the literal 'default' → /api/contact-form/default 404s
+    // (the Worker does WHERE slug=?). Must resolve to the real site slug via siteSlug().
+    const tag = document.createElement("script");
+    tag.src = "https://vitos-hvac.projectsites.dev/app.js";
+    tag.setAttribute("data-slug", "vitos-hvac");
+    document.body.appendChild(tag);
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify({ ok: true }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+      ),
+    );
+    const { container, getByRole } = render(<QuoteForm />); // NO slug prop
+    const fill = (id: string, value: string) =>
+      fireEvent.change(container.querySelector(id) as HTMLInputElement, {
+        target: { value },
+      });
+    fill("#q-name", "Jane Contractor");
+    fill("#q-email", "jane@example.com");
+    fill("#q-phone", "(555) 123-4567");
+    fill("#q-address", "123 Main St, Lake Hiawatha NJ");
+    fill(
+      "#q-details",
+      "Need a full HVAC system replacement quote for a 2-story home.",
+    );
+    fireEvent.click(getByRole("button", { name: /request my free quote/i }));
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+    const url = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(url).toBe("/api/contact-form/vitos-hvac"); // the REAL slug…
+    expect(url).not.toBe("/api/contact-form/default"); // …never the dead literal
   });
 });

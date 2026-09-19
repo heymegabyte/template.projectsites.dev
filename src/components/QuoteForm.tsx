@@ -1,6 +1,7 @@
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { Send, Check, AlertCircle, Upload, X, ImageIcon } from "lucide-react";
 import { z } from "zod";
+import { siteSlug } from "../lib/siteSlug";
 
 /**
  * Quote-request form for service businesses (HVAC, plumbing, roofing, remodel,
@@ -59,7 +60,7 @@ interface Photo {
   preview: string;
 }
 
-export function QuoteForm({ slug = "default", endpoint }: Props) {
+export function QuoteForm({ slug, endpoint }: Props) {
   const [fields, setFields] = useState({
     name: "",
     email: "",
@@ -115,7 +116,9 @@ export function QuoteForm({ slug = "default", endpoint }: Props) {
     }
     setErrors({});
     setStatus("sending");
-    const url = endpoint ?? `/api/contact-form/${slug}`;
+    // Resolve to the REAL site slug (siteSlug), never the dead literal 'default' — the Worker does
+    // WHERE slug=? so `/api/contact-form/default` 404s. An explicit `slug`/`endpoint` prop still wins.
+    const url = endpoint ?? `/api/contact-form/${slug || siteSlug()}`;
     const body = {
       name: parsed.data.name,
       email: parsed.data.email,

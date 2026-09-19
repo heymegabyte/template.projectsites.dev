@@ -1,8 +1,9 @@
-import { useEffect, useState, type ChangeEvent, type FocusEvent } from 'react';
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
-import { Send, Check, AlertCircle, X } from 'lucide-react';
-import { z } from 'zod';
+import { useEffect, useState, type ChangeEvent, type FocusEvent } from "react";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
+import { Send, Check, AlertCircle, X } from "lucide-react";
+import { z } from "zod";
+import { siteSlug } from "../lib/siteSlug";
 
 /**
  * Contact form using React 19's `useActionState` + `useFormStatus` (ideas #51-58),
@@ -37,10 +38,10 @@ import { z } from 'zod';
  */
 
 const ContactSchema = z.object({
-  name:    z.string().trim().min(2, 'Name must be at least 2 characters'),
-  email:   z.string().trim().email('Please enter a valid email'),
-  phone:   z.string().trim().optional(),
-  message: z.string().trim().min(10, 'Message must be at least 10 characters'),
+  name: z.string().trim().min(2, "Name must be at least 2 characters"),
+  email: z.string().trim().email("Please enter a valid email"),
+  phone: z.string().trim().optional(),
+  message: z.string().trim().min(10, "Message must be at least 10 characters"),
 });
 
 type FieldName = keyof z.infer<typeof ContactSchema>;
@@ -68,19 +69,19 @@ export function isValidEmail(v: string): boolean {
  *  contract, which carries `phone` (not the dropped `subject`). */
 export function isValidPhone(v: string): boolean {
   const t = v.trim();
-  return t === '' || t.replace(/\D/g, '').length >= 7;
+  return t === "" || t.replace(/\D/g, "").length >= 7;
 }
 
 /** Live validity for a single field, mirroring the Zod thresholds above. */
 export function isFieldValid(name: FieldName, value: string): boolean {
   switch (name) {
-    case 'name':
+    case "name":
       return isMinLength(value, 2);
-    case 'email':
+    case "email":
       return isValidEmail(value);
-    case 'phone':
+    case "phone":
       return isValidPhone(value);
-    case 'message':
+    case "message":
       return isMinLength(value, 10);
     default:
       return false;
@@ -89,16 +90,20 @@ export function isFieldValid(name: FieldName, value: string): boolean {
 
 /** The inline hint shown while a touched field is still invalid. */
 const HINTS: Record<FieldName, string> = {
-  name:    'Name must be at least 2 characters',
-  email:   'Please enter a valid email',
-  phone:   'Enter a valid phone number',
-  message: 'Message must be at least 10 characters',
+  name: "Name must be at least 2 characters",
+  email: "Please enter a valid email",
+  phone: "Enter a valid phone number",
+  message: "Message must be at least 10 characters",
 };
 
 type ContactState =
-  | { status: 'idle' }
-  | { status: 'success'; message: string }
-  | { status: 'error'; fieldErrors?: Partial<Record<FieldName, string>>; message: string };
+  | { status: "idle" }
+  | { status: "success"; message: string }
+  | {
+      status: "error";
+      fieldErrors?: Partial<Record<FieldName, string>>;
+      message: string;
+    };
 
 interface Props {
   endpoint?: string;
@@ -113,11 +118,17 @@ async function submit(
   // (`/api/contact-form/:slug`) — there is no `/api/contact/:slug` route, so the old fallback 404'd
   // whenever this React path ran without app.js (local preview / Storybook / a failed inject). An
   // explicit `__endpoint` override still wins. (Type-honest: `formData.get` is `string | File | null`.)
-  const rawEndpoint = formData.get('__endpoint');
+  const rawEndpoint = formData.get("__endpoint");
+  // Resolve the slug to the REAL site identity (siteSlug: injected data-slug, else the hostname),
+  // never the dead literal 'default' — `/api/contact-form/default` 404s (the Worker does WHERE slug=?
+  // and no site is named 'default'), so the old fallback silently failed wherever this React path ran
+  // without app.js's hijack (local preview / Storybook / a failed inject).
+  const rawSlug = formData.get("__slug");
+  const slug = typeof rawSlug === "string" && rawSlug ? rawSlug : siteSlug();
   const endpoint =
-    typeof rawEndpoint === 'string' && rawEndpoint
+    typeof rawEndpoint === "string" && rawEndpoint
       ? rawEndpoint
-      : `/api/contact-form/${formData.get('__slug') ?? 'default'}`;
+      : `/api/contact-form/${slug}`;
 
   const parsed = ContactSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
@@ -125,27 +136,37 @@ async function submit(
     for (const issue of parsed.error.issues) {
       fieldErrors[issue.path[0] as string] = issue.message;
     }
-    return { status: 'error', fieldErrors, message: 'Please fix the highlighted fields.' };
+    return {
+      status: "error",
+      fieldErrors,
+      message: "Please fix the highlighted fields.",
+    };
   }
 
   try {
     const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(parsed.data),
     });
     if (!res.ok) {
-      const data = await res.json().catch(() => ({ error: 'Server error' }));
-      return { status: 'error', message: data.error ?? 'Could not send. Please try again.' };
+      const data = await res.json().catch(() => ({ error: "Server error" }));
+      return {
+        status: "error",
+        message: data.error ?? "Could not send. Please try again.",
+      };
     }
-    return { status: 'success', message: "Thanks. We'll reply within 24 hours." };
+    return {
+      status: "success",
+      message: "Thanks. We'll reply within 24 hours.",
+    };
   } catch {
     // Never surface a raw Error.message ("Failed to fetch" / "NetworkError…") to a visitor — it
     // reads as broken. Give a plain, reassuring next step (embarrassingly-easy: language that guides,
     // not jargon). The field values are untouched (React 19 only resets on the success path), so the
     // visitor can retry without re-typing.
     return {
-      status: 'error',
+      status: "error",
       message: "Couldn't send — please check your connection and try again.",
     };
   }
@@ -161,8 +182,22 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
     >
       {pending ? (
         <>
-          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="60" strokeDashoffset="20" strokeLinecap="round" />
+          <svg
+            className="animate-spin h-4 w-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeDasharray="60"
+              strokeDashoffset="20"
+              strokeLinecap="round"
+            />
           </svg>
           Sending…
         </>
@@ -176,15 +211,17 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
   );
 }
 
-export function ContactForm({ endpoint, slug = 'default' }: Props) {
-  const [state, formAction] = useActionState<ContactState, FormData>(submit, { status: 'idle' });
+export function ContactForm({ endpoint, slug }: Props) {
+  const [state, formAction] = useActionState<ContactState, FormData>(submit, {
+    status: "idle",
+  });
 
   // Live-validation state: the current value + whether the visitor has interacted.
   const [values, setValues] = useState<Record<FieldName, string>>({
-    name: '',
-    email: '',
-    phone: '',
-    message: '',
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
   });
   const [touched, setTouched] = useState<Record<FieldName, boolean>>({
     name: false,
@@ -200,63 +237,101 @@ export function ContactForm({ endpoint, slug = 'default' }: Props) {
   // surface. On a successful send, clear the controlled values + touched state so the form returns
   // to a clean slate (the success message stays). Keyed on `state.status` so it fires once per send.
   useEffect(() => {
-    if (state.status === 'success') {
-      setValues({ name: '', email: '', phone: '', message: '' });
+    if (state.status === "success") {
+      setValues({ name: "", email: "", phone: "", message: "" });
       setTouched({ name: false, email: false, phone: false, message: false });
     }
     // Key on the `state` OBJECT (useActionState returns a fresh object per action completion),
     // so a SECOND successful send — where `state.status` stays 'success' — still re-clears.
   }, [state]);
 
-  const onFieldChange = (name: FieldName) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    setValues((v) => ({ ...v, [name]: e.target.value }));
-  const onFieldBlur = (name: FieldName) => (_e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    setTouched((t) => ({ ...t, [name]: true }));
+  const onFieldChange =
+    (name: FieldName) =>
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setValues((v) => ({ ...v, [name]: e.target.value }));
+  const onFieldBlur =
+    (name: FieldName) =>
+    (_e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setTouched((t) => ({ ...t, [name]: true }));
 
-  const allValid = (Object.keys(values) as FieldName[]).every((n) => isFieldValid(n, values[n]));
+  const allValid = (Object.keys(values) as FieldName[]).every((n) =>
+    isFieldValid(n, values[n]),
+  );
 
   return (
     <form
       action={formAction}
       className="pst-cf glass rounded-2xl p-8 space-y-6"
       noValidate
-      aria-busy={state.status === 'idle' ? undefined : false}
+      aria-busy={state.status === "idle" ? undefined : false}
     >
       {/* Contract-critical hidden inputs — DO NOT rename/remove: app.js reads these. */}
-      <input type="hidden" name="__slug" value={slug} />
+      <input type="hidden" name="__slug" value={slug || siteSlug()} />
       {endpoint && <input type="hidden" name="__endpoint" value={endpoint} />}
 
       <div className="grid sm:grid-cols-2 gap-6">
         <Field
-          label="Name" name="name" type="text" autoComplete="name" required
-          state={state} value={values.name} touched={touched.name}
-          onChange={onFieldChange('name')} onBlur={onFieldBlur('name')}
+          label="Name"
+          name="name"
+          type="text"
+          autoComplete="name"
+          required
+          state={state}
+          value={values.name}
+          touched={touched.name}
+          onChange={onFieldChange("name")}
+          onBlur={onFieldBlur("name")}
         />
         <Field
-          label="Email" name="email" type="email" autoComplete="email" inputMode="email" required
-          state={state} value={values.email} touched={touched.email}
-          onChange={onFieldChange('email')} onBlur={onFieldBlur('email')}
+          label="Email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          inputMode="email"
+          required
+          state={state}
+          value={values.email}
+          touched={touched.email}
+          onChange={onFieldChange("email")}
+          onBlur={onFieldBlur("email")}
         />
       </div>
       <Field
-        label="Phone (optional)" name="phone" type="tel" autoComplete="tel" inputMode="tel"
-        state={state} value={values.phone} touched={touched.phone}
-        onChange={onFieldChange('phone')} onBlur={onFieldBlur('phone')}
+        label="Phone (optional)"
+        name="phone"
+        type="tel"
+        autoComplete="tel"
+        inputMode="tel"
+        state={state}
+        value={values.phone}
+        touched={touched.phone}
+        onChange={onFieldChange("phone")}
+        onBlur={onFieldBlur("phone")}
       />
       <Field
-        label="Message" name="message" type="textarea" rows={5} required
-        state={state} value={values.message} touched={touched.message}
-        onChange={onFieldChange('message')} onBlur={onFieldBlur('message')}
+        label="Message"
+        name="message"
+        type="textarea"
+        rows={5}
+        required
+        state={state}
+        value={values.message}
+        touched={touched.message}
+        onChange={onFieldChange("message")}
+        onBlur={onFieldBlur("message")}
       />
 
       <SubmitButton disabled={!allValid} />
 
-      {state.status === 'success' && (
-        <p role="status" className="flex items-center gap-2 text-sm text-success">
+      {state.status === "success" && (
+        <p
+          role="status"
+          className="flex items-center gap-2 text-sm text-success"
+        >
           <Check size={16} aria-hidden="true" /> {state.message}
         </p>
       )}
-      {state.status === 'error' && (
+      {state.status === "error" && (
         <p role="alert" className="flex items-center gap-2 text-sm text-danger">
           <AlertCircle size={16} aria-hidden="true" /> {state.message}
         </p>
@@ -268,9 +343,9 @@ export function ContactForm({ endpoint, slug = 'default' }: Props) {
 interface FieldProps {
   label: string;
   name: FieldName;
-  type?: 'text' | 'email' | 'tel' | 'textarea';
+  type?: "text" | "email" | "tel" | "textarea";
   autoComplete?: string;
-  inputMode?: 'text' | 'email' | 'tel' | 'numeric';
+  inputMode?: "text" | "email" | "tel" | "numeric";
   rows?: number;
   required?: boolean;
   state: ContactState;
@@ -281,15 +356,26 @@ interface FieldProps {
 }
 
 function Field({
-  label, name, type = 'text', autoComplete, inputMode, rows, required,
-  state, value, touched, onChange, onBlur,
+  label,
+  name,
+  type = "text",
+  autoComplete,
+  inputMode,
+  rows,
+  required,
+  state,
+  value,
+  touched,
+  onChange,
+  onBlur,
 }: FieldProps) {
   const id = `cf-${name}`;
   const hintId = `${id}-hint`;
   const errorId = `${id}-error`;
 
   // Server-side error from the last submit (persists until the field is edited).
-  const serverError = state.status === 'error' ? state.fieldErrors?.[name] : undefined;
+  const serverError =
+    state.status === "error" ? state.fieldErrors?.[name] : undefined;
 
   // Live validity — only "graded" once the visitor has typed something OR blurred.
   const hasInput = value.length > 0;
@@ -303,12 +389,14 @@ function Field({
   const ariaInvalid = showInvalid || Boolean(serverError);
   // Point `aria-describedby` at whichever message is currently rendered.
   const describedBy =
-    [liveHint ? hintId : null, serverError ? errorId : null].filter(Boolean).join(' ') || undefined;
+    [liveHint ? hintId : null, serverError ? errorId : null]
+      .filter(Boolean)
+      .join(" ") || undefined;
 
   const baseClass =
-    'pst-cf-input w-full bg-surface border border-border rounded-lg px-4 py-3 text-text placeholder-text-subtle min-h-[48px]';
+    "pst-cf-input w-full bg-surface border border-border rounded-lg px-4 py-3 text-text placeholder-text-subtle min-h-[48px]";
   // A little right padding so the ✓ / × mark never overlaps the caret/text.
-  const withMarkPad = graded ? ' pr-11' : '';
+  const withMarkPad = graded ? " pr-11" : "";
   const dataValid = graded ? String(valid) : undefined;
 
   const commonProps = {
@@ -318,14 +406,17 @@ function Field({
     onChange,
     onBlur,
     required,
-    'aria-invalid': ariaInvalid ? ('true' as const) : undefined,
-    'aria-describedby': describedBy,
-    'data-valid': dataValid,
+    "aria-invalid": ariaInvalid ? ("true" as const) : undefined,
+    "aria-describedby": describedBy,
+    "data-valid": dataValid,
   };
 
   return (
     <div>
-      <label htmlFor={id} className="pst-cf-label flex items-center gap-1 text-text/80 font-medium mb-2">
+      <label
+        htmlFor={id}
+        className="pst-cf-label flex items-center gap-1 text-text/80 font-medium mb-2"
+      >
         {label}
         {required && (
           <span aria-hidden="true" className="text-danger">
@@ -336,7 +427,7 @@ function Field({
       </label>
 
       <div className="relative">
-        {type === 'textarea' ? (
+        {type === "textarea" ? (
           <textarea
             {...commonProps}
             rows={rows ?? 4}
@@ -358,7 +449,7 @@ function Field({
         {showValid && (
           <span
             aria-hidden="true"
-            className={`pst-cf-mark absolute right-3.5 text-success ${type === 'textarea' ? 'top-3.5' : 'top-1/2 -translate-y-1/2'}`}
+            className={`pst-cf-mark absolute right-3.5 text-success ${type === "textarea" ? "top-3.5" : "top-1/2 -translate-y-1/2"}`}
           >
             <Check size={18} strokeWidth={2.5} />
           </span>
@@ -366,7 +457,7 @@ function Field({
         {showInvalid && (
           <span
             aria-hidden="true"
-            className={`pst-cf-mark absolute right-3.5 text-danger ${type === 'textarea' ? 'top-3.5' : 'top-1/2 -translate-y-1/2'}`}
+            className={`pst-cf-mark absolute right-3.5 text-danger ${type === "textarea" ? "top-3.5" : "top-1/2 -translate-y-1/2"}`}
           >
             <X size={18} strokeWidth={2.5} />
           </span>
@@ -375,7 +466,11 @@ function Field({
 
       {/* Live hint (while touched + invalid) — reachable without a submit. */}
       {liveHint && (
-        <p id={hintId} role="alert" className="mt-1.5 flex items-center gap-1.5 text-xs text-danger">
+        <p
+          id={hintId}
+          role="alert"
+          className="mt-1.5 flex items-center gap-1.5 text-xs text-danger"
+        >
           <AlertCircle size={13} aria-hidden="true" /> {liveHint}
         </p>
       )}
