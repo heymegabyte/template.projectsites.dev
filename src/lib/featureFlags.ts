@@ -13,7 +13,7 @@
  * default (experimental); opt a build in with `VITE_PERSONALIZED_RIBBON=1`.
  */
 export function personalizedRibbonEnabled(): boolean {
-  return import.meta.env.VITE_PERSONALIZED_RIBBON === '1';
+  return import.meta.env.VITE_PERSONALIZED_RIBBON === "1";
 }
 
 /**
@@ -24,7 +24,7 @@ export function personalizedRibbonEnabled(): boolean {
  * `VITE_CLIP_REVEAL=1`. Firefox / reduced-motion get the static, fully-visible image (never clipped).
  */
 export function clipRevealEnabled(): boolean {
-  return import.meta.env.VITE_CLIP_REVEAL === '1';
+  return import.meta.env.VITE_CLIP_REVEAL === "1";
 }
 
 /**
@@ -37,7 +37,7 @@ export function clipRevealEnabled(): boolean {
  * Source: awwwards.com scramble-text inspiration + Codrops 2026 kinetic-type trend.
  */
 export function textScrambleEnabled(): boolean {
-  return import.meta.env.VITE_TEXT_SCRAMBLE === '1';
+  return import.meta.env.VITE_TEXT_SCRAMBLE === "1";
 }
 
 /**
@@ -53,7 +53,7 @@ export function textScrambleEnabled(): boolean {
  * micro-behavior adaptation) — the named bleeding-edge the big AI builders don't ship.
  */
 export function exitIntentEnabled(): boolean {
-  return import.meta.env.VITE_EXIT_INTENT === '1';
+  return import.meta.env.VITE_EXIT_INTENT === "1";
 }
 
 /**
@@ -75,7 +75,7 @@ export function exitIntentEnabled(): boolean {
  * Codrops 2026 scroll-depth trend — the cinematic layer the one-click AI builders don't ship.
  */
 export function scrollCinemaEnabled(): boolean {
-  return import.meta.env.VITE_SCROLL_CINEMA !== '0';
+  return import.meta.env.VITE_SCROLL_CINEMA !== "0";
 }
 
 /**
@@ -96,7 +96,7 @@ export function scrollCinemaEnabled(): boolean {
  * backdrop the one-click AI builders don't ship.
  */
 export function particleFieldEnabled(): boolean {
-  return import.meta.env.VITE_PARTICLE_FIELD === '1';
+  return import.meta.env.VITE_PARTICLE_FIELD === "1";
 }
 
 /**
@@ -120,7 +120,7 @@ export function particleFieldEnabled(): boolean {
  * don't ship.
  */
 export function cinematicProcessEnabled(): boolean {
-  return import.meta.env.VITE_CINEMATIC_PROCESS === '1';
+  return import.meta.env.VITE_CINEMATIC_PROCESS === "1";
 }
 
 /**
@@ -144,7 +144,7 @@ export function cinematicProcessEnabled(): boolean {
  * (Framer / v0 / Lovable) still emulate with JS.
  */
 export function faqNativeDisclosureEnabled(): boolean {
-  return import.meta.env.VITE_FAQ_NATIVE_DISCLOSURE === '1';
+  return import.meta.env.VITE_FAQ_NATIVE_DISCLOSURE === "1";
 }
 
 /**
@@ -169,7 +169,7 @@ export function faqNativeDisclosureEnabled(): boolean {
  * the one-click AI builders (Framer / v0 / Lovable) don't ship as one-click.
  */
 export function kineticMarqueeEnabled(): boolean {
-  return import.meta.env.VITE_KINETIC_MARQUEE === '1';
+  return import.meta.env.VITE_KINETIC_MARQUEE === "1";
 }
 
 /**
@@ -192,7 +192,7 @@ export function kineticMarqueeEnabled(): boolean {
  * the one-click AI builders don't ship.
  */
 export function scrollStackEnabled(): boolean {
-  return import.meta.env.VITE_SCROLL_STACK === '1';
+  return import.meta.env.VITE_SCROLL_STACK === "1";
 }
 
 /**
@@ -208,7 +208,7 @@ export function scrollStackEnabled(): boolean {
  * `VITE_KINETIC_HEADLINE=1`. Wiring the previously-built-but-unwired `.kinetic-headline` CSS + KineticHeadline.
  */
 export function kineticHeadlineEnabled(): boolean {
-  return import.meta.env.VITE_KINETIC_HEADLINE === '1';
+  return import.meta.env.VITE_KINETIC_HEADLINE === "1";
 }
 
 /**
@@ -224,5 +224,19 @@ export function kineticHeadlineEnabled(): boolean {
  * the animated layer is aria-hidden). Dark by default; opt a build in with `VITE_ROTATING_SUBHEAD=1`.
  */
 export function rotatingSubheadEnabled(): boolean {
-  return import.meta.env.VITE_ROTATING_SUBHEAD === '1';
+  return import.meta.env.VITE_ROTATING_SUBHEAD === "1";
+}
+
+/**
+ * Living gradient border (`living_border` / VITE_LIVING_BORDER) — the Awwwards / motion.so "glowing
+ * card" signature: a crisp conic-gradient ring rotates slowly around the hero's PRIMARY CTA, drawing
+ * the eye straight to the one conversion action (a `.living-border` class + a masked `::before` ring
+ * driven by an animated `@property --lb-angle`). Pure CSS — no library, no bundle cost. LCP-safe (the
+ * CTA sits below the <h1> LCP element; the ring is a decorative `z-index:-1` `::before` that paints
+ * post-hydration and never reflows — CLS-safe by construction). reduced-motion → the ring is STATIC
+ * (a still gradient border, no rotation). axe-neutral (decorative, aria-hidden by nature). Dark by
+ * default; opt a build in with `VITE_LIVING_BORDER=1`.
+ */
+export function livingBorderEnabled(): boolean {
+  return import.meta.env.VITE_LIVING_BORDER === "1";
 }

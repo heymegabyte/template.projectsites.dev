@@ -1,20 +1,27 @@
-import { type CSSProperties } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, Star, Shield, Award } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { MagneticButton } from '@/components/MagneticButton';
-import { cn } from '@/lib/utils';
-import { brand } from '@/brand';
-import { scrubText, scrubImage } from '@/lib/placeholders';
-import { cdnImageProps } from '@/lib/cdn-image';
-import { WebGLHeroBackdrop, backdropForPreset, type HeroBackdropVariant } from '@/components/sections/WebGLHeroBackdrop';
-import { TiltCard } from '@/components/TiltCard';
-import { ScrollParallax } from '@/components/ScrollParallax';
-import { ScrambleText } from '@/components/ScrambleText';
-import { RotatingSubhead } from '@/components/RotatingSubhead';
-import { kineticHeadlineEnabled } from '@/lib/featureFlags';
+import { type CSSProperties } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight, Star, Shield, Award } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MagneticButton } from "@/components/MagneticButton";
+import { cn } from "@/lib/utils";
+import { brand } from "@/brand";
+import { scrubText, scrubImage } from "@/lib/placeholders";
+import { cdnImageProps } from "@/lib/cdn-image";
+import {
+  WebGLHeroBackdrop,
+  backdropForPreset,
+  type HeroBackdropVariant,
+} from "@/components/sections/WebGLHeroBackdrop";
+import { TiltCard } from "@/components/TiltCard";
+import { ScrollParallax } from "@/components/ScrollParallax";
+import { ScrambleText } from "@/components/ScrambleText";
+import { RotatingSubhead } from "@/components/RotatingSubhead";
+import {
+  kineticHeadlineEnabled,
+  livingBorderEnabled,
+} from "@/lib/featureFlags";
 
-type Trust = { icon?: 'star' | 'shield' | 'award'; label: string };
+type Trust = { icon?: "star" | "shield" | "award"; label: string };
 
 /**
  * Scrub trust badges: drop any whose label is an unresolved placeholder so the
@@ -22,11 +29,16 @@ type Trust = { icon?: 'star' | 'shield' | 'award'; label: string };
  */
 function scrubTrust(items?: Trust[]): Trust[] {
   if (!items?.length) return [];
-  return items.map((t) => ({ ...t, label: scrubText(t.label) })).filter((t) => t.label.length > 0);
+  return items
+    .map((t) => ({ ...t, label: scrubText(t.label) }))
+    .filter((t) => t.label.length > 0);
 }
 
 /** Scrub a `{ label, href }` CTA; returns undefined when the label is a placeholder. */
-function scrubCta(cta?: { label: string; href: string }): { label: string; href: string } | undefined {
+function scrubCta(cta?: {
+  label: string;
+  href: string;
+}): { label: string; href: string } | undefined {
   if (!cta) return undefined;
   const label = scrubText(cta.label);
   return label ? { label, href: cta.href } : undefined;
@@ -64,7 +76,7 @@ function TrustRow({ items }: { items?: Trust[] }) {
   return (
     <div className="mt-12 flex flex-wrap justify-center gap-3 text-sm">
       {items.map((t, i) => {
-        const Icon = TRUST_ICONS[t.icon ?? 'star'];
+        const Icon = TRUST_ICONS[t.icon ?? "star"];
         return (
           <span
             key={i}
@@ -72,10 +84,13 @@ function TrustRow({ items }: { items?: Trust[] }) {
             // entrance keyed on `--trust-i`, and a hover lift with the icon springing —
             // all motion-gated via `.trust-pill` in index.css (the resting state is
             // fully legible for reduced-motion / no-JS). Informational, not a control.
-            style={{ ['--trust-i' as string]: i } as CSSProperties}
+            style={{ ["--trust-i" as string]: i } as CSSProperties}
             className="trust-pill inline-flex items-center gap-2 rounded-full border border-border/70 bg-surface/60 px-3.5 py-1.5 text-text-muted backdrop-blur-sm"
           >
-            <Icon aria-hidden="true" className="trust-pill__icon h-4 w-4 text-accent" />
+            <Icon
+              aria-hidden="true"
+              className="trust-pill__icon h-4 w-4 text-accent"
+            />
             <span>{t.label}</span>
           </span>
         );
@@ -98,7 +113,17 @@ function TrustRow({ items }: { items?: Trust[] }) {
  * none) and sit behind the z-10 content. All motion is gated behind
  * `prefers-reduced-motion` — base states stay fully visible + legible.
  */
-export function HeroCenter({ eyebrow, headline, subheadline, valueProps, primary, secondary, trustBadges, className, webglBackdrop }: CommonProps) {
+export function HeroCenter({
+  eyebrow,
+  headline,
+  subheadline,
+  valueProps,
+  primary,
+  secondary,
+  trustBadges,
+  className,
+  webglBackdrop,
+}: CommonProps) {
   // The headline is the only <h1> — it must ALWAYS render, so fall back to the
   // real business name when the generation token is unresolved. Everything else
   // scrubs to empty/undefined and is hidden by its own guard.
@@ -113,7 +138,12 @@ export function HeroCenter({ eyebrow, headline, subheadline, valueProps, primary
   // delivered site now gets its fitting animated hero with zero per-build opt-in.
   const resolvedBackdrop = webglBackdrop ?? backdropForPreset(brand.themeStyle);
   return (
-    <section className={cn('relative min-h-screen flex items-center justify-center overflow-hidden grain', className)}>
+    <section
+      className={cn(
+        "relative min-h-screen flex items-center justify-center overflow-hidden grain",
+        className,
+      )}
+    >
       {/* Per-industry animated WebGL backdrop (deepest layer), auto-derived from the
           site personality. Decorative + LCP-safe: the <h1> below is the LCP element;
           this canvas mounts post-hydration and degrades to a static brand gradient
@@ -122,40 +152,54 @@ export function HeroCenter({ eyebrow, headline, subheadline, valueProps, primary
       {/* Centered accent bloom — a single OKLCH aura + slow conic halo behind the
           headline. Both decorative, always behind the z-10 content, no <img> in
           this variant so neither can become the LCP. */}
-      <div aria-hidden="true" className="hero-center-aura pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[46rem] w-[46rem] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />
-      <div aria-hidden="true" className="hero-center-halo pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[38rem] w-[38rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-60" />
+      <div
+        aria-hidden="true"
+        className="hero-center-aura pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[46rem] w-[46rem] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
+      />
+      <div
+        aria-hidden="true"
+        className="hero-center-halo pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[38rem] w-[38rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-60"
+      />
       {/* CINEMATIC-3D depth parallax — two decorative accent orbs drift at DIFFERENT rates as the
           page scrolls (motion.so-style layered depth). LCP-safe (a blurred bg-color div is never an
           LCP candidate; identity at scroll 0), and static under reduced-motion / Firefox. */}
-      <ScrollParallax depth={1.6} className="absolute -top-28 right-[10%] -z-10 h-64 w-64 rounded-full bg-accent/15 blur-3xl" />
-      <ScrollParallax depth={0.6} className="absolute bottom-[8%] left-[8%] -z-10 h-52 w-52 rounded-full bg-primary/12 blur-3xl" />
+      <ScrollParallax
+        depth={1.6}
+        className="absolute -top-28 right-[10%] -z-10 h-64 w-64 rounded-full bg-accent/15 blur-3xl"
+      />
+      <ScrollParallax
+        depth={0.6}
+        className="absolute bottom-[8%] left-[8%] -z-10 h-52 w-52 rounded-full bg-primary/12 blur-3xl"
+      />
       {/* Fine token-tinted grid — sits on border color so it reads on light + dark. */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10 opacity-[0.5]"
         style={{
           backgroundImage:
-            'linear-gradient(to right, var(--color-border) 1px, transparent 1px), linear-gradient(to bottom, var(--color-border) 1px, transparent 1px)',
-          backgroundSize: '64px 64px',
-          maskImage: 'radial-gradient(ellipse 70% 60% at 50% 45%, #000 30%, transparent 75%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 45%, #000 30%, transparent 75%)',
+            "linear-gradient(to right, var(--color-border) 1px, transparent 1px), linear-gradient(to bottom, var(--color-border) 1px, transparent 1px)",
+          backgroundSize: "64px 64px",
+          maskImage:
+            "radial-gradient(ellipse 70% 60% at 50% 45%, #000 30%, transparent 75%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 70% 60% at 50% 45%, #000 30%, transparent 75%)",
         }}
       />
       <div className="hero-cinematic-dolly relative z-10 max-w-container-wide mx-auto px-6 text-center pt-32 pb-20">
         {safeEyebrow && (
           <span
             className="hero-enter inline-block text-accent text-xs md:text-sm font-mono tracking-[0.3em] uppercase mb-6 px-4 py-2 rounded-full border border-accent/20 bg-accent/5"
-            style={{ ['--enter-i' as string]: 0 }}
+            style={{ ["--enter-i" as string]: 0 }}
           >
             <ScrambleText text={safeEyebrow} />
           </span>
         )}
         <h1
           className={cn(
-            'hero-enter hero-headline-fluid gradient-text font-heading font-extrabold mx-auto max-w-5xl',
-            kineticHeadlineEnabled() && 'kinetic-headline',
+            "hero-enter hero-headline-fluid gradient-text font-heading font-extrabold mx-auto max-w-5xl",
+            kineticHeadlineEnabled() && "kinetic-headline",
           )}
-          style={{ ['--enter-i' as string]: 1 }}
+          style={{ ["--enter-i" as string]: 1 }}
         >
           {safeHeadline}
         </h1>
@@ -164,17 +208,21 @@ export function HeroCenter({ eyebrow, headline, subheadline, valueProps, primary
             text={safeSubheadline}
             items={valueProps}
             className="hero-enter text-lg md:text-xl text-text-muted max-w-2xl mx-auto mt-8 leading-relaxed"
-            style={{ ['--enter-i' as string]: 2 }}
+            style={{ ["--enter-i" as string]: 2 }}
           />
         )}
         {(safePrimary || safeSecondary) && (
           <div
             className="hero-enter hero-center-cta flex flex-col sm:flex-row gap-4 justify-center mt-12"
-            style={{ ['--enter-i' as string]: 3 }}
+            style={{ ["--enter-i" as string]: 3 }}
           >
             {safePrimary && (
               <MagneticButton>
-                <Button asChild size="xl">
+                <Button
+                  asChild
+                  size="xl"
+                  className={cn(livingBorderEnabled() && "living-border")}
+                >
                   <Link to={safePrimary.href}>
                     {safePrimary.label} <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
@@ -188,7 +236,7 @@ export function HeroCenter({ eyebrow, headline, subheadline, valueProps, primary
             )}
           </div>
         )}
-        <div className="hero-enter" style={{ ['--enter-i' as string]: 4 }}>
+        <div className="hero-enter" style={{ ["--enter-i" as string]: 4 }}>
           <TrustRow items={safeTrust} />
         </div>
         {/* Tasteful scroll cue at the fold — the section is full-height. */}
@@ -207,7 +255,18 @@ interface SplitProps extends CommonProps {
 }
 
 /** Asymmetric hero: copy left, image right. Good for storefronts + services. */
-export function HeroSplit({ eyebrow, headline, subheadline, valueProps, primary, secondary, image, trustBadges, className, webglBackdrop }: SplitProps) {
+export function HeroSplit({
+  eyebrow,
+  headline,
+  subheadline,
+  valueProps,
+  primary,
+  secondary,
+  image,
+  trustBadges,
+  className,
+  webglBackdrop,
+}: SplitProps) {
   const safeHeadline = scrubText(headline, brand.business.name);
   const safeEyebrow = scrubText(eyebrow);
   const safeSubheadline = scrubText(subheadline);
@@ -221,12 +280,19 @@ export function HeroSplit({ eyebrow, headline, subheadline, valueProps, primary,
   // URLs → `auto=format` (AVIF/WebP) + a per-width srcSet, so a phone loads a small image, not a
   // 1000px JPEG. In a 2-col split the image is ~50vw ≥lg, 100vw below. Falls back to src (no-op)
   // for non-CDN URLs. The srcSet is additive — the browser always has `src` to fall back to.
-  const heroImg = safeImage ? cdnImageProps(safeImage.src, '(max-width: 1024px) 100vw, 50vw') : null;
+  const heroImg = safeImage
+    ? cdnImageProps(safeImage.src, "(max-width: 1024px) 100vw, 50vw")
+    : null;
   // Auto-derive the per-industry backdrop from the site personality when no explicit
   // override is passed (see HeroCenter) — LCP-safe: the eager hero <img> stays the LCP.
   const resolvedBackdrop = webglBackdrop ?? backdropForPreset(brand.themeStyle);
   return (
-    <section className={cn('relative isolate pt-32 pb-16 md:pb-24 max-w-container-wide mx-auto px-6', className)}>
+    <section
+      className={cn(
+        "relative isolate pt-32 pb-16 md:pb-24 max-w-container-wide mx-auto px-6",
+        className,
+      )}
+    >
       {/* Per-industry animated WebGL backdrop (deepest layer, auto-derived via
           backdropForPreset from the site personality). Decorative + LCP-safe: it
           mounts post-hydration behind the z-10 grid, always smaller-impact than the
@@ -237,25 +303,45 @@ export function HeroSplit({ eyebrow, headline, subheadline, valueProps, primary,
           fine grain layer. Both are decorative (aria-hidden, pointer-events
           none), always smaller and behind the eager hero <img>, so neither can
           become the LCP element. Motion is gated by prefers-reduced-motion. */}
-      <div aria-hidden="true" className="hero-aurora pointer-events-none absolute -top-24 -left-24 -z-10 h-[34rem] w-[34rem] rounded-full blur-3xl opacity-70" />
+      <div
+        aria-hidden="true"
+        className="hero-aurora pointer-events-none absolute -top-24 -left-24 -z-10 h-[34rem] w-[34rem] rounded-full blur-3xl opacity-70"
+      />
       {/* CINEMATIC-3D depth parallax — layered accent orbs drift at different rates on scroll
           (see the HeroCenter note): decorative, LCP-safe, static under reduced-motion / Firefox. */}
-      <ScrollParallax depth={1.5} className="absolute top-[6%] right-[6%] -z-10 h-60 w-60 rounded-full bg-accent/15 blur-3xl" />
-      <ScrollParallax depth={0.55} className="absolute -bottom-20 left-[4%] -z-10 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
-      <div aria-hidden="true" className="grain pointer-events-none absolute inset-0 -z-10" />
-      <div className={cn('grid gap-16 items-center', safeImage ? 'lg:grid-cols-2' : 'max-w-3xl mx-auto text-center')}>
+      <ScrollParallax
+        depth={1.5}
+        className="absolute top-[6%] right-[6%] -z-10 h-60 w-60 rounded-full bg-accent/15 blur-3xl"
+      />
+      <ScrollParallax
+        depth={0.55}
+        className="absolute -bottom-20 left-[4%] -z-10 h-56 w-56 rounded-full bg-primary/10 blur-3xl"
+      />
+      <div
+        aria-hidden="true"
+        className="grain pointer-events-none absolute inset-0 -z-10"
+      />
+      <div
+        className={cn(
+          "grid gap-16 items-center",
+          safeImage ? "lg:grid-cols-2" : "max-w-3xl mx-auto text-center",
+        )}
+      >
         <div className="hero-cinematic-dolly relative z-10">
           {safeEyebrow && (
-            <span className="hero-enter text-accent text-sm font-mono tracking-widest uppercase" style={{ ['--enter-i' as string]: 0 }}>
+            <span
+              className="hero-enter text-accent text-sm font-mono tracking-widest uppercase"
+              style={{ ["--enter-i" as string]: 0 }}
+            >
               <ScrambleText text={safeEyebrow} />
             </span>
           )}
           <h1
             className={cn(
-              'hero-enter hero-headline-fluid mt-4 font-extrabold font-heading',
-              kineticHeadlineEnabled() && 'kinetic-headline',
+              "hero-enter hero-headline-fluid mt-4 font-extrabold font-heading",
+              kineticHeadlineEnabled() && "kinetic-headline",
             )}
-            style={{ ['--enter-i' as string]: 1 }}
+            style={{ ["--enter-i" as string]: 1 }}
           >
             <span className="gradient-text">{safeHeadline}</span>
           </h1>
@@ -264,19 +350,27 @@ export function HeroSplit({ eyebrow, headline, subheadline, valueProps, primary,
               text={safeSubheadline}
               items={valueProps}
               className="hero-enter mt-6 text-lg md:text-xl text-text-muted leading-relaxed max-w-xl"
-              style={{ ['--enter-i' as string]: 2 }}
+              style={{ ["--enter-i" as string]: 2 }}
             />
           )}
           {(safePrimary || safeSecondary) && (
             <div
-              className={cn('hero-enter mt-8 flex flex-col sm:flex-row gap-3', !safeImage && 'justify-center')}
-              style={{ ['--enter-i' as string]: 3 }}
+              className={cn(
+                "hero-enter mt-8 flex flex-col sm:flex-row gap-3",
+                !safeImage && "justify-center",
+              )}
+              style={{ ["--enter-i" as string]: 3 }}
             >
               {safePrimary && (
                 <MagneticButton>
-                  <Button asChild size="lg">
+                  <Button
+                    asChild
+                    size="lg"
+                    className={cn(livingBorderEnabled() && "living-border")}
+                  >
                     <Link to={safePrimary.href}>
-                      {safePrimary.label} <ArrowRight className="ml-2 h-5 w-5" />
+                      {safePrimary.label}{" "}
+                      <ArrowRight className="ml-2 h-5 w-5" />
                     </Link>
                   </Button>
                 </MagneticButton>
@@ -293,7 +387,10 @@ export function HeroSplit({ eyebrow, headline, subheadline, valueProps, primary,
         {safeImage && (
           <div className="relative">
             {/* Accent ring + glow framing the LCP photo (decorative, behind it). */}
-            <div aria-hidden="true" className="pointer-events-none absolute -inset-3 -z-10 rounded-[1.75rem] bg-gradient-to-br from-accent/25 via-primary/10 to-transparent blur-2xl" />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -inset-3 -z-10 rounded-[1.75rem] bg-gradient-to-br from-accent/25 via-primary/10 to-transparent blur-2xl"
+            />
             {/* Cinematic pointer 3D-tilt (TiltCard): identity at rest → the eager <img> stays the
                 LCP; tilt + glare are fine-pointer + motion-gated (touch/reduced-motion → static). */}
             <TiltCard className="card-tactile relative overflow-hidden rounded-2xl aspect-[5/4] shadow-lg ring-1 ring-border">
@@ -310,9 +407,15 @@ export function HeroSplit({ eyebrow, headline, subheadline, valueProps, primary,
                 className="h-full w-full object-cover hero-kenburns"
               />
               {/* Cinematic vignette + top sheen — pure overlay, never the LCP. */}
-              <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-accent/10" />
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-accent/10"
+              />
             </TiltCard>
-            <div aria-hidden="true" className="absolute inset-0 -z-20 blur-3xl bg-accent/10 rounded-full" />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 -z-20 blur-3xl bg-accent/10 rounded-full"
+            />
           </div>
         )}
       </div>
