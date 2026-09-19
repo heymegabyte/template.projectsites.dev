@@ -1,6 +1,7 @@
 import { AnimatedSection } from '@/components/AnimatedSection';
 import { useSEO } from '@/hooks/useSEO';
 import { brand } from '@/brand';
+import { emailAddr } from '@/lib/email';
 
 /**
  * Terms of Service — ships a complete, de-facto-standard starting contract so a
@@ -11,7 +12,7 @@ import { brand } from '@/brand';
  */
 export default function Terms() {
   const name = brand.business.name || 'this business';
-  const email = brand.business.email;
+  const email = emailAddr(brand.business.email); // real address or '' → the contact-form fallback below
   const year = new Date().getFullYear();
 
   const sections: { h: string; body: React.ReactNode }[] = [

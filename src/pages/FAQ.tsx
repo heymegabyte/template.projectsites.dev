@@ -2,6 +2,7 @@ import { useSEO } from '@/hooks/useSEO';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { FAQ as FAQSection, CTASection, type FAQItem } from '@/components/sections';
 import { brand } from '@/brand';
+import { mailtoHref } from '@/lib/email';
 
 // 11 Q&A across four categories (each token emitted by the content pack for all
 // 10 verticals): 3 general + 4 "good to know" + 2 billing + 2 support. Answers run
@@ -53,7 +54,7 @@ export default function FAQPage() {
       <CTASection
         eyebrow="Still have questions?"
         headline="We answer email within 24 hours"
-        primary={{ label: 'Email us', href: `mailto:${brand.business.email}` }}
+        primary={mailtoHref(brand.business.email) ? { label: 'Email us', href: mailtoHref(brand.business.email) } : { label: 'Contact us', href: '/contact' }}
         tone="quiet"
       />
     </>

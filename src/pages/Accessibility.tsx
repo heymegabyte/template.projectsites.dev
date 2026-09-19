@@ -1,4 +1,14 @@
+import { brand } from '@/brand';
+import { telHref } from '@/lib/phone';
+import { mailtoHref } from '@/lib/email';
+
 export default function Accessibility() {
+  // Runtime-brand-driven (was hardcoded `{BUSINESS_NAME}`/`{BUSINESS_PHONE}`/`{BUSINESS_EMAIL}` literals
+  // → a token leak + dead tel:/mailto: when a business lacked phone/email). Each contact control renders
+  // only when real (telHref/mailtoHref), else the list falls back to the contact form — never a dead control.
+  const name = brand.business.name || 'This website';
+  const tel = telHref(brand.business.phone);
+  const mail = mailtoHref(brand.business.email);
   return (
     <main className="pt-32 pb-20">
       <div className="max-w-3xl mx-auto px-6">
@@ -8,7 +18,7 @@ export default function Accessibility() {
 
         <div className="space-y-6 text-text-muted text-sm leading-relaxed">
           <p>
-            {'{BUSINESS_NAME}'} is committed to ensuring digital accessibility for people with
+            {name} is committed to ensuring digital accessibility for people with
             disabilities. We continually improve the user experience for everyone and apply the
             relevant accessibility standards.
           </p>
@@ -44,10 +54,18 @@ export default function Accessibility() {
             We welcome your feedback on the accessibility of this website. If you encounter
             accessibility barriers, please contact us:
           </p>
-          <ul className="list-disc pl-6 space-y-2">
-            <li>Phone: <a href="tel:{BUSINESS_PHONE}" className="text-[var(--color-accent)] hover:underline">{'{BUSINESS_PHONE}'}</a></li>
-            <li>Email: <a href="mailto:{BUSINESS_EMAIL}" className="text-[var(--color-accent)] hover:underline">{'{BUSINESS_EMAIL}'}</a></li>
-          </ul>
+          {tel || mail ? (
+            <ul className="list-disc pl-6 space-y-2">
+              {tel && (
+                <li>Phone: <a href={tel} className="text-[var(--color-accent)] hover:underline">{brand.business.phone}</a></li>
+              )}
+              {mail && (
+                <li>Email: <a href={mail} className="text-[var(--color-accent)] hover:underline">{brand.business.email}</a></li>
+              )}
+            </ul>
+          ) : (
+            <p>Please use the <a href="/contact" className="text-[var(--color-accent)] hover:underline">contact form</a> on this website and we&rsquo;ll respond promptly.</p>
+          )}
           <p>We aim to respond to accessibility feedback within 2 business days.</p>
 
           <h2 className="text-xl font-heading font-semibold text-text mt-8">

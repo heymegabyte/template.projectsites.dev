@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { brand } from "@/brand";
 import { exitIntentEnabled } from "@/lib/featureFlags";
 import { telHref } from "@/lib/phone";
+import { mailtoHref } from "@/lib/email";
 
 /**
  * ExitIntentOffer — the 2026 conversion-recovery frontier the big AI builders (Framer / Lovable /
@@ -51,10 +52,12 @@ export function deriveOffer(business: {
       label: `Call ${business.shortName || business.name || "us"}`,
       event: "exit_intent_call",
     };
-  const email = business.email?.trim();
-  if (email)
+  // Only offer email when it's a real address (not a placeholder/{token}/invalid) — else fall
+  // through to the contact page rather than a dead mailto: exit-intent offer.
+  const mail = mailtoHref(business.email);
+  if (mail)
     return {
-      href: `mailto:${email}`,
+      href: mail,
       label: "Send us a message",
       event: "exit_intent_email",
     };

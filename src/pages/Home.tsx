@@ -9,6 +9,7 @@ import { buildSiteJsonLd, parseAddress, parseHours, type BusinessClass } from '@
 import { GalleryGrid } from '@/components/local';
 import { hasRealImage, cityFromAddress } from '@/lib/placeholders';
 import { telDigits, telHref } from '@/lib/phone';
+import { mailtoHref } from '@/lib/email';
 import { cinematicProcessEnabled, kineticMarqueeEnabled, scrollStackEnabled } from '@/lib/featureFlags';
 import KineticMarquee from '@/components/KineticMarquee';
 
@@ -204,10 +205,13 @@ export function HomeContact() {
   // so a garbage-only phone falls through to the reassurance message, not an empty column.
   const dialable = telDigits(phone);
   const callHref = telHref(phone);
+  // Click-to-email through the shared helper: a mailto: ONLY for a real email (not a {token}/
+  // invalid) — gate the Email row on the SAME predicate so no dead mailto: ships.
+  const mail = mailtoHref(email);
   const mapHref = address
     ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`
     : '';
-  const hasNap = Boolean(dialable || email || address || hours);
+  const hasNap = Boolean(dialable || mail || address || hours);
 
   return (
     <section id="contact" className="relative py-24 border-t border-border">
@@ -250,9 +254,9 @@ export function HomeContact() {
                     </span>
                   </a>
                 )}
-                {email && (
+                {mail && (
                   <a
-                    href={`mailto:${email}`}
+                    href={mail}
                     className="glass rounded-2xl p-6 flex items-center gap-4 hover:border-accent/40 transition-colors"
                     aria-label={`Email ${name} at ${email}`}
                   >

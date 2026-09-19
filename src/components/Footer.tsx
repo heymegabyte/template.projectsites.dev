@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Mail, Phone, MapPin, MessageSquare } from "lucide-react";
 import { brand, featureOn } from "@/brand";
 import { telHref } from "@/lib/phone";
+import { mailtoHref } from "@/lib/email";
 
 interface NavRoute {
   to: string;
@@ -72,7 +73,9 @@ export default function Footer({ routes, socials = [] }: Props) {
   // '' (not '#') when the phone isn't dialable — the row below now gates on phoneHref, so a
   // digitless/placeholder phone hides the row entirely instead of rendering a dead href="#".
   const phoneHref = telHref(phone);
-  const emailHref = derivedEmail ? `mailto:${derivedEmail}` : "#";
+  // '' (not '#') when the email isn't real — the row below gates on emailHref, so a
+  // placeholder/{token}/invalid email hides the row instead of a dead mailto:/href="#".
+  const emailHref = mailtoHref(derivedEmail);
 
   return (
     <footer className="site-footer grain relative bg-surface text-text-muted pt-20 pb-8 border-t border-border">
@@ -172,7 +175,7 @@ export default function Footer({ routes, socials = [] }: Props) {
                   <span>{phone}</span>
                 </a>
               )}
-              {derivedEmail && (
+              {emailHref && (
                 <a
                   href={emailHref}
                   className="footer-link flex items-center gap-2 text-text-muted hover:text-accent focus-visible:text-accent transition-colors break-all"

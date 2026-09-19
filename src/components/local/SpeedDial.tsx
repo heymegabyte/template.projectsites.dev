@@ -1,6 +1,7 @@
 import { Plus, Phone, Mail, MapPin, Calendar, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { telDigits, telHref } from '@/lib/phone';
+import { mailtoHref } from '@/lib/email';
 
 interface SpeedDialProps {
   phone?: string;
@@ -51,11 +52,12 @@ export default function SpeedDial({ phone, email, directionsUrl, bookingUrl }: S
     });
   }
 
-  if (email) {
+  const mail = mailtoHref(email);
+  if (mail) {
     actions.push({
       label: 'Email',
       icon: Mail,
-      href: `mailto:${email}`,
+      href: mail,
       event: 'email_click',
       color: 'bg-blue-500 hover:bg-blue-400',
     });
