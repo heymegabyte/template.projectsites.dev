@@ -1,22 +1,22 @@
-import { Mail, Phone, MapPin, Clock } from 'lucide-react';
-import { AnimatedSection } from '@/components/AnimatedSection';
-import { ContactForm } from '@/components/ContactForm';
-import { useSEO } from '@/hooks/useSEO';
-import { JsonLd } from '@/components/JsonLd';
+import { Mail, Phone, MapPin, Clock } from "lucide-react";
+import { AnimatedSection } from "@/components/AnimatedSection";
+import { ContactForm } from "@/components/ContactForm";
+import { useSEO } from "@/hooks/useSEO";
+import { JsonLd } from "@/components/JsonLd";
 
 export default function Contact() {
   useSEO({
-    title: 'Contact {BUSINESS_NAME} — {SEO_TAGLINE}',
-    description: '{CONTACT_META_DESCRIPTION}',
+    title: "Contact {BUSINESS_NAME} — {SEO_TAGLINE}",
+    description: "{CONTACT_META_DESCRIPTION}",
   });
 
   return (
     <>
       <JsonLd
         data={{
-          '@context': 'https://schema.org',
-          '@type': 'ContactPage',
-          name: 'Contact {BUSINESS_NAME}',
+          "@context": "https://schema.org",
+          "@type": "ContactPage",
+          name: "Contact {BUSINESS_NAME}",
         }}
       />
 
@@ -27,17 +27,17 @@ export default function Contact() {
               Get in Touch
             </span>
             <h1 className="text-4xl md:text-6xl font-bold font-heading mt-4 mb-6">
-              <span className="gradient-text">{'{CONTACT_HEADLINE}'}</span>
+              <span className="gradient-text">{"{CONTACT_HEADLINE}"}</span>
             </h1>
-            <p className="text-text-subtle max-w-2xl mx-auto text-lg">
-              {'{CONTACT_SUBHEADLINE}'}
+            <p className="text-text-muted max-w-2xl mx-auto text-lg">
+              {"{CONTACT_SUBHEADLINE}"}
             </p>
           </AnimatedSection>
 
           {/* Intro — reassuring, guess-ahead copy so the page is more than a form. */}
           <AnimatedSection className="mb-12">
             <p className="text-text-muted leading-relaxed max-w-3xl mx-auto text-center">
-              {'{CONTACT_INTRO}'}
+              {"{CONTACT_INTRO}"}
             </p>
           </AnimatedSection>
 
@@ -61,7 +61,9 @@ export default function Contact() {
                   </div>
                   <div>
                     <h3 className="text-text font-medium mb-1">Address</h3>
-                    <p className="text-text-subtle text-sm">{'{BUSINESS_ADDRESS}'}</p>
+                    <p className="text-text-muted text-sm">
+                      {"{BUSINESS_ADDRESS}"}
+                    </p>
                   </div>
                 </div>
 
@@ -71,7 +73,9 @@ export default function Contact() {
                   </div>
                   <div>
                     <h3 className="text-text font-medium mb-1">Phone</h3>
-                    <p className="text-text-subtle text-sm">{'{BUSINESS_PHONE}'}</p>
+                    <p className="text-text-muted text-sm">
+                      {"{BUSINESS_PHONE}"}
+                    </p>
                   </div>
                 </div>
 
@@ -81,7 +85,9 @@ export default function Contact() {
                   </div>
                   <div>
                     <h3 className="text-text font-medium mb-1">Email</h3>
-                    <p className="text-text-subtle text-sm">{'{BUSINESS_EMAIL}'}</p>
+                    <p className="text-text-muted text-sm">
+                      {"{BUSINESS_EMAIL}"}
+                    </p>
                   </div>
                 </div>
 
@@ -91,7 +97,9 @@ export default function Contact() {
                   </div>
                   <div>
                     <h3 className="text-text font-medium mb-1">Hours</h3>
-                    <p className="text-text-subtle text-sm">{'{BUSINESS_HOURS}'}</p>
+                    <p className="text-text-muted text-sm">
+                      {"{BUSINESS_HOURS}"}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -113,32 +121,54 @@ export default function Contact() {
               Here&rsquo;s how it works after you reach out
             </h2>
             <p className="text-text-muted leading-relaxed">
-              However you get in touch &mdash; the form, a phone call, or an email &mdash; you&rsquo;ll
-              always reach a real person who knows our work and genuinely wants to help. We read every
-              message, answer your questions honestly, and never put you through an automated runaround
-              or a high-pressure pitch. Most inquiries get a thoughtful, personal reply within one
-              business day, and often much sooner. There are no silly questions and no wrong reasons to
-              reach out &mdash; if we can help, we will, and if we cannot, we will happily point you in
-              the right direction.
+              However you get in touch &mdash; the form, a phone call, or an
+              email &mdash; you&rsquo;ll always reach a real person who knows
+              our work and genuinely wants to help. We read every message,
+              answer your questions honestly, and never put you through an
+              automated runaround or a high-pressure pitch. Most inquiries get a
+              thoughtful, personal reply within one business day, and often much
+              sooner. There are no silly questions and no wrong reasons to reach
+              out &mdash; if we can help, we will, and if we cannot, we will
+              happily point you in the right direction.
             </p>
             <ol className="grid sm:grid-cols-3 gap-6 mt-8">
               {[
-                { n: '01', t: 'We listen', d: 'We read your message and route it to the right person on our team — no ticket numbers, no runaround.' },
-                { n: '02', t: 'We respond', d: 'You get a clear, honest reply with answers, next steps, or a time to talk — usually within one business day.' },
-                { n: '03', t: 'We follow through', d: 'From first hello to finished work, you always deal with real people who care about getting it right.' },
+                {
+                  n: "01",
+                  t: "We listen",
+                  d: "We read your message and route it to the right person on our team — no ticket numbers, no runaround.",
+                },
+                {
+                  n: "02",
+                  t: "We respond",
+                  d: "You get a clear, honest reply with answers, next steps, or a time to talk — usually within one business day.",
+                },
+                {
+                  n: "03",
+                  t: "We follow through",
+                  d: "From first hello to finished work, you always deal with real people who care about getting it right.",
+                },
               ].map((s) => (
                 <li key={s.n} className="relative">
-                  <span aria-hidden="true" className="font-heading text-3xl font-extrabold text-[var(--color-accent)]/25">
+                  <span
+                    aria-hidden="true"
+                    className="font-heading text-3xl font-extrabold text-[var(--color-accent)]/25"
+                  >
                     {s.n}
                   </span>
-                  <h3 className="font-heading text-lg font-bold text-text mt-1 mb-1.5">{s.t}</h3>
-                  <p className="text-text-muted text-sm leading-relaxed">{s.d}</p>
+                  <h3 className="font-heading text-lg font-bold text-text mt-1 mb-1.5">
+                    {s.t}
+                  </h3>
+                  <p className="text-text-muted text-sm leading-relaxed">
+                    {s.d}
+                  </p>
                 </li>
               ))}
             </ol>
-            <p className="text-text-subtle text-sm mt-8">
-              Prefer to talk right away? Call or email us directly using the details above &mdash;
-              we&rsquo;re glad to help however works best for you.
+            <p className="text-text-muted text-sm mt-8">
+              Prefer to talk right away? Call or email us directly using the
+              details above &mdash; we&rsquo;re glad to help however works best
+              for you.
             </p>
           </AnimatedSection>
         </div>
@@ -156,19 +186,32 @@ export default function Contact() {
               A few ways to reach us
             </h2>
             <p className="text-text-muted leading-relaxed max-w-3xl mx-auto">
-              {'{CONTACT_REASSURE}'}
+              {"{CONTACT_REASSURE}"}
             </p>
           </AnimatedSection>
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {[
-              { title: '{CONTACT_POINT_1_TITLE}', desc: '{CONTACT_POINT_1_DESC}' },
-              { title: '{CONTACT_POINT_2_TITLE}', desc: '{CONTACT_POINT_2_DESC}' },
-              { title: '{CONTACT_POINT_3_TITLE}', desc: '{CONTACT_POINT_3_DESC}' },
+              {
+                title: "{CONTACT_POINT_1_TITLE}",
+                desc: "{CONTACT_POINT_1_DESC}",
+              },
+              {
+                title: "{CONTACT_POINT_2_TITLE}",
+                desc: "{CONTACT_POINT_2_DESC}",
+              },
+              {
+                title: "{CONTACT_POINT_3_TITLE}",
+                desc: "{CONTACT_POINT_3_DESC}",
+              },
             ].map((p, i) => (
               <AnimatedSection key={i} delay={`${i * 0.1}s`}>
                 <div className="glass rounded-2xl p-8 h-full">
-                  <h3 className="text-lg font-bold font-heading text-text mb-2">{p.title}</h3>
-                  <p className="text-text-muted text-sm leading-relaxed">{p.desc}</p>
+                  <h3 className="text-lg font-bold font-heading text-text mb-2">
+                    {p.title}
+                  </h3>
+                  <p className="text-text-muted text-sm leading-relaxed">
+                    {p.desc}
+                  </p>
                 </div>
               </AnimatedSection>
             ))}
@@ -177,10 +220,10 @@ export default function Contact() {
           <AnimatedSection className="mt-12">
             <div className="glass rounded-2xl p-8 md:p-12 max-w-3xl mx-auto text-center">
               <h3 className="text-xl md:text-2xl font-bold font-heading text-text mb-4">
-                {'{CONTACT_HELP_TITLE}'}
+                {"{CONTACT_HELP_TITLE}"}
               </h3>
               <p className="text-text-muted leading-relaxed">
-                {'{CONTACT_HELP_TEXT}'}
+                {"{CONTACT_HELP_TEXT}"}
               </p>
             </div>
           </AnimatedSection>
