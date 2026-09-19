@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Play, ExternalLink } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { Play, ExternalLink } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Props {
   /** URL of the demo to embed. */
@@ -37,24 +37,35 @@ export function Demo({
   eyebrow,
   headline,
   description,
-  aspect = '16 / 10',
+  aspect = "16 / 10",
   externalLink = true,
   className,
 }: Props) {
   const [active, setActive] = useState(false);
 
   return (
-    <section className={cn('py-20 md:py-28 max-w-container-wide mx-auto px-6', className)}>
+    <section
+      className={cn(
+        "py-20 md:py-28 max-w-container-wide mx-auto px-6",
+        className,
+      )}
+    >
       {(eyebrow || headline || description) && (
         <div className="text-center mb-10 reveal-on-view">
           {eyebrow && (
-            <p className="text-accent text-sm font-mono tracking-widest uppercase">{eyebrow}</p>
+            <p className="text-accent text-sm font-mono tracking-widest uppercase">
+              {eyebrow}
+            </p>
           )}
           {headline && (
-            <h2 className="mt-4 text-3xl md:text-5xl font-bold font-heading text-text">{headline}</h2>
+            <h2 className="mt-4 text-3xl md:text-5xl font-bold font-heading text-text">
+              {headline}
+            </h2>
           )}
           {description && (
-            <p className="mt-4 text-text-muted text-lg max-w-2xl mx-auto">{description}</p>
+            <p className="mt-4 text-text-muted text-lg max-w-2xl mx-auto">
+              {description}
+            </p>
           )}
         </div>
       )}
@@ -88,7 +99,9 @@ export function Demo({
           ) : (
             <iframe
               src={src}
-              title={title}
+              // Never ship an empty iframe title — `title=""` is still a WCAG 4.1.2 (Name, Role,
+              // Value) failure, and `title` is TS-required but not runtime-guaranteed non-empty.
+              title={title || "Embedded demo"}
               loading="lazy"
               referrerPolicy="strict-origin-when-cross-origin"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups"

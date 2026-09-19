@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { Play } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { Play } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Props {
   /** Full URL or video ID. Supports YouTube, Vimeo, Loom, or a direct .mp4 path. */
   src: string;
   /** Provider hint. Auto-detected from URL if omitted. */
-  provider?: 'youtube' | 'vimeo' | 'loom' | 'mp4' | 'auto';
+  provider?: "youtube" | "vimeo" | "loom" | "mp4" | "auto";
   /** Poster image shown before user clicks play. Required — prevents 200kb iframe preload on initial paint. */
   poster: { src: string; alt: string };
   /** Aspect ratio. Default `16 / 9`. */
@@ -16,12 +16,12 @@ interface Props {
   className?: string;
 }
 
-function detectProvider(src: string): NonNullable<Props['provider']> {
-  if (/youtube\.com|youtu\.be/.test(src)) return 'youtube';
-  if (/vimeo\.com/.test(src)) return 'vimeo';
-  if (/loom\.com/.test(src)) return 'loom';
-  if (/\.mp4($|\?)/.test(src)) return 'mp4';
-  return 'youtube';
+function detectProvider(src: string): NonNullable<Props["provider"]> {
+  if (/youtube\.com|youtu\.be/.test(src)) return "youtube";
+  if (/vimeo\.com/.test(src)) return "vimeo";
+  if (/loom\.com/.test(src)) return "loom";
+  if (/\.mp4($|\?)/.test(src)) return "mp4";
+  return "youtube";
 }
 
 function youtubeId(src: string): string {
@@ -41,14 +41,17 @@ function loomId(src: string): string {
   return m?.[1] ?? src;
 }
 
-function embedUrl(provider: NonNullable<Props['provider']>, src: string): string {
-  if (provider === 'youtube') {
+function embedUrl(
+  provider: NonNullable<Props["provider"]>,
+  src: string,
+): string {
+  if (provider === "youtube") {
     return `https://www.youtube-nocookie.com/embed/${youtubeId(src)}?autoplay=1&rel=0&modestbranding=1`;
   }
-  if (provider === 'vimeo') {
+  if (provider === "vimeo") {
     return `https://player.vimeo.com/video/${vimeoId(src)}?autoplay=1&title=0&byline=0`;
   }
-  if (provider === 'loom') {
+  if (provider === "loom") {
     return `https://www.loom.com/embed/${loomId(src)}?autoplay=1&hideEmbedTopBar=true`;
   }
   return src;
@@ -66,17 +69,17 @@ function embedUrl(provider: NonNullable<Props['provider']>, src: string): string
  */
 export function VideoEmbed({
   src,
-  provider = 'auto',
+  provider = "auto",
   poster,
-  aspect = '16 / 9',
+  aspect = "16 / 9",
   caption,
   className,
 }: Props) {
   const [active, setActive] = useState(false);
-  const resolvedProvider = provider === 'auto' ? detectProvider(src) : provider;
+  const resolvedProvider = provider === "auto" ? detectProvider(src) : provider;
 
   return (
-    <figure className={cn('reveal-on-view', className)}>
+    <figure className={cn("reveal-on-view", className)}>
       <div
         className="relative overflow-hidden rounded-lg card-tactile"
         style={{ aspectRatio: aspect }}
@@ -102,7 +105,7 @@ export function VideoEmbed({
               </span>
             </div>
           </button>
-        ) : resolvedProvider === 'mp4' ? (
+        ) : resolvedProvider === "mp4" ? (
           <video
             src={src}
             controls
@@ -114,7 +117,9 @@ export function VideoEmbed({
         ) : (
           <iframe
             src={embedUrl(resolvedProvider, src)}
-            title={poster.alt}
+            // `poster.alt` can be an empty string (TS-required, not runtime-non-empty); an empty
+            // iframe `title=""` is still a WCAG 4.1.2 failure, so fall back to a meaningful label.
+            title={poster.alt || "Embedded video"}
             allow="autoplay; encrypted-media; picture-in-picture; web-share"
             allowFullScreen
             referrerPolicy="strict-origin-when-cross-origin"
