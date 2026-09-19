@@ -177,10 +177,11 @@ export function kineticMarqueeEnabled(): boolean {
  * recede as you scroll" signature: the "How it works" steps become a VERTICAL DECK where each step
  * pins near the top and gently scales back as the next slides over it, so the section reads as a
  * guided, one-step-at-a-time narrative instead of a flat grid. Same PROCESS_* content the static
- * {@link ProcessSteps} renders (a step sequence IS the natural scroll-stack), zero new config. Dark
- * by default (experimental); opt a build in with `VITE_SCROLL_STACK=1`. When ON (and
- * `cinematic_process` is OFF), `Home` renders `<ProcessSteps stack>`; when OFF a shipped site is
- * byte-for-byte unchanged.
+ * {@link ProcessSteps} renders (a step sequence IS the natural scroll-stack), zero new config.
+ * **PROMOTED to default-ON (CINEMATIC-3D)** — proven LCP/INP/CLS-safe + reduced-motion/Firefox/mobile
+ * fall through to the plain vertical list, so keeping it dark was the built-but-unwired anti-pattern;
+ * `VITE_SCROLL_STACK=0` is the killswitch. When ON (and `cinematic_process` is OFF), `Home` renders
+ * `<ProcessSteps stack>`; the killswitch or `cinematic_process` returns the byte-for-byte grid.
  *
  * Safe BY CONSTRUCTION — pure native CSS `position: sticky` + `animation-timeline: view()`, ZERO JS /
  * no scroll listener (unlike GSAP/Lenis): LCP-safe (below-fold; the settled/first frame is identity
@@ -192,7 +193,7 @@ export function kineticMarqueeEnabled(): boolean {
  * the one-click AI builders don't ship.
  */
 export function scrollStackEnabled(): boolean {
-  return import.meta.env.VITE_SCROLL_STACK === "1";
+  return import.meta.env.VITE_SCROLL_STACK !== "0";
 }
 
 /**
@@ -204,11 +205,12 @@ export function scrollStackEnabled(): boolean {
  * animation, so at first paint (scroll 0) the h1 is at the FROM state (wght 800) — the LCP element paints
  * as ordinary text, unchanged, no late decode; the compress only plays as the hero scrolls off. Gated by
  * `@supports (animation-timeline: scroll())` + `@media (prefers-reduced-motion: no-preference)` — Firefox
- * / reduced-motion get the static full-weight headline. Dark by default; opt a build in with
- * `VITE_KINETIC_HEADLINE=1`. Wiring the previously-built-but-unwired `.kinetic-headline` CSS + KineticHeadline.
+ * / reduced-motion get the static full-weight headline. **PROMOTED to default-ON (CINEMATIC-3D)** —
+ * LCP-safe (the h1 paints at the FROM state at scroll 0, unchanged) + reduced-motion/Firefox-gated, so
+ * keeping it dark was the built-but-unwired anti-pattern; `VITE_KINETIC_HEADLINE=0` is the killswitch.
  */
 export function kineticHeadlineEnabled(): boolean {
-  return import.meta.env.VITE_KINETIC_HEADLINE === "1";
+  return import.meta.env.VITE_KINETIC_HEADLINE !== "0";
 }
 
 /**
@@ -221,10 +223,11 @@ export function kineticHeadlineEnabled(): boolean {
  * so it is ZERO-RISK and byte-identical to today until a build opts in. LCP-safe (the subhead is
  * below the <h1> LCP element; prop[0] paints immediately in a CLS-safe grid-stack; the cross-fade
  * only starts post-hydration) + a11y (the full prop list is always in the DOM for screen readers,
- * the animated layer is aria-hidden). Dark by default; opt a build in with `VITE_ROTATING_SUBHEAD=1`.
+ * the animated layer is aria-hidden). **PROMOTED to default-ON (CINEMATIC-3D)** — zero-risk (self-gates
+ * on ≥2 props + falls back to the single subheadline under reduced-motion or <2 props); `VITE_ROTATING_SUBHEAD=0` is the killswitch.
  */
 export function rotatingSubheadEnabled(): boolean {
-  return import.meta.env.VITE_ROTATING_SUBHEAD === "1";
+  return import.meta.env.VITE_ROTATING_SUBHEAD !== "0";
 }
 
 /**
@@ -234,9 +237,10 @@ export function rotatingSubheadEnabled(): boolean {
  * driven by an animated `@property --lb-angle`). Pure CSS — no library, no bundle cost. LCP-safe (the
  * CTA sits below the <h1> LCP element; the ring is a decorative `z-index:-1` `::before` that paints
  * post-hydration and never reflows — CLS-safe by construction). reduced-motion → the ring is STATIC
- * (a still gradient border, no rotation). axe-neutral (decorative, aria-hidden by nature). Dark by
- * default; opt a build in with `VITE_LIVING_BORDER=1`.
+ * (a still gradient border, no rotation). axe-neutral (decorative, aria-hidden by nature).
+ * **PROMOTED to default-ON (CINEMATIC-3D)** — decorative CTA ring, LCP/CLS-safe + reduced-motion-static,
+ * so keeping it dark was the built-but-unwired anti-pattern; `VITE_LIVING_BORDER=0` is the killswitch.
  */
 export function livingBorderEnabled(): boolean {
-  return import.meta.env.VITE_LIVING_BORDER === "1";
+  return import.meta.env.VITE_LIVING_BORDER !== "0";
 }

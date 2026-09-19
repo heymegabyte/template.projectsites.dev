@@ -96,17 +96,7 @@ describe("Cinematic hero DOLLY — recede-on-scroll wired on the hero content (L
 describe("Kinetic display headline (kinetic_headline flag) — LCP-safe hero <h1> compress-on-scroll", () => {
   afterEach(() => vi.unstubAllEnvs());
 
-  it("is DARK by default — the hero <h1> does NOT carry .kinetic-headline (fleet unchanged)", () => {
-    const { container } = renderIn(
-      <HeroCenter headline="A real, specific headline" />,
-    );
-    expect(container.querySelector("h1.kinetic-headline")).toBeNull();
-    // the h1 still renders as the LCP element with the fluid gradient headline
-    expect(container.querySelector("h1.hero-headline-fluid")).not.toBeNull();
-  });
-
-  it("VITE_KINETIC_HEADLINE=1 adds .kinetic-headline to the hero <h1> (both variants) — a class, never a component swap", () => {
-    vi.stubEnv("VITE_KINETIC_HEADLINE", "1");
+  it("is ON by default — the hero <h1> carries .kinetic-headline (both variants, promoted fleet-wide)", () => {
     const c1 = renderIn(
       <HeroCenter headline="A real, specific headline" />,
     ).container;
@@ -118,12 +108,22 @@ describe("Kinetic display headline (kinetic_headline flag) — LCP-safe hero <h1
     ).container;
     expect(c1.querySelector("h1.kinetic-headline")).not.toBeNull();
     expect(c2.querySelector("h1.kinetic-headline")).not.toBeNull();
-    // still exactly one LCP <h1>, still the fluid headline (size unchanged — the class only adds the
+    // still exactly one LCP <h1>, still the fluid headline (the class only adds the
     // scroll-compress animation; no scale/eyebrow/component swap, so LCP + a11y are untouched).
     expect(c1.querySelectorAll("h1").length).toBe(1);
     expect(
       c1.querySelector("h1.hero-headline-fluid.kinetic-headline"),
     ).not.toBeNull();
+  });
+
+  it("VITE_KINETIC_HEADLINE=0 is the killswitch — the hero <h1> drops .kinetic-headline (fleet can opt out)", () => {
+    vi.stubEnv("VITE_KINETIC_HEADLINE", "0");
+    const { container } = renderIn(
+      <HeroCenter headline="A real, specific headline" />,
+    );
+    expect(container.querySelector("h1.kinetic-headline")).toBeNull();
+    // the h1 still renders as the LCP element with the fluid gradient headline
+    expect(container.querySelector("h1.hero-headline-fluid")).not.toBeNull();
   });
 });
 
@@ -135,21 +135,7 @@ describe("Rotating AI value-prop subhead (rotating_subhead flag) — conversion,
     "Neighborhood favorite",
   ];
 
-  it("is DARK by default — the subhead renders the single line, NO rotating stack (fleet unchanged)", () => {
-    const { container } = renderIn(
-      <HeroCenter
-        headline="H"
-        subheadline="Great coffee, every day."
-        valueProps={PROPS}
-      />,
-    );
-    expect(container.querySelector("[data-rotating]")).toBeNull();
-    expect(container.querySelector(".rotating-subhead__stack")).toBeNull();
-    expect(container.textContent).toContain("Great coffee, every day.");
-  });
-
-  it("VITE_ROTATING_SUBHEAD=1 + ≥2 props → cross-fade stack (both variants); prop[0] active, all props in DOM, sr-complete", () => {
-    vi.stubEnv("VITE_ROTATING_SUBHEAD", "1");
+  it("is ON by default with ≥2 props → cross-fade stack (both variants); prop[0] active, all props in DOM, sr-complete", () => {
     for (const container of [
       renderIn(
         <HeroCenter headline="H" subheadline="fallback" valueProps={PROPS} />,
@@ -183,8 +169,21 @@ describe("Rotating AI value-prop subhead (rotating_subhead flag) — conversion,
     }
   });
 
-  it("flag ON but <2 props → falls back to the single subheadline (rotation needs ≥2 reasons)", () => {
-    vi.stubEnv("VITE_ROTATING_SUBHEAD", "1");
+  it("VITE_ROTATING_SUBHEAD=0 is the killswitch — single subheadline, NO rotating stack (fleet can opt out)", () => {
+    vi.stubEnv("VITE_ROTATING_SUBHEAD", "0");
+    const { container } = renderIn(
+      <HeroCenter
+        headline="H"
+        subheadline="Great coffee, every day."
+        valueProps={PROPS}
+      />,
+    );
+    expect(container.querySelector("[data-rotating]")).toBeNull();
+    expect(container.querySelector(".rotating-subhead__stack")).toBeNull();
+    expect(container.textContent).toContain("Great coffee, every day.");
+  });
+
+  it("with <2 props → falls back to the single subheadline (rotation needs ≥2 reasons)", () => {
     const { container } = renderIn(
       <HeroCenter
         headline="H"
@@ -197,23 +196,11 @@ describe("Rotating AI value-prop subhead (rotating_subhead flag) — conversion,
   });
 });
 
-describe("Living gradient border (living_border flag) — CTA glow ring, LCP-safe, dark by default", () => {
+describe("Living gradient border (living_border flag) — CTA glow ring, LCP-safe, default-ON", () => {
   afterEach(() => vi.unstubAllEnvs());
   const primary = { label: "Get started", href: "/contact" };
 
-  it("is DARK by default — the primary CTA does NOT carry .living-border (fleet unchanged)", () => {
-    const { container } = renderIn(
-      <HeroCenter headline="H" primary={primary} />,
-    );
-    // the primary CTA renders, without the ring class
-    expect(
-      container.querySelector("a.living-border, button.living-border"),
-    ).toBeNull();
-    expect(container.textContent).toContain("Get started");
-  });
-
-  it("VITE_LIVING_BORDER=1 adds .living-border to the primary CTA (both variants) — decorative ring, no content change", () => {
-    vi.stubEnv("VITE_LIVING_BORDER", "1");
+  it("is ON by default — the primary CTA carries .living-border (both variants); label + href untouched", () => {
     const c1 = renderIn(
       <HeroCenter headline="H" primary={primary} />,
     ).container;
@@ -230,5 +217,16 @@ describe("Living gradient border (living_border flag) — CTA glow ring, LCP-saf
     const cta = c1.querySelector(".living-border") as HTMLAnchorElement;
     expect(cta.getAttribute("href")).toBe("/contact");
     expect(cta.textContent).toContain("Get started");
+  });
+
+  it("VITE_LIVING_BORDER=0 is the killswitch — the primary CTA drops the ring (fleet can opt out)", () => {
+    vi.stubEnv("VITE_LIVING_BORDER", "0");
+    const { container } = renderIn(
+      <HeroCenter headline="H" primary={primary} />,
+    );
+    expect(
+      container.querySelector("a.living-border, button.living-border"),
+    ).toBeNull();
+    expect(container.textContent).toContain("Get started");
   });
 });
