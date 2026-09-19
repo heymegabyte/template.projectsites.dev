@@ -1,6 +1,6 @@
 /* TEAM */
 Owner: {BUSINESS_NAME}
-Site: https://{DOMAIN}/
+Site: {DOMAIN}/
 Contact: hey@megabyte.space
 
 /* THANKS */
@@ -8,7 +8,6 @@ Generator: Megabyte Labs · projectsites.dev
 Stack: Cloudflare Workers, Vite, React, Tailwind
 
 /* SITE */
-Last update: {BUILD_DATE}
 Standards: HTML5, CSS3, ES2024, WCAG 2.2 AA
 Components: Vite + React 18 + Tailwind 3
 Software: Built with care, deployed on Cloudflare
