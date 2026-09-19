@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
+import { appJsAttr, siteSlug } from "../lib/siteSlug";
 
 /**
  * PageviewBeacon — records a client-side pageview on every SPA route change (react-router
@@ -21,33 +22,11 @@ import { useLocation } from 'react-router-dom';
  * fail-soft — analytics must NEVER break the page. Renders nothing.
  */
 
-/** Read a config attribute off the injected app.js `<script>` tag (matches app.js's own reads). */
-function appJsAttr(name: string, fallback: string): string {
-  try {
-    const tag = document.querySelector('script[src*="/app.js"]');
-    const v = tag?.getAttribute(name);
-    if (v) return v;
-  } catch {
-    /* ignore — fall through to the fallback */
-  }
-  return fallback;
-}
-
-/** The site slug app.js sends as `siteId` (data-slug, else the hostname's first label). */
-function siteSlug(): string {
-  const bySlug = appJsAttr('data-slug', '');
-  if (bySlug) return bySlug;
-  try {
-    return location.hostname.split('.')[0] || 'site';
-  } catch {
-    return 'site';
-  }
-}
-
 /** One cookieless session id for this page-load lifetime (metadata only; pageview COUNT is exact). */
 const SESSION_ID = (() => {
   try {
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+    if (typeof crypto !== "undefined" && crypto.randomUUID)
+      return crypto.randomUUID();
   } catch {
     /* ignore */
   }
@@ -56,13 +35,14 @@ const SESSION_ID = (() => {
 
 function newEventId(): string {
   try {
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+    if (typeof crypto !== "undefined" && crypto.randomUUID)
+      return crypto.randomUUID();
   } catch {
     /* ignore */
   }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
-    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
   });
 }
 
@@ -77,14 +57,17 @@ export default function PageviewBeacon() {
       return;
     }
     try {
-      const api = appJsAttr('data-api', 'https://projectsites.dev');
+      const api = appJsAttr("data-api", "https://projectsites.dev");
       const body: Record<string, unknown> = {
         eventId: newEventId(),
         siteId: siteSlug(),
-        eventType: 'pageview',
+        eventType: "pageview",
         sessionId: SESSION_ID,
         timestamp: Date.now(),
-        payload: { href: pathname + search, title: document.title || undefined },
+        payload: {
+          href: pathname + search,
+          title: document.title || undefined,
+        },
       };
       try {
         if (document.referrer) body.referer = document.referrer;
@@ -92,12 +75,12 @@ export default function PageviewBeacon() {
         /* ignore */
       }
       void fetch(`${api}/api/events`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        method: "POST",
+        headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
         keepalive: true,
-        mode: 'cors',
-        credentials: 'omit',
+        mode: "cors",
+        credentials: "omit",
       }).catch(() => {
         /* fire-and-forget — a failed beacon must never surface to the visitor */
       });
