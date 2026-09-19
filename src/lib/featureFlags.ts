@@ -244,3 +244,22 @@ export function rotatingSubheadEnabled(): boolean {
 export function livingBorderEnabled(): boolean {
   return import.meta.env.VITE_LIVING_BORDER !== "0";
 }
+
+/**
+ * Cinematic Section Rail (`section_rail` / VITE_SECTION_RAIL) — the Apple-product-page /
+ * Awwwards-2026 "scroll navigation" pattern that NO all-in-one AI builder (Framer / Lovable / v0 /
+ * Webflow) auto-generates: a minimal left-edge, desktop-only navigator of the page's OWN sections,
+ * with an active-section indicator + one-tap jump straight to the convert section (Contact/Book).
+ * Embarrassingly-easy + AI-does-the-work: the rail DERIVES its entries from the page's real
+ * `<section>` landmarks + their headings at runtime — the owner never lists or configures sections.
+ * Only appears on long pages (≥4 labeled sections) so short pages stay uncluttered; hidden on mobile
+ * where the StickyActionBar owns conversion. LCP-safe (mounts post-paint, no layout thrash), INP-safe
+ * (IntersectionObserver + no scroll listener), CLS-safe (fixed-position overlay), reduced-motion-safe
+ * (jump is instant, dots don't animate), axe-clean (`<nav aria-label>` + real `#anchor` links +
+ * `aria-current` + ≥24px targets), fail-soft (any DOM error → no rail, never a crash). Dark by default
+ * (experimental); opt a build in with `VITE_SECTION_RAIL=1`.
+ * Source: awwwards.com immersive-2026 + Apple scroll-flow (WebSearch 2026-09-19).
+ */
+export function sectionRailEnabled(): boolean {
+  return import.meta.env.VITE_SECTION_RAIL === "1";
+}

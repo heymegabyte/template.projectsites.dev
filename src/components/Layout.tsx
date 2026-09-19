@@ -4,6 +4,7 @@ import Footer from './Footer';
 import SkipLink from './SkipLink';
 import BackToTop from './BackToTop';
 import { ScrollProgress } from './ScrollProgress';
+import { SectionRail } from './SectionRail';
 import { PWAInstallPrompt } from './PWAInstallPrompt';
 import { StickyActionBar } from './StickyActionBar';
 import { SmartWelcomeRibbon } from './SmartWelcomeRibbon';
@@ -77,6 +78,10 @@ export default function Layout({ children }: Props) {
       <BackToTop />
       <PWAInstallPrompt />
       <StickyActionBar />
+      {/* Cinematic Section Rail (section_rail, dark by default) — desktop-only left-edge navigator
+          auto-derived from the page's own sections; one-tap jump to the convert section. Renders
+          null unless the flag is on AND the page has ≥4 labeled sections (short pages/mobile → null). */}
+      <SectionRail />
       {/* ChunkBoundary (AL-571): a lazy-chunk load failure here degrades to "feature absent",
           NEVER a whole-site crash. Without it, a failed import() propagates past <Suspense> to
           the app error boundary → "Something went wrong" (olson-kundig-seattle went fully dark

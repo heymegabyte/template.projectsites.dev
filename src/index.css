@@ -7017,3 +7017,69 @@ main#main {
     }
   }
 }
+
+/* ── Cinematic Section Rail (section_rail) ─────────────────────────────────────────────
+   Left-edge, desktop-only section navigator (see SectionRail.tsx). Dot per section, active
+   tracked, label revealed on hover/focus. Theme tokens only → gorgeous on light + dark. */
+.ps-section-rail-item {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 3px 6px 3px 0;
+  text-decoration: none;
+}
+.ps-section-rail-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: color-mix(in oklch, var(--color-text-muted) 50%, transparent);
+  transition:
+    transform 200ms var(--ease, ease),
+    background-color 200ms var(--ease, ease),
+    box-shadow 200ms var(--ease, ease);
+}
+.ps-section-rail-item:hover .ps-section-rail-dot,
+.ps-section-rail-item:focus-visible .ps-section-rail-dot {
+  background: var(--color-accent);
+  transform: scale(1.3);
+}
+.ps-section-rail-item[aria-current="true"] .ps-section-rail-dot {
+  background: var(--color-accent);
+  transform: scale(1.4);
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--color-accent) 22%, transparent);
+}
+.ps-section-rail-label {
+  margin-left: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--color-text);
+  background: color-mix(in oklch, var(--color-surface-elevated, var(--color-surface)) 94%, transparent);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 5px 9px;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transform: translateX(-6px);
+  pointer-events: none;
+  transition:
+    opacity 180ms var(--ease, ease),
+    transform 180ms var(--ease, ease);
+}
+.ps-section-rail-item:hover .ps-section-rail-label,
+.ps-section-rail-item:focus-visible .ps-section-rail-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+.ps-section-rail-item:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ps-section-rail-dot,
+  .ps-section-rail-label {
+    transition: none;
+  }
+}
