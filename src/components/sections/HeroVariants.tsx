@@ -11,6 +11,7 @@ import { WebGLHeroBackdrop, backdropForPreset, type HeroBackdropVariant } from '
 import { TiltCard } from '@/components/TiltCard';
 import { ScrollParallax } from '@/components/ScrollParallax';
 import { ScrambleText } from '@/components/ScrambleText';
+import { kineticHeadlineEnabled } from '@/lib/featureFlags';
 
 type Trust = { icon?: 'star' | 'shield' | 'award'; label: string };
 
@@ -143,7 +144,10 @@ export function HeroCenter({ eyebrow, headline, subheadline, primary, secondary,
           </span>
         )}
         <h1
-          className="hero-enter hero-headline-fluid gradient-text font-heading font-extrabold mx-auto max-w-5xl"
+          className={cn(
+            'hero-enter hero-headline-fluid gradient-text font-heading font-extrabold mx-auto max-w-5xl',
+            kineticHeadlineEnabled() && 'kinetic-headline',
+          )}
           style={{ ['--enter-i' as string]: 1 }}
         >
           {safeHeadline}
@@ -240,7 +244,10 @@ export function HeroSplit({ eyebrow, headline, subheadline, primary, secondary, 
             </span>
           )}
           <h1
-            className="hero-enter hero-headline-fluid mt-4 font-extrabold font-heading"
+            className={cn(
+              'hero-enter hero-headline-fluid mt-4 font-extrabold font-heading',
+              kineticHeadlineEnabled() && 'kinetic-headline',
+            )}
             style={{ ['--enter-i' as string]: 1 }}
           >
             <span className="gradient-text">{safeHeadline}</span>

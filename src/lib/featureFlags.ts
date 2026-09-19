@@ -194,3 +194,19 @@ export function kineticMarqueeEnabled(): boolean {
 export function scrollStackEnabled(): boolean {
   return import.meta.env.VITE_SCROLL_STACK === '1';
 }
+
+/**
+ * Kinetic display headline (`kinetic_headline`) — the motion.so / Awwwards "variable-font hero" signature:
+ * the hero `<h1>` compresses its variable-font WEIGHT (800→500) + WIDTH (120→90) + letter-spacing as the
+ * visitor scrolls past the hero — a living, cinematic display type distinct from the static gradient
+ * headline. Adds only the shared `.kinetic-headline` class to the EXISTING hero `<h1>` (no component swap,
+ * no scale/eyebrow change). LCP-SAFE BY CONSTRUCTION: the class only carries a scroll(root) 0→50vh
+ * animation, so at first paint (scroll 0) the h1 is at the FROM state (wght 800) — the LCP element paints
+ * as ordinary text, unchanged, no late decode; the compress only plays as the hero scrolls off. Gated by
+ * `@supports (animation-timeline: scroll())` + `@media (prefers-reduced-motion: no-preference)` — Firefox
+ * / reduced-motion get the static full-weight headline. Dark by default; opt a build in with
+ * `VITE_KINETIC_HEADLINE=1`. Wiring the previously-built-but-unwired `.kinetic-headline` CSS + KineticHeadline.
+ */
+export function kineticHeadlineEnabled(): boolean {
+  return import.meta.env.VITE_KINETIC_HEADLINE === '1';
+}

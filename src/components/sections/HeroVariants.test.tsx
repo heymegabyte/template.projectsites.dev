@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import type { ReactElement } from 'react';
 import { HeroCenter, HeroSplit } from './HeroVariants';
 import { backdropForPreset } from './WebGLHeroBackdrop';
@@ -79,5 +79,33 @@ describe('Cinematic hero DOLLY — recede-on-scroll wired on the hero content (L
       />,
     );
     expect(container.querySelector('.hero-cinematic-dolly')).not.toBeNull();
+  });
+});
+
+describe('Kinetic display headline (kinetic_headline flag) — LCP-safe hero <h1> compress-on-scroll', () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it('is DARK by default — the hero <h1> does NOT carry .kinetic-headline (fleet unchanged)', () => {
+    const { container } = renderIn(<HeroCenter headline="A real, specific headline" />);
+    expect(container.querySelector('h1.kinetic-headline')).toBeNull();
+    // the h1 still renders as the LCP element with the fluid gradient headline
+    expect(container.querySelector('h1.hero-headline-fluid')).not.toBeNull();
+  });
+
+  it('VITE_KINETIC_HEADLINE=1 adds .kinetic-headline to the hero <h1> (both variants) — a class, never a component swap', () => {
+    vi.stubEnv('VITE_KINETIC_HEADLINE', '1');
+    const c1 = renderIn(<HeroCenter headline="A real, specific headline" />).container;
+    const c2 = renderIn(
+      <HeroSplit
+        headline="A real, specific headline"
+        image={{ src: 'https://example.com/hero.jpg', alt: 'Storefront' }}
+      />,
+    ).container;
+    expect(c1.querySelector('h1.kinetic-headline')).not.toBeNull();
+    expect(c2.querySelector('h1.kinetic-headline')).not.toBeNull();
+    // still exactly one LCP <h1>, still the fluid headline (size unchanged — the class only adds the
+    // scroll-compress animation; no scale/eyebrow/component swap, so LCP + a11y are untouched).
+    expect(c1.querySelectorAll('h1').length).toBe(1);
+    expect(c1.querySelector('h1.hero-headline-fluid.kinetic-headline')).not.toBeNull();
   });
 });
