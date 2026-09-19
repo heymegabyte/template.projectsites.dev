@@ -258,6 +258,25 @@ export function staticBackdropFor(variant: HeroBackdropVariant): string {
         'linear-gradient(180deg, color-mix(in oklch, var(--color-primary) 11%, transparent), transparent 72%),' +
         'linear-gradient(93deg, transparent 47.5%, color-mix(in oklch, var(--color-accent) 24%, transparent) 49% 50.5%, transparent 52%)'
       );
+    case 'silk': // boutique/luxe — draped-satin folds with a soft diagonal sheen sweep.
+      return (
+        'linear-gradient(105deg, transparent 30%, color-mix(in oklch, white 6%, transparent) 46% 50%, transparent 66%),' +
+        'linear-gradient(160deg, color-mix(in oklch, var(--color-primary) 15%, transparent), transparent 60%),' +
+        'radial-gradient(120% 90% at 20% 12%, color-mix(in oklch, var(--color-accent) 12%, transparent), transparent 60%)'
+      );
+    case 'velocity': // bold/athletic — thin diagonal speed-streaks racing toward a directional glow.
+      return (
+        'repeating-linear-gradient(115deg, color-mix(in oklch, var(--color-accent) 10%, transparent) 0 2px, transparent 2px 26px),' +
+        'radial-gradient(70% 120% at 100% 50%, color-mix(in oklch, var(--color-accent) 20%, transparent), transparent 60%),' +
+        'linear-gradient(180deg, color-mix(in oklch, var(--color-primary) 10%, transparent), transparent 70%)'
+      );
+    case 'gyro': // precision/engineering — tight calibrated instrument rings + a thin crosshair reticle.
+      return (
+        'repeating-radial-gradient(45% 45% at 50% 50%, color-mix(in oklch, var(--color-accent) 11%, transparent) 0 1px, transparent 1px 26px),' +
+        'linear-gradient(90deg, transparent 49.5%, color-mix(in oklch, var(--color-accent) 16%, transparent) 49.7% 50.3%, transparent 50.5%),' +
+        'linear-gradient(0deg, transparent 49.5%, color-mix(in oklch, var(--color-accent) 16%, transparent) 49.7% 50.3%, transparent 50.5%),' +
+        'radial-gradient(120% 90% at 50% 0%, color-mix(in oklch, var(--color-primary) 12%, transparent), transparent 65%)'
+      );
     default:
       return GENERIC_STATIC_BG;
   }

@@ -283,14 +283,17 @@ describe('staticBackdropFor (per-variant reduced-motion / no-WebGL fallback)', (
     }
   });
 
-  it('gives the 3 most scene-distinct variants their OWN backdrop (not the generic wash, nor each other)', () => {
+  it('gives the 6 scene-distinct variants their OWN backdrop (not the generic wash, nor each other)', () => {
     const generic = staticBackdropFor('aurora');
     expect(staticBackdropFor('grid')).toContain('repeating-linear-gradient'); // synthwave perspective grid
     expect(staticBackdropFor('terrain')).toContain('repeating-radial-gradient'); // topographic contour rings
     expect(staticBackdropFor('monolith')).toContain('linear-gradient(93deg'); // brutalist fault seam
-    const bespoke = ['grid', 'terrain', 'monolith'] as HeroBackdropVariant[];
+    expect(staticBackdropFor('silk')).toContain('linear-gradient(105deg'); // boutique draped-satin sheen
+    expect(staticBackdropFor('velocity')).toContain('repeating-linear-gradient(115deg'); // bold speed-streaks
+    expect(staticBackdropFor('gyro')).toContain('linear-gradient(0deg'); // precision crosshair reticle
+    const bespoke = ['grid', 'terrain', 'monolith', 'silk', 'velocity', 'gyro'] as HeroBackdropVariant[];
     for (const v of bespoke) expect(staticBackdropFor(v)).not.toBe(generic);
-    expect(new Set(bespoke.map((v) => staticBackdropFor(v))).size).toBe(3);
+    expect(new Set(bespoke.map((v) => staticBackdropFor(v))).size).toBe(6);
   });
 
   it('falls back to the generic twin-radial wash for the soft-glow variants (aurora/waves/mesh/…)', () => {
