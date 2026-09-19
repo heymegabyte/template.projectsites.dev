@@ -80,8 +80,9 @@ describe('HERO_BACKDROP_CONFIGS', () => {
     'weave',
     'velocity',
     'gyro',
+    'halftone',
   ];
-  it('defines all fifteen variants with sane, text-legible params', () => {
+  it('defines all sixteen variants with sane, text-legible params', () => {
     for (const v of variants) {
       const c = HERO_BACKDROP_CONFIGS[v];
       expect(c).toBeDefined();
@@ -126,8 +127,8 @@ describe('backdropForPreset (per-industry hero motion)', () => {
     expect(backdropForPreset('warm')).toBe('ember'); // food/hospitality — warm rising glow
     expect(backdropForPreset('artisan')).toBe('weave'); // AL-548: craft/maker get an interlaced woven-thread lattice, NOT the food-hearth ember glow they used to share with warm
     expect(backdropForPreset('luxe')).toBe('bokeh'); // premium — its OWN light-mote field, not editorial's waves
-    expect(backdropForPreset('editorial')).toBe('waves'); // authoritative, measured
-    expect(backdropForPreset('heritage')).toBe('waves'); // AL-490: dignified/authoritative (financial/legal/insurance) — NOT ember's cozy hearth glow
+    expect(backdropForPreset('editorial')).toBe('halftone'); // media/publishing/magazine/news/blog get the kinetic Ben-Day halftone dot field (the print signature), not the shared waves
+    expect(backdropForPreset('heritage')).toBe('waves'); // AL-490: dignified/authoritative (financial/legal/insurance) — NOT ember's cozy hearth glow; heritage keeps the calm swells editorial left behind
     expect(backdropForPreset('futuristic')).toBe('mesh'); // technical, energetic
     expect(backdropForPreset('bold')).toBe('velocity'); // AL-605: energetic/kinetic bold gets its OWN speed-streak scene, not the calm cellular mesh (kept for futuristic)
     expect(backdropForPreset('precision')).toBe('gyro'); // AL-699: engineering/motorsports/machining/aerospace get their OWN precision-instrument gyroscope rings + radar sweep, not the cellular mesh they used to share with futuristic
@@ -226,7 +227,7 @@ describe('shader-branch source gate (every variant is actually RENDERED, not sil
   it('the uMode uniform comment documents every mode the ternary can emit (author-intent doc stays honest)', () => {
     // The `uniform float uMode; // 0=… 1=ember … 10=weave` comment is the human map of the ladder;
     // guard that it names the highest mode so a new scene updates the doc too (drift catch).
-    expect(BACKDROP_SRC).toMatch(/uniform float uMode;[^\n]*12=gyro/);
+    expect(BACKDROP_SRC).toMatch(/uniform float uMode;[^\n]*13=halftone/);
   });
 });
 

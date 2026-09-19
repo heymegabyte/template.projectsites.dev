@@ -42,7 +42,8 @@ export type HeroBackdropVariant =
   | 'monolith'
   | 'weave'
   | 'velocity'
-  | 'gyro';
+  | 'gyro'
+  | 'halftone';
 
 /** Shader parameters per variant (pure data — unit-tested). */
 export interface HeroBackdropConfig {
@@ -132,6 +133,13 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
   // count, sharpness = ring crispness, low hueSpread = calibrated-instrument restraint; warp inert.
   // Distinct from mesh's soft cellular shimmer: crisp brand-tinted rings + a slow sweep read as a gauge.
   gyro: { scale: 5.0, speed: 0.6, sharpness: 0.72, hueSpread: 0.05, intensity: 0.8, warp: 0.3 },
+  // halftone: a kinetic Ben-Day DOT field for EDITORIAL (media / publishing / magazine / news /
+  // blog). A regular dot grid whose per-dot RADIUS is driven by a slow flowing fbm tone-wave, so
+  // bright "tone" ripples sweep across the field like an animated halftone gradient (newsprint /
+  // comic / magazine). scale = dot density, sharpness = dot edge crispness, low hueSpread = a tight
+  // brand-tinted screen; warp nudges the tone flow. Distinct from every noise-field variant: crisp
+  // discrete dots on a dark ground. Bright brand dots keep it non-black; low intensity keeps the H1 legible.
+  halftone: { scale: 9.0, speed: 0.7, sharpness: 0.72, hueSpread: 0.08, intensity: 0.82, warp: 0.3 },
 };
 
 /**
@@ -147,9 +155,12 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
  *      soft aurora ribbons they used to share);
  *   - `petals` — soft blossoms drifting downward → botanical / floral / garden
  *     (botanical — florist / plant shop / nursery get their OWN falling-petals scene, not shared aurora);
+ *   - `halftone` — a kinetic Ben-Day DOT field (animated tone ripples) → print / publishing / media
+ *     (editorial — media / magazine / news / blog get the print/editorial signature, not the shared
+ *      waves; the calm swells undersold editorial's dynamic print identity);
  *   - `waves`  — broad calm swells → authoritative / professional / trusted / dignified
- *     (editorial, heritage — a law / accounting / insurance / real-estate firm reads as steady +
- *      trusted, NOT cozy-warm; ember's hearth glow was a mismatch for it);
+ *     (heritage — a law / accounting / insurance / real-estate firm reads as steady + trusted,
+ *      NOT cozy-warm; ember's hearth glow was a mismatch for it);
  *   - `bokeh`  — soft drifting out-of-focus light-motes → refined / premium / elegant
  *     (luxe — fine dining / jewelry / hotels want their OWN premium field, not editorial's waves);
  *   - `mesh`   — tight cellular shimmer → technical / precise
@@ -171,6 +182,7 @@ export const HERO_BACKDROP_CONFIGS: Record<HeroBackdropVariant, HeroBackdropConf
  *     (retro — the iconic scrolling grid IS the retro identity; a soft aurora field undersold it).
  * Pure + total (unknown/blank → `aurora`) so it unit-tests in isolation.
  *
+ * @example backdropForPreset('editorial')  // → 'halftone'
  * @example backdropForPreset('luxe')       // → 'bokeh'
  * @example backdropForPreset('botanical')  // → 'petals'
  * @example backdropForPreset('noir')       // → 'smoke'
@@ -193,7 +205,8 @@ export const PRESET_BACKDROP: Record<string, HeroBackdropVariant> = {
   scholarly: 'constellation', // AL-532: academic/library/education/research get a deep-night star map (twinkling knowledge points), not the generic soft-ribbon aurora
 
   boutique: 'silk', // AL-525: upscale fashion/jewelry/salon get draped-satin folds with a sweeping sheen — a soft aurora ribbon undersold the premium boutique feel
-  editorial: 'waves',
+  editorial: 'halftone', // media/publishing/magazine/news/blog get their OWN kinetic Ben-Day halftone dot field (the print/editorial signature); the calm authoritative WAVES (kept for heritage's financial/legal/insurance) undersold editorial's dynamic print identity
+
   heritage: 'waves', // dignified authoritative swells — financial/legal/insurance/real-estate; ember's cozy hearth glow was a MISMATCH for a law/accounting/insurance firm (AL-490)
   luxe: 'bokeh', // premium drifting light-motes — luxe's OWN refined scene, not editorial's waves
   futuristic: 'mesh',
@@ -310,7 +323,7 @@ uniform float uScale;
 uniform float uSharp;
 uniform float uSpread;
 uniform float uIntensity;
-uniform float uMode;      // 0=flowing(aurora/waves/mesh) 1=ember 2=grid 3=bokeh 4=petals 5=smoke 6=terrain 7=silk 8=constellation 9=monolith 10=weave 11=velocity 12=gyro
+uniform float uMode;      // 0=flowing(aurora/waves/mesh) 1=ember 2=grid 3=bokeh 4=petals 5=smoke 6=terrain 7=silk 8=constellation 9=monolith 10=weave 11=velocity 12=gyro 13=halftone
 uniform float uWarp;      // domain-warp strength (0 = legacy flat field)
 uniform vec2 uParallax;   // pointer + scroll parallax offset — subtle living depth (0 under reduced-motion)
 uniform vec2 uSpot;       // cursor position in uv (0..1); center (0.5,0.5) at rest
@@ -326,7 +339,26 @@ void main(){
   vec2 p = uv * vec2(uRes.x/uRes.y, 1.0);
   float t = uTime * 0.05;
   vec3 col;
-  if (uMode > 11.5) {
+  if (uMode > 12.5) {
+    // ---- HALFTONE (uMode==13): a kinetic Ben-Day DOT field — the print/EDITORIAL signature (media /
+    // publishing / magazine / news / blog). A regular dot grid (aspect-corrected → circular dots) whose
+    // per-dot RADIUS is driven by a slow flowing fbm TONE wave, so bright "tone" ripples sweep across the
+    // field like an animated halftone gradient. Distinct from every noise-field variant: crisp discrete
+    // brand-tinted dots on a dark ground. uScale = dot density, uSharp = dot edge crispness. The dark 0.10
+    // base (non-black by construction) + the shared vignette/intensity keep the center H1 legible.
+    float cells = uScale;                                   // dot-grid density
+    vec2 hg = uv * vec2(uRes.x / uRes.y, 1.0) * cells;      // aspect-correct → square cells (circular dots)
+    vec2 hcell = floor(hg);
+    vec2 hf = fract(hg) - 0.5;                              // position within the cell (-0.5..0.5)
+    vec2 cc = (hcell + 0.5) / cells;                        // cell-center in field space → the "image" sampled
+    float tone = fbm(cc * 2.4 + vec2(t * 0.28, -t * 0.2) + uWarp * vec2(fbm(cc * 1.3 - t * 0.12), 0.0));
+    tone = smoothstep(0.22, 0.9, tone);                     // shape the tonal ramp (waves of light/dark dots)
+    float hrad = mix(0.06, 0.48, tone);                     // dot radius grows with local tone
+    float hedge = mix(0.16, 0.03, uSharp);                  // sharper preset → crisper dot edge
+    float hdot = 1.0 - smoothstep(hrad - hedge, hrad, length(hf));  // crisp filled dot
+    float hhue = uHue + uSpread * (tone - 0.5);
+    col = hsl2rgb(hhue, 0.62, 0.10 + 0.40 * hdot * (0.5 + 0.5 * tone)); // dark ground + bright brand dots
+  } else if (uMode > 11.5) {
     // ---- GYRO (uMode==12): concentric orbital RINGS drifting outward under a slow radar SWEEP arm —
     // a precision-INSTRUMENT / gyroscope field for PRECISION (engineering / motorsports / aerospace /
     // machining). Aspect-corrected circular rings + a rotating bright arm that lights the rings it
@@ -655,7 +687,9 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
       spotStrength: gl.getUniformLocation(prog, 'uSpotStrength'),
     };
     const modeFlag =
-      effectiveVariant === 'gyro'
+      effectiveVariant === 'halftone'
+        ? 13
+        : effectiveVariant === 'gyro'
         ? 12
         : effectiveVariant === 'velocity'
         ? 11
@@ -805,6 +839,8 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
   return (
     <div
       aria-hidden="true"
+      data-hero-variant={effectiveVariant}
+      data-hero-mode={mode}
       className={['pointer-events-none absolute inset-0 -z-10 overflow-hidden', className]
         .filter(Boolean)
         .join(' ')}
