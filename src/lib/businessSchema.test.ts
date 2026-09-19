@@ -100,6 +100,17 @@ describe("isOpenAt / describeToday — overnight-safe open-now (nightlife: 6pm�
     expect(isOpenAt(BAR, "Friday", 2 * 60)).toBe(false); // 2:00am exactly — closed (half-open)
   });
 
+  it("CLOSES AT MIDNIGHT (6pm–12am): open until 12am, NOT after — distinct from 6pm–2am", () => {
+    const TILL_MIDNIGHT = "Mon–Sun 6pm–12am"; // closes "00:00" → still the overnight branch
+    expect(isOpenAt(TILL_MIDNIGHT, "Friday", 23 * 60)).toBe(true); // 11pm — open
+    expect(isOpenAt(TILL_MIDNIGHT, "Friday", 30)).toBe(false); // 12:30am — CLOSED (unlike the 2am bar)
+    expect(isOpenAt(TILL_MIDNIGHT, "Friday", 15 * 60)).toBe(false); // 3pm — closed
+    expect(describeToday(TILL_MIDNIGHT, "Friday", 23 * 60)).toEqual({
+      open: true,
+      label: "Open now · until 12am",
+    });
+  });
+
   it("describeToday standard: opens-later / open-now / closed", () => {
     expect(describeToday(STD, "Monday", 8 * 60)).toEqual({
       open: false,
