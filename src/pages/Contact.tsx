@@ -23,7 +23,7 @@ export default function Contact() {
       <section className="pt-32 pb-20">
         <div className="max-w-7xl mx-auto px-6">
           <AnimatedSection className="text-center mb-16">
-            <span className="text-[var(--color-accent)] text-sm font-mono tracking-widest uppercase">
+            <span className="text-accent text-sm font-mono tracking-widest uppercase">
               Get in Touch
             </span>
             <h1 className="text-4xl md:text-6xl font-bold font-heading mt-4 mb-6">
@@ -162,7 +162,7 @@ export default function Contact() {
       <section className="pb-24">
         <div className="max-w-container-wide mx-auto px-6">
           <AnimatedSection className="glass rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
-            <span className="text-[var(--color-accent)] text-sm font-mono tracking-widest uppercase">
+            <span className="text-accent text-sm font-mono tracking-widest uppercase">
               What to expect
             </span>
             <h2 className="text-2xl md:text-3xl font-bold font-heading text-text mt-3 mb-4">
@@ -205,7 +205,7 @@ export default function Contact() {
       <section className="pb-28">
         <div className="max-w-container-wide mx-auto px-6">
           <AnimatedSection className="text-center mb-10">
-            <span className="text-[var(--color-accent)] text-sm font-mono tracking-widest uppercase">
+            <span className="text-accent text-sm font-mono tracking-widest uppercase">
               However works for you
             </span>
             <h2 className="text-2xl md:text-4xl font-bold font-heading text-text mt-3 mb-4">

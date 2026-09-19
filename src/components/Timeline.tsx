@@ -31,7 +31,7 @@ export default function Timeline({ events, headline, eyebrow }: Props) {
         {(eyebrow || headline) && (
           <div className="text-center mb-12">
             {eyebrow && (
-              <span className="text-[var(--color-accent)] text-sm font-mono tracking-widest uppercase">
+              <span className="text-accent text-sm font-mono tracking-widest uppercase">
                 {eyebrow}
               </span>
             )}
@@ -54,7 +54,7 @@ export default function Timeline({ events, headline, eyebrow }: Props) {
                   aria-hidden="true"
                   className="timeline-dot absolute -left-[37px] top-1.5 h-3.5 w-3.5 rounded-full bg-[var(--color-accent)] ring-4 ring-background"
                 />
-                <time className="text-[var(--color-accent)] font-mono text-sm tracking-widest">
+                <time className="text-accent font-mono text-sm tracking-widest">
                   {e.year}
                 </time>
                 <h3

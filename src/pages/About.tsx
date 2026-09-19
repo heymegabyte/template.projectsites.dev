@@ -46,7 +46,7 @@ export default function About() {
       <section className="pt-32 pb-16">
         <div className="max-w-4xl mx-auto px-6">
           <AnimatedSection>
-            <span className="text-[var(--color-accent)] text-sm font-mono tracking-widest uppercase">
+            <span className="text-accent text-sm font-mono tracking-widest uppercase">
               About Us
             </span>
             <h1 className="text-4xl md:text-6xl font-bold font-heading mt-4 mb-8">
@@ -102,7 +102,7 @@ export default function About() {
       <section className="py-16">
         <div className="max-w-6xl mx-auto px-6">
           <AnimatedSection className="mb-10">
-            <span className="text-[var(--color-accent)] text-sm font-mono tracking-widest uppercase">
+            <span className="text-accent text-sm font-mono tracking-widest uppercase">
               What we stand for
             </span>
             <h2 className="text-2xl md:text-4xl font-bold font-heading text-text mt-3">
@@ -127,7 +127,7 @@ export default function About() {
         <div className="max-w-4xl mx-auto px-6">
           <AnimatedSection>
             <div className="glass rounded-2xl p-8 md:p-12">
-              <span className="text-[var(--color-accent)] text-sm font-mono tracking-widest uppercase">
+              <span className="text-accent text-sm font-mono tracking-widest uppercase">
                 How we work
               </span>
               <h2 className="text-2xl md:text-3xl font-bold font-heading text-text mt-3 mb-4">

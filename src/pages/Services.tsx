@@ -47,7 +47,7 @@ export default function Services() {
       <section className="pt-32 pb-16">
         <div className="max-w-7xl mx-auto px-6">
           <AnimatedSection className="text-center mb-10">
-            <span className="text-[var(--color-accent)] text-sm font-mono tracking-widest uppercase">
+            <span className="text-accent text-sm font-mono tracking-widest uppercase">
               Our Services
             </span>
             <h1 className="text-4xl md:text-6xl font-bold font-heading mt-4 mb-6">
@@ -103,7 +103,7 @@ export default function Services() {
       <section className="py-16">
         <div className="max-w-6xl mx-auto px-6">
           <AnimatedSection className="text-center mb-10">
-            <span className="text-[var(--color-accent)] text-sm font-mono tracking-widest uppercase">
+            <span className="text-accent text-sm font-mono tracking-widest uppercase">
               Why choose us
             </span>
             <h2 className="text-2xl md:text-4xl font-bold font-heading text-text mt-3">

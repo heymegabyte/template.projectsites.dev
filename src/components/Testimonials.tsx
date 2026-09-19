@@ -53,7 +53,7 @@ export default function Testimonials({
           }))}
         />
         <AnimatedSection className="text-center mb-16">
-          <span className="text-[var(--color-accent)] text-sm font-mono tracking-widest uppercase">
+          <span className="text-accent text-sm font-mono tracking-widest uppercase">
             {eyebrow}
           </span>
           <h2
