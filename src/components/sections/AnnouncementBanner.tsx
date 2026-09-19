@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
-import { X, Sparkles } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useEffect, useState } from "react";
+import { X, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { scrubText } from "@/lib/placeholders";
 
 interface Props {
   /** Banner copy. Keep ≤80 chars. */
@@ -10,18 +11,18 @@ interface Props {
   /** Unique id so dismissal persists per banner. */
   id?: string;
   /** Display tone. */
-  tone?: 'accent' | 'success' | 'warning' | 'danger' | 'info';
+  tone?: "accent" | "success" | "warning" | "danger" | "info";
   /** Dismissible. Default true. */
   dismissible?: boolean;
   className?: string;
 }
 
-const TONE_CLASS: Record<NonNullable<Props['tone']>, string> = {
-  accent:  'bg-accent text-[var(--color-on-accent)]',
-  success: 'bg-success text-on-signal',
-  warning: 'bg-warning text-on-signal',
-  danger:  'bg-danger text-on-signal',
-  info:    'bg-info text-on-signal',
+const TONE_CLASS: Record<NonNullable<Props["tone"]>, string> = {
+  accent: "bg-accent text-[var(--color-on-accent)]",
+  success: "bg-success text-on-signal",
+  warning: "bg-warning text-on-signal",
+  danger: "bg-danger text-on-signal",
+  info: "bg-info text-on-signal",
 };
 
 /**
@@ -39,8 +40,8 @@ const TONE_CLASS: Record<NonNullable<Props['tone']>, string> = {
 export function AnnouncementBanner({
   message,
   cta,
-  id = 'default',
-  tone = 'accent',
+  id = "default",
+  tone = "accent",
   dismissible = true,
   className,
 }: Props) {
@@ -49,7 +50,7 @@ export function AnnouncementBanner({
 
   useEffect(() => {
     try {
-      if (localStorage.getItem(storageKey) === '1') setDismissed(true);
+      if (localStorage.getItem(storageKey) === "1") setDismissed(true);
     } catch {
       /* private mode */
     }
@@ -58,32 +59,42 @@ export function AnnouncementBanner({
   function dismiss() {
     setDismissed(true);
     try {
-      localStorage.setItem(storageKey, '1');
+      localStorage.setItem(storageKey, "1");
     } catch {
       /* private mode */
     }
   }
 
-  if (dismissed) return null;
+  // Self-hide when the message is a placeholder/empty (a token-leaking or blank banner is worse than
+  // no banner). The CTA renders only when it has real copy AND a real href (not `{token}`/`#`/empty) —
+  // never a dead announcement link.
+  const msg = scrubText(message);
+  const ctaLabel = scrubText(cta?.label);
+  const ctaHref = (cta?.href ?? "").trim();
+  const showCta = Boolean(
+    ctaLabel && ctaHref && !ctaHref.startsWith("{") && ctaHref !== "#",
+  );
+
+  if (dismissed || !msg) return null;
 
   return (
     <div
       role="region"
       aria-label="Announcement"
       className={cn(
-        'flex items-center justify-center gap-4 px-4 py-2.5 text-sm font-medium',
+        "flex items-center justify-center gap-4 px-4 py-2.5 text-sm font-medium",
         TONE_CLASS[tone],
         className,
       )}
     >
       <Sparkles size={14} aria-hidden="true" />
-      <span>{message}</span>
-      {cta && (
+      <span>{msg}</span>
+      {showCta && (
         <a
-          href={cta.href}
+          href={ctaHref}
           className="underline underline-offset-2 hover:no-underline font-bold"
         >
-          {cta.label} →
+          {ctaLabel} →
         </a>
       )}
       {dismissible && (
