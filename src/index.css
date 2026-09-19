@@ -947,6 +947,40 @@ main#main { view-transition-name: ps-main; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   SCROLL-STACKING CARDS (CINEMATIC-3D) — the Apple / Awwwards "cards stack &
+   recede as you scroll" deck. When scroll_stack is on, <ProcessSteps stack>
+   renders the steps as a vertical column with `.process-steps.ps-scroll-stack`;
+   each step card PINS near the top and gently scales back as the next slides
+   over it (a guided, one-step-at-a-time narrative). Base (reduced-motion / no
+   `animation-timeline` / mobile) is a plain, fully-visible vertical card list —
+   the sticky pin + view()-scrubbed recede live behind BOTH queries below, so
+   Firefox / reduced-motion / small screens never get a stuck-scaled card.
+   Safe: LCP (below-fold, settled frame is identity scale 1, never the hero),
+   INP (compositor-driven), CLS (transform-only). Reuses the existing `--step-i`.
+   ───────────────────────────────────────────────────────────────────────── */
+.process-steps.ps-scroll-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.process-steps.ps-scroll-stack > li { margin: 0; }
+@supports (animation-timeline: view()) {
+  @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+    .process-steps.ps-scroll-stack > li {
+      will-change: transform;
+      position: sticky;
+      top: calc(12vh + var(--step-i, 0) * 1.1rem);
+      animation: ps-scroll-stack-recede linear both;
+      animation-timeline: view();
+      animation-range: cover 45% cover 100%;
+    }
+    @keyframes ps-scroll-stack-recede {
+      to { transform: scale(0.93); opacity: 0.62; }
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
    FEATURE SPLIT — a soft OKLCH accent aura behind the framed About visual for
    cinematic depth. Static (no motion — composes with the column's reveal-on-view);
    the hover accent-ring lives on the frame via Tailwind ring utilities.

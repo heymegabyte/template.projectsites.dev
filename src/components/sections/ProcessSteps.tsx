@@ -14,6 +14,13 @@ interface Props {
   headline?: string;
   description?: string;
   className?: string;
+  /**
+   * Scroll-stacking DECK variant (`scroll_stack` flag) — render the steps as a vertical column of
+   * sticky cards that pin + recede as you scroll (Apple / Awwwards "cards stack"), instead of the
+   * horizontal grid. Off by default → byte-for-byte the existing grid. The pin + recede is CSS-only
+   * (`.process-steps.ps-scroll-stack`), reduced-motion / mobile / no-`animation-timeline` safe.
+   */
+  stack?: boolean;
 }
 
 /**
@@ -24,7 +31,7 @@ interface Props {
  * the inline `--step-i` cascade. Motion is `prefers-reduced-motion`-gated; the
  * resting base state (no-JS / reduced-motion) is fully drawn + legible.
  */
-export function ProcessSteps({ steps, eyebrow = 'How it works', headline, description, className }: Props) {
+export function ProcessSteps({ steps, eyebrow = 'How it works', headline, description, className, stack = false }: Props) {
   const safeEyebrow = scrubText(eyebrow, 'How it works');
   const safeHeadline = scrubText(headline);
   const safeDescription = scrubText(description);
@@ -45,20 +52,28 @@ export function ProcessSteps({ steps, eyebrow = 'How it works', headline, descri
         {safeDescription && <p className="text-text-muted max-w-2xl mx-auto text-lg">{safeDescription}</p>}
       </div>
 
-      <ol className="process-steps relative grid md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {/* Connector line linking the steps into a flow (md+ horizontal row).
-            The base rail is fully drawn (no-JS / reduced-motion renders it
-            solid); a second overlay rail (process-connector) draws left→right
-            on scroll with a soft glow "comet" head, layered above the base so
-            the flow reads even before any motion runs. */}
-        <span
-          aria-hidden="true"
-          className="hidden md:block absolute top-8 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-accent/25 to-transparent"
-        />
-        <span
-          aria-hidden="true"
-          className="process-connector hidden md:block absolute top-8 left-[12%] right-[12%] h-px bg-gradient-to-r from-accent/60 via-primary/60 to-info/60"
-        />
+      <ol
+        className={cn(
+          'process-steps relative gap-6',
+          stack ? 'ps-scroll-stack' : 'grid md:grid-cols-3 lg:grid-cols-4',
+        )}
+      >
+        {/* Connector line linking the steps into a flow (md+ horizontal row). Only in the GRID
+            layout — the vertical scroll-stack deck has no horizontal rail. The base rail is fully
+            drawn (no-JS / reduced-motion renders it solid); a second overlay rail (process-connector)
+            draws left→right on scroll with a soft glow "comet" head. */}
+        {!stack && (
+          <>
+            <span
+              aria-hidden="true"
+              className="hidden md:block absolute top-8 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-accent/25 to-transparent"
+            />
+            <span
+              aria-hidden="true"
+              className="process-connector hidden md:block absolute top-8 left-[12%] right-[12%] h-px bg-gradient-to-r from-accent/60 via-primary/60 to-info/60"
+            />
+          </>
+        )}
         {safeSteps.map((step, i) => (
           <li
             key={step.title}

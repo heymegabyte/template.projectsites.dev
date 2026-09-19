@@ -8,7 +8,7 @@ import { brand, featureOn } from '@/brand';
 import { buildSiteJsonLd, parseAddress, parseHours, type BusinessClass } from '@/lib/businessSchema';
 import { GalleryGrid } from '@/components/local';
 import { hasRealImage, cityFromAddress } from '@/lib/placeholders';
-import { cinematicProcessEnabled, kineticMarqueeEnabled } from '@/lib/featureFlags';
+import { cinematicProcessEnabled, kineticMarqueeEnabled, scrollStackEnabled } from '@/lib/featureFlags';
 import KineticMarquee from '@/components/KineticMarquee';
 
 import {
@@ -523,6 +523,7 @@ export default function Home() {
               steps={process}
               headline="{PROCESS_HEADLINE}"
               description="{PROCESS_SUBHEADLINE}"
+              stack={scrollStackEnabled()}
             />
           )}
         </SafeSection>

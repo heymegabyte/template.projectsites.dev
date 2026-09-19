@@ -171,3 +171,26 @@ export function faqNativeDisclosureEnabled(): boolean {
 export function kineticMarqueeEnabled(): boolean {
   return import.meta.env.VITE_KINETIC_MARQUEE === '1';
 }
+
+/**
+ * Scroll-stacking cards (`scroll_stack` / VITE_SCROLL_STACK) — the Apple / Awwwards "cards stack &
+ * recede as you scroll" signature: the "How it works" steps become a VERTICAL DECK where each step
+ * pins near the top and gently scales back as the next slides over it, so the section reads as a
+ * guided, one-step-at-a-time narrative instead of a flat grid. Same PROCESS_* content the static
+ * {@link ProcessSteps} renders (a step sequence IS the natural scroll-stack), zero new config. Dark
+ * by default (experimental); opt a build in with `VITE_SCROLL_STACK=1`. When ON (and
+ * `cinematic_process` is OFF), `Home` renders `<ProcessSteps stack>`; when OFF a shipped site is
+ * byte-for-byte unchanged.
+ *
+ * Safe BY CONSTRUCTION — pure native CSS `position: sticky` + `animation-timeline: view()`, ZERO JS /
+ * no scroll listener (unlike GSAP/Lenis): LCP-safe (below-fold; the settled/first frame is identity
+ * scale 1; NEVER the hero LCP element), INP-safe (compositor-driven, off the main thread), CLS-safe
+ * (transform-only). The sticky pin + view()-scrubbed recede live INSIDE `@supports (animation-timeline:
+ * view())` + `@media (min-width:768px) and (prefers-reduced-motion:no-preference)` — Firefox /
+ * reduced-motion / mobile fall through to a plain, fully-visible vertical card list (never a
+ * stuck-scaled card). Source: Apple product-page + Awwwards SOTD scroll-stack showcases — the deck
+ * the one-click AI builders don't ship.
+ */
+export function scrollStackEnabled(): boolean {
+  return import.meta.env.VITE_SCROLL_STACK === '1';
+}
