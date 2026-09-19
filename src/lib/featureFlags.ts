@@ -146,3 +146,28 @@ export function cinematicProcessEnabled(): boolean {
 export function faqNativeDisclosureEnabled(): boolean {
   return import.meta.env.VITE_FAQ_NATIVE_DISCLOSURE === '1';
 }
+
+/**
+ * Kinetic velocity marquee (`kinetic_marquee` / VITE_KINETIC_MARQUEE) — the Framer / Awwwards
+ * "velocity marquee" signature: a perspective-tilted typographic ribbon of the business's OWN
+ * offering words (feature / service titles) that drifts continuously (alive at rest) AND couples to
+ * scroll so the words visibly rush as the visitor moves, set on a subtle `rotateX` receding plane so
+ * it reads as a cinematic 3D depth band rather than a flat ticker. Same feature titles the Bento
+ * section already renders, so it auto-populates with zero new config (unfilled `{TOKEN}`s are
+ * dropped; <2 real words → renders nothing). Dark by default (experimental); opt a build in with
+ * `VITE_KINETIC_MARQUEE=1`. When ON, `Home` renders {@link KineticMarquee} as a band between the
+ * services and collection sections; when OFF a shipped site is byte-for-byte unchanged.
+ *
+ * Safe BY CONSTRUCTION — pure native CSS (NO library, NO JS scroll listener, unlike GSAP/Lenis): the
+ * continuous drift is a universally-supported keyframe; the scroll coupling lives inside
+ * `@supports (animation-timeline: scroll())` + `@media (prefers-reduced-motion: no-preference)`.
+ * LCP-safe (a BELOW-fold `aria-hidden` decorative band, never the hero LCP element; drift starts at
+ * identity, scroll nudge is ±4%), INP-safe (`animation-timeline: scroll(root)` is compositor-driven,
+ * off the main thread), CLS-safe (transform-only inside `overflow:hidden`). Firefox keeps the drift
+ * without scroll coupling; `prefers-reduced-motion: reduce` → the ribbon is perfectly STATIC + fully
+ * legible. Source: Framer velocity-marquee + Awwwards SOTD ribbon-band showcases — the kinetic layer
+ * the one-click AI builders (Framer / v0 / Lovable) don't ship as one-click.
+ */
+export function kineticMarqueeEnabled(): boolean {
+  return import.meta.env.VITE_KINETIC_MARQUEE === '1';
+}

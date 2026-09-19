@@ -868,6 +868,85 @@ main#main { view-transition-name: ps-main; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   KINETIC VELOCITY MARQUEE (CINEMATIC-3D) — a perspective-tilted typographic
+   ribbon of the business's OWN offering words that drifts continuously (alive at
+   rest) AND couples to scroll so the words rush as the visitor moves (the Framer /
+   Awwwards "velocity marquee" signature). Consumed by <KineticMarquee>, gated by
+   kineticMarqueeEnabled() (VITE_KINETIC_MARQUEE, dark). Ambient decoration
+   (aria-hidden), low-contrast brand-tinted, edge-masked. Safe by construction:
+   LCP-safe (BELOW-fold, drift starts at identity, scroll nudge ±4%, never the hero);
+   INP-safe (compositor-driven, no JS scroll listener); CLS-safe (transform-only in
+   overflow:hidden). The continuous drift is a universally-supported keyframe (so
+   Firefox still gets a living ribbon); the SCROLL coupling is gated by both queries
+   below — Firefox + reduced-motion users fall through to a static, fully-legible band.
+   ───────────────────────────────────────────────────────────────────────── */
+.ps-kinetic-marquee {
+  position: relative;
+  overflow: hidden;
+  perspective: 900px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+}
+.ps-kinetic-marquee__row {
+  display: flex;
+  transform: rotateX(14deg);       /* subtle 3D receding plane — static + safe (the "3D" read) */
+  transform-origin: center;
+}
+.ps-kinetic-marquee__track {
+  display: flex;
+  flex: 0 0 auto;
+  width: max-content;
+  align-items: center;
+}
+.ps-kinetic-marquee__word {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(1.25rem, 3vw, 2.75rem);
+  padding-inline: clamp(0.625rem, 1.5vw, 1.375rem);
+  white-space: nowrap;
+  font-family: var(--font-heading, inherit);
+  font-weight: 900;
+  font-size: clamp(1.75rem, 6vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  /* Low-contrast luminous brand tint (decoration, not a reading surface). `currentColor` inherits
+     the container's `text-accent`, so it tracks the brand regardless of how --accent is defined. */
+  color: color-mix(in oklab, currentColor 30%, transparent);
+}
+.ps-kinetic-marquee__dot {
+  flex: 0 0 auto;
+  width: 0.42em;
+  height: 0.42em;
+  border-radius: 999px;
+  background: color-mix(in oklab, currentColor 55%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ps-kinetic-marquee__track {
+    will-change: transform;
+    animation: ps-marquee-drift 34s linear infinite;   /* universal — Firefox gets a living ribbon */
+  }
+  @keyframes ps-marquee-drift {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }                /* seamless: track holds the sequence twice */
+  }
+}
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .ps-kinetic-marquee__row {
+      will-change: transform;
+      animation: ps-marquee-scroll linear both;        /* scroll-coupled nudge — composes w/ drift */
+      animation-timeline: scroll(root);
+    }
+    /* Keep the static rotateX tilt inside the keyframe so the 3D plane holds while scrolling. */
+    @keyframes ps-marquee-scroll {
+      from { transform: rotateX(14deg) translateX(4%); }
+      to { transform: rotateX(14deg) translateX(-4%); }
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
    FEATURE SPLIT — a soft OKLCH accent aura behind the framed About visual for
    cinematic depth. Static (no motion — composes with the column's reveal-on-view);
    the hover accent-ring lives on the frame via Tailwind ring utilities.

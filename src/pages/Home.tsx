@@ -8,7 +8,8 @@ import { brand, featureOn } from '@/brand';
 import { buildSiteJsonLd, parseAddress, parseHours, type BusinessClass } from '@/lib/businessSchema';
 import { GalleryGrid } from '@/components/local';
 import { hasRealImage, cityFromAddress } from '@/lib/placeholders';
-import { cinematicProcessEnabled } from '@/lib/featureFlags';
+import { cinematicProcessEnabled, kineticMarqueeEnabled } from '@/lib/featureFlags';
+import KineticMarquee from '@/components/KineticMarquee';
 
 import {
   HeroSplit,
@@ -484,6 +485,12 @@ export default function Home() {
           bookUrl="{BOOK_URL}"
         />
       </SafeSection>
+
+      {kineticMarqueeEnabled() && (
+        <SafeSection name="kineticMarquee">
+          <KineticMarquee words={bentoTiles.map((t) => t.title)} />
+        </SafeSection>
+      )}
 
       <SafeSection name="collection">
         <FeaturedCollection
