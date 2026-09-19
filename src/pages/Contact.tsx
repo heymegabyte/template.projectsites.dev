@@ -1,8 +1,8 @@
 import { Mail, Phone, MapPin, Clock } from 'lucide-react';
 import { AnimatedSection } from '@/components/AnimatedSection';
+import { ContactForm } from '@/components/ContactForm';
 import { useSEO } from '@/hooks/useSEO';
 import { JsonLd } from '@/components/JsonLd';
-import { Button } from '@/components/ui/button';
 
 export default function Contact() {
   useSEO({
@@ -42,70 +42,14 @@ export default function Contact() {
           </AnimatedSection>
 
           <div className="grid lg:grid-cols-2 gap-12">
-            {/* Contact Form */}
+            {/* Contact Form — the SAME robust, Zod-validated ContactForm the Home section uses:
+                live per-field valid/invalid affordances + aria-invalid + role=alert errors + a submit
+                GATED until every field is valid (no empty/garbage lead) + inline success/error state.
+                Previously this dedicated /contact page — the destination of the "Contact" nav link, the
+                #1 lead-capture surface — carried an inferior hand-rolled inline form with none of that
+                validation or a11y (WCAG 3.3.1/3.3.3 gap). Root-fixed by reusing the component. */}
             <AnimatedSection animation="animate-slideInLeft">
-              <form className="glass rounded-2xl p-8 space-y-6">
-                <div className="grid sm:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="ps-contact-name" className="block text-text-muted text-sm font-medium mb-2">
-                      Name
-                    </label>
-                    <input
-                      id="ps-contact-name"
-                      name="name"
-                      type="text"
-                      autoComplete="name"
-                      required
-                      className="w-full bg-surface border border-border rounded-lg px-4 py-3 text-text placeholder-text-subtle focus:outline-none focus:border-[var(--color-accent)]/50 focus:ring-1 focus:ring-[var(--color-accent)]/50 transition-colors"
-                      placeholder="Your name"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="ps-contact-email" className="block text-text-muted text-sm font-medium mb-2">
-                      Email
-                    </label>
-                    <input
-                      id="ps-contact-email"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      required
-                      className="w-full bg-surface border border-border rounded-lg px-4 py-3 text-text placeholder-text-subtle focus:outline-none focus:border-[var(--color-accent)]/50 focus:ring-1 focus:ring-[var(--color-accent)]/50 transition-colors"
-                      placeholder="you@example.com"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="ps-contact-phone" className="block text-text-muted text-sm font-medium mb-2">
-                    Phone <span className="text-text-subtle font-normal">(optional)</span>
-                  </label>
-                  <input
-                    id="ps-contact-phone"
-                    name="phone"
-                    type="tel"
-                    autoComplete="tel"
-                    inputMode="tel"
-                    className="w-full bg-surface border border-border rounded-lg px-4 py-3 text-text placeholder-text-subtle focus:outline-none focus:border-[var(--color-accent)]/50 focus:ring-1 focus:ring-[var(--color-accent)]/50 transition-colors"
-                    placeholder="(555) 123-4567"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="ps-contact-message" className="block text-text-muted text-sm font-medium mb-2">
-                    Message
-                  </label>
-                  <textarea
-                    id="ps-contact-message"
-                    name="message"
-                    rows={5}
-                    required
-                    className="w-full bg-surface border border-border rounded-lg px-4 py-3 text-text placeholder-text-subtle focus:outline-none focus:border-[var(--color-accent)]/50 focus:ring-1 focus:ring-[var(--color-accent)]/50 transition-colors resize-none"
-                    placeholder="Tell us about your project..."
-                  />
-                </div>
-                <Button type="submit" size="lg" className="w-full">
-                  Send Message
-                </Button>
-              </form>
+              <ContactForm />
             </AnimatedSection>
 
             {/* Contact Info */}
