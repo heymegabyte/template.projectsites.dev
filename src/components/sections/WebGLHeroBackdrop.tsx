@@ -224,6 +224,46 @@ export function backdropForPreset(preset: string | null | undefined): HeroBackdr
 }
 
 /**
+ * The GENERIC static wash — soft brand-tinted twin radials; the safe default for reduced-motion /
+ * no-WebGL visitors on the variants whose scene reads fine as a gentle glow.
+ */
+const GENERIC_STATIC_BG =
+  'radial-gradient(120% 120% at 50% 0%, color-mix(in oklch, var(--color-primary) 22%, transparent), transparent 60%), radial-gradient(90% 90% at 80% 100%, color-mix(in oklch, var(--color-accent) 16%, transparent), transparent 55%)';
+
+/**
+ * DISTINCT static fallbacks — a CSS-only backdrop that EVOKES each animated scene for the variants
+ * whose motion character the generic soft-radial wash misrepresents most. Reduced-motion + no-WebGL
+ * visitors (a real a11y segment) otherwise saw ONE identical wash across all 16 personalities, losing
+ * every per-industry cue the WebGL scenes carry. CSS-only → zero bundle cost, LCP/INP-safe, brand-tinted
+ * via the same `--color-*` tokens, kept low-alpha so foreground text stays legible. Pure + exported.
+ *
+ * @example staticBackdropFor('grid')   // synthwave perspective grid + horizon glow
+ * @example staticBackdropFor('aurora') // the GENERIC_STATIC_BG wash
+ */
+export function staticBackdropFor(variant: HeroBackdropVariant): string {
+  switch (variant) {
+    case 'grid': // retro/synthwave — a faint perspective grid receding to a horizon sun-glow.
+      return (
+        'radial-gradient(85% 55% at 50% 100%, color-mix(in oklch, var(--color-accent) 22%, transparent), transparent 62%),' +
+        'repeating-linear-gradient(to right, color-mix(in oklch, var(--color-accent) 9%, transparent) 0 1px, transparent 1px 46px),' +
+        'repeating-linear-gradient(to bottom, color-mix(in oklch, var(--color-accent) 7%, transparent) 0 1px, transparent 1px 46px)'
+      );
+    case 'terrain': // rugged/outdoors — topographic contour rings + a soft summit wash.
+      return (
+        'repeating-radial-gradient(60% 60% at 50% 42%, color-mix(in oklch, var(--color-primary) 13%, transparent) 0 2px, transparent 2px 40px),' +
+        'radial-gradient(120% 90% at 50% 0%, color-mix(in oklch, var(--color-primary) 14%, transparent), transparent 65%)'
+      );
+    case 'monolith': // brutalist — a stark vertical slab wash + one thin glowing fault seam.
+      return (
+        'linear-gradient(180deg, color-mix(in oklch, var(--color-primary) 11%, transparent), transparent 72%),' +
+        'linear-gradient(93deg, transparent 47.5%, color-mix(in oklch, var(--color-accent) 24%, transparent) 49% 50.5%, transparent 52%)'
+      );
+    default:
+      return GENERIC_STATIC_BG;
+  }
+}
+
+/**
  * DEMO-ONLY backdrop-variant override for the template showcase (`template.projectsites.dev`, AL-699).
  * A `?bg=<variant>` query param lets the LIVE demo preview ANY hero scene (e.g. `?bg=gyro`) so a new
  * cinematic variant is provable in a real browser WITHOUT a full site rebuild (the 402/fast-path
@@ -832,8 +872,9 @@ export function WebGLHeroBackdrop({ variant = 'aurora', className }: Props) {
   // Static brand gradient — the always-legible fallback (reduced-motion / no-WebGL /
   // SSR first paint). Uses the brand tokens so it matches the animated version's palette.
   const staticStyle: CSSProperties = {
-    background:
-      'radial-gradient(120% 120% at 50% 0%, color-mix(in oklch, var(--color-primary) 22%, transparent), transparent 60%), radial-gradient(90% 90% at 80% 100%, color-mix(in oklch, var(--color-accent) 16%, transparent), transparent 55%)',
+    // Per-variant static fallback (a11y + distinctiveness): reduced-motion / no-WebGL visitors get a
+    // scene-evoking backdrop, not one generic wash across all 16 personalities. CSS-only → LCP/INP-safe.
+    background: staticBackdropFor(effectiveVariant),
   };
 
   return (

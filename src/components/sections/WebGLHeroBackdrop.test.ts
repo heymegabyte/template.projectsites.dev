@@ -6,6 +6,7 @@ import {
   parseBrandHue,
   resolveBackdropMode,
   backdropForPreset,
+  staticBackdropFor,
   demoVariantOverride,
   HERO_BACKDROP_CONFIGS,
   PRESET_BACKDROP,
@@ -267,5 +268,36 @@ describe('pointer + scroll parallax (cinematic-3D #1) — default-on every scene
   it('removes both listeners on cleanup (no leak)', () => {
     expect(BACKDROP_SRC).toMatch(/removeEventListener\('pointermove'/);
     expect(BACKDROP_SRC).toMatch(/removeEventListener\('scroll'/);
+  });
+});
+
+describe('staticBackdropFor (per-variant reduced-motion / no-WebGL fallback)', () => {
+  const variants = Object.keys(HERO_BACKDROP_CONFIGS) as HeroBackdropVariant[];
+
+  it('returns a brand-tinted, non-empty CSS background for EVERY variant (never flat/blank)', () => {
+    for (const v of variants) {
+      const bg = staticBackdropFor(v);
+      expect(bg.length).toBeGreaterThan(20);
+      expect(bg).toContain('color-mix(in oklch'); // brand-token tinted, not a hardcoded colour
+      expect(bg).toMatch(/var\(--color-(primary|accent)\)/);
+    }
+  });
+
+  it('gives the 3 most scene-distinct variants their OWN backdrop (not the generic wash, nor each other)', () => {
+    const generic = staticBackdropFor('aurora');
+    expect(staticBackdropFor('grid')).toContain('repeating-linear-gradient'); // synthwave perspective grid
+    expect(staticBackdropFor('terrain')).toContain('repeating-radial-gradient'); // topographic contour rings
+    expect(staticBackdropFor('monolith')).toContain('linear-gradient(93deg'); // brutalist fault seam
+    const bespoke = ['grid', 'terrain', 'monolith'] as HeroBackdropVariant[];
+    for (const v of bespoke) expect(staticBackdropFor(v)).not.toBe(generic);
+    expect(new Set(bespoke.map((v) => staticBackdropFor(v))).size).toBe(3);
+  });
+
+  it('falls back to the generic twin-radial wash for the soft-glow variants (aurora/waves/mesh/…)', () => {
+    const generic = staticBackdropFor('aurora');
+    expect(generic).toContain('radial-gradient(120% 120% at 50% 0%');
+    for (const v of ['waves', 'mesh', 'smoke', 'bokeh'] as HeroBackdropVariant[]) {
+      expect(staticBackdropFor(v)).toBe(generic);
+    }
   });
 });
