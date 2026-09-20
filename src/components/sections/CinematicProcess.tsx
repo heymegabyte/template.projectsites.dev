@@ -65,6 +65,7 @@ export function CinematicProcess({
 
   return (
     <section
+      data-testid="cinematic-process"
       className={cn('cine-section relative max-w-container-wide mx-auto px-6', className)}
       aria-label={safeHeadline || safeEyebrow}
     >

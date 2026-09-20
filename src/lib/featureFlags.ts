@@ -108,22 +108,23 @@ export function particleFieldEnabled(): boolean {
  * scroll-scrubbed reel where a sticky stage holds each step "act" and cross-dissolves them one at a
  * time as the visitor scrolls, a progress rail drawing through the whole chapter. Same PROCESS_*
  * content as the static {@link ProcessSteps} (a step sequence IS the natural scrollytelling), so it
- * auto-populates with zero new config. Dark by default (experimental); opt a build in with
- * `VITE_CINEMATIC_PROCESS=1`. When ON, `Home` renders {@link CinematicProcess} in place of
+ * auto-populates with zero new config. ON by default (AL-829, promoted experimental→default after the
+ * particle-field precedent — safe BY CONSTRUCTION, see below); a build OPTS OUT with
+ * `VITE_CINEMATIC_PROCESS=0`. When ON, `Home` renders {@link CinematicProcess} in place of
  * {@link ProcessSteps}; when OFF a shipped site is byte-for-byte unchanged.
  *
  * Safe BY CONSTRUCTION — pure native CSS `view-timeline` + `animation-timeline: view()`, ZERO JS /
- * no scroll listener (the component renders static markup): LCP-safe (below-fold; opacity/transform
- * only; never the hero LCP element), INP-safe (compositor-driven, off the main thread), CLS-safe
- * (the sticky stage reserves 100svh; acts are absolutely positioned within). The pin engages ONLY
- * inside `@supports (animation-timeline: view())` + `@media (min-width:768px) and
- * (prefers-reduced-motion:no-preference)` — Firefox / reduced-motion / mobile / no-JS fall through
- * to a fully-visible, legible static vertical stack of every step. Source: Apple product-page +
- * Awwwards SOTD pinned-scrollytelling showcases — the cinematic chapter the one-click AI builders
- * don't ship.
+ * no scroll listener (the component renders static markup — verified: no useEffect/addEventListener):
+ * LCP-safe (below-fold; opacity/transform only; never the hero LCP element), INP-safe (compositor-
+ * driven, off the main thread), CLS-safe (the sticky stage reserves 100svh; acts are absolutely
+ * positioned within). The pin engages ONLY inside `@supports (animation-timeline: view())` +
+ * `@media (min-width:768px) and (prefers-reduced-motion:no-preference)` — Firefox / reduced-motion /
+ * mobile / no-JS fall through to a fully-visible, legible static vertical stack of every step, so the
+ * default-on flip can never dark a section. Source: Apple product-page + Awwwards SOTD
+ * pinned-scrollytelling showcases — the cinematic chapter the one-click AI builders don't ship.
  */
 export function cinematicProcessEnabled(): boolean {
-  return import.meta.env.VITE_CINEMATIC_PROCESS === "1";
+  return import.meta.env.VITE_CINEMATIC_PROCESS !== "0";
 }
 
 /**

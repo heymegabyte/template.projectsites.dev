@@ -17,9 +17,11 @@ const steps = [
   { title: 'You go live', description: 'Hosted, SSL, live in minutes.' },
 ];
 
-describe('cinematicProcessEnabled — VITE_CINEMATIC_PROCESS gate (dark by default)', () => {
-  it('is OFF unless VITE_CINEMATIC_PROCESS=1 (experimental, promote-to-enable)', () => {
-    expect(cinematicProcessEnabled()).toBe(false);
+describe('cinematicProcessEnabled — VITE_CINEMATIC_PROCESS gate (ON by default, opt-OUT — AL-829)', () => {
+  it('is ON by default (no env) and only OFF when explicitly VITE_CINEMATIC_PROCESS=0', () => {
+    expect(cinematicProcessEnabled()).toBe(true); // promoted default-on (safe by construction)
+    vi.stubEnv('VITE_CINEMATIC_PROCESS', '0');
+    expect(cinematicProcessEnabled()).toBe(false); // the opt-out escape hatch
     vi.stubEnv('VITE_CINEMATIC_PROCESS', '1');
     expect(cinematicProcessEnabled()).toBe(true);
   });
@@ -30,6 +32,8 @@ describe('CinematicProcess — structural + fallback contract', () => {
     const { container, getByRole } = render(
       <CinematicProcess steps={steps} headline="How it works" description="Three simple steps" />,
     );
+    // Stable prod-probe hook (verify-cinematic-process.mjs reads this).
+    expect(container.querySelector('[data-testid="cinematic-process"]')).toBeTruthy();
     const list = getByRole('list');
     const items = within(list).getAllByRole('listitem');
     expect(items).toHaveLength(3);
