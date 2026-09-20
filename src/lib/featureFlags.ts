@@ -298,3 +298,17 @@ export function sectionRailEnabled(): boolean {
 export function wordRevealEnabled(): boolean {
   return import.meta.env.VITE_WORD_REVEAL === "1";
 }
+
+/**
+ * `line_draw` (AL-849, dark) — the Awwwards/Codrops "hand-drawn accent stroke reveals" signature:
+ * a subtle accent underline beneath a below-fold section eyebrow that DRAWS in (SVG
+ * `stroke-dashoffset`) as the section scrolls into view. A genuinely-new visual CLASS for the
+ * template (it had translates/scales/tilts/opacity-reveals but no stroke-draw). Zero-lib (native
+ * `animation-timeline: view()`), LCP-safe (a thin decorative below-fold SVG, never the LCP element),
+ * `@supports` + `prefers-reduced-motion: no-preference` gated with a BASE state of fully-DRAWN
+ * (`stroke-dashoffset: 0`) → Firefox / reduced-motion / no-JS get the static accent, never a
+ * stranded-invisible line. Dark by default; opt-in via `VITE_LINE_DRAW=1`.
+ */
+export function lineDrawEnabled(): boolean {
+  return import.meta.env.VITE_LINE_DRAW === "1";
+}

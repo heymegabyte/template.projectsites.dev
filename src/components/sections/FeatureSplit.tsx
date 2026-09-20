@@ -7,6 +7,7 @@ import { scrubText, scrubList, scrubImage } from '@/lib/placeholders';
 import { cdnImageProps } from '@/lib/cdn-image';
 import { clipRevealEnabled } from '@/lib/featureFlags';
 import { SplitHeadline } from '@/components/SplitHeadline';
+import { LineAccent } from '@/components/LineAccent';
 
 interface Props {
   eyebrow?: string;
@@ -60,6 +61,8 @@ export function FeatureSplit({
           {safeEyebrow && (
             <span className="text-accent text-sm font-mono tracking-widest uppercase">{safeEyebrow}</span>
           )}
+          {/* AL-849: hand-drawn accent stroke draws in beneath the eyebrow on scroll (line_draw dark). */}
+          <LineAccent className="mt-3" />
           {safeHeadline && (
             <SplitHeadline
               as="h2"
