@@ -31,16 +31,19 @@ function stubMatchMedia(motionOk: boolean) {
   vi.stubGlobal('requestIdleCallback', undefined);
 }
 
-describe('particleFieldEnabled — VITE_PARTICLE_FIELD gate (dark by default)', () => {
-  it('is OFF unless VITE_PARTICLE_FIELD=1 (experimental, promote-to-enable)', () => {
-    expect(particleFieldEnabled()).toBe(false);
+describe('particleFieldEnabled — VITE_PARTICLE_FIELD gate (ON by default, opt-OUT — AL-801)', () => {
+  it('is ON by default (no env) and only OFF when explicitly VITE_PARTICLE_FIELD=0', () => {
+    expect(particleFieldEnabled()).toBe(true); // promoted default-on (safe by construction)
+    vi.stubEnv('VITE_PARTICLE_FIELD', '0');
+    expect(particleFieldEnabled()).toBe(false); // the escape hatch
     vi.stubEnv('VITE_PARTICLE_FIELD', '1');
     expect(particleFieldEnabled()).toBe(true);
   });
 });
 
 describe('ParticleField', () => {
-  it('renders NOTHING when the flag is OFF — the shipped fleet is unchanged', () => {
+  it('renders NOTHING when opted OUT (VITE_PARTICLE_FIELD=0) — the escape hatch', () => {
+    vi.stubEnv('VITE_PARTICLE_FIELD', '0');
     stubMatchMedia(true);
     const { container } = render(<ParticleField />);
     expect(container.querySelector('canvas')).toBeNull();

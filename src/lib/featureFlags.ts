@@ -83,8 +83,8 @@ export function scrollCinemaEnabled(): boolean {
  * "living canvas" ambient signature: a slow drift of luminous brand-tinted motes behind the
  * closing CTA band, giving the section depth + life a flat gradient can't. Canvas 2D (NO WebGL,
  * NO library, ~2KB, a pre-rendered glow sprite `drawImage`d per mote), scoped INSIDE the
- * below-fold CTA container (visible over its gradient, behind its `z-10` text). Dark by default
- * (experimental); opt a build in with `VITE_PARTICLE_FIELD=1`.
+ * below-fold CTA container (visible over its gradient, behind its `z-10` text). ON by default
+ * (promoted from experimental — safe BY CONSTRUCTION, see below); a build opts OUT with `VITE_PARTICLE_FIELD=0`.
  *
  * Safe BY CONSTRUCTION: LCP-safe (below-fold + the canvas MOUNTS only after an idle callback,
  * long after first paint, and is a decorative aria-hidden layer, NEVER the LCP element);
@@ -96,7 +96,10 @@ export function scrollCinemaEnabled(): boolean {
  * backdrop the one-click AI builders don't ship.
  */
 export function particleFieldEnabled(): boolean {
-  return import.meta.env.VITE_PARTICLE_FIELD === "1";
+  // ON by default (opt-OUT): the field is safe by construction — below-fold, post-idle mount
+  // (never the LCP element), reduced-motion-gated OFF, INP-capped, aria-hidden, full cleanup.
+  // A build sets VITE_PARTICLE_FIELD=0 to disable (the escape hatch).
+  return import.meta.env.VITE_PARTICLE_FIELD !== "0";
 }
 
 /**
