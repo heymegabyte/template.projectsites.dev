@@ -20,33 +20,18 @@ const renderFAQ = () => render(<FAQ items={items} />);
 
 afterEach(() => vi.unstubAllEnvs());
 
-describe('faqNativeDisclosureEnabled — VITE_FAQ_NATIVE_DISCLOSURE gate (dark by default)', () => {
-  it('is OFF unless VITE_FAQ_NATIVE_DISCLOSURE=1 (experimental, promote-to-enable)', () => {
-    expect(faqNativeDisclosureEnabled()).toBe(false);
+describe('faqNativeDisclosureEnabled — VITE_FAQ_NATIVE_DISCLOSURE gate (ON by default, opt-OUT — AL-833)', () => {
+  it('is ON by default (no env) and only OFF when explicitly VITE_FAQ_NATIVE_DISCLOSURE=0', () => {
+    expect(faqNativeDisclosureEnabled()).toBe(true); // promoted default-on (layered under @supports)
+    vi.stubEnv('VITE_FAQ_NATIVE_DISCLOSURE', '0');
+    expect(faqNativeDisclosureEnabled()).toBe(false); // the opt-out escape hatch
     vi.stubEnv('VITE_FAQ_NATIVE_DISCLOSURE', '1');
     expect(faqNativeDisclosureEnabled()).toBe(true);
-    vi.stubEnv('VITE_FAQ_NATIVE_DISCLOSURE', '0');
-    expect(faqNativeDisclosureEnabled()).toBe(false);
-    vi.stubEnv('VITE_FAQ_NATIVE_DISCLOSURE', 'true'); // only the literal '1' opts in
-    expect(faqNativeDisclosureEnabled()).toBe(false);
   });
 });
 
 describe('FAQ — native height-auto disclosure is flag-gated', () => {
-  it('does NOT mark panels data-faq-native when the flag is off (default); the grid-rows reveal + answers still render', () => {
-    const { container } = renderFAQ();
-    // Feature dark: no opt-in attribute anywhere.
-    expect(container.querySelector('[data-faq-native]')).toBeNull();
-    // The universal base/fallback reveal is intact.
-    const panels = container.querySelectorAll('.faq-panel');
-    expect(panels.length).toBe(items.length);
-    // The clip wrapper + the answer copy are present regardless of the flag.
-    expect(container.querySelector('.faq-panel__clip')).not.toBeNull();
-    expect(container.querySelector('.faq-answer')?.textContent).toContain('substance');
-  });
-
-  it('marks every panel data-faq-native when the flag is ON (reveal wraps, never replaces)', () => {
-    vi.stubEnv('VITE_FAQ_NATIVE_DISCLOSURE', '1');
+  it('marks every panel data-faq-native by DEFAULT (ON) — reveal wraps, never replaces', () => {
     const { container } = renderFAQ();
     const native = container.querySelectorAll('[data-faq-native]');
     // Every panel opted in — and every native panel is a real .faq-panel with its answer inside.
@@ -57,5 +42,18 @@ describe('FAQ — native height-auto disclosure is flag-gated', () => {
     });
     // The FAQPage JSON-LD (the AI-citation payload) is unaffected by the visual upgrade.
     expect(container.querySelector('script[type="application/ld+json"]')).not.toBeNull();
+  });
+
+  it('does NOT mark panels data-faq-native when opted OUT (=0); the grid-rows reveal + answers still render', () => {
+    vi.stubEnv('VITE_FAQ_NATIVE_DISCLOSURE', '0');
+    const { container } = renderFAQ();
+    // Opted out: no opt-in attribute anywhere.
+    expect(container.querySelector('[data-faq-native]')).toBeNull();
+    // The universal base/fallback reveal is intact.
+    const panels = container.querySelectorAll('.faq-panel');
+    expect(panels.length).toBe(items.length);
+    // The clip wrapper + the answer copy are present regardless of the flag.
+    expect(container.querySelector('.faq-panel__clip')).not.toBeNull();
+    expect(container.querySelector('.faq-answer')?.textContent).toContain('substance');
   });
 });

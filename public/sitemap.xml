@@ -2,79 +2,79 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>{BUSINESS_URL}/</loc>
-    <lastmod>2026-09-18T07:55:17.811Z</lastmod>
+    <lastmod>2026-09-20T03:35:00.554Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1</priority>
   </url>
   <url>
     <loc>{BUSINESS_URL}/gallery</loc>
-    <lastmod>2026-09-18T07:55:17.811Z</lastmod>
+    <lastmod>2026-09-20T03:35:00.554Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>{BUSINESS_URL}/studio</loc>
-    <lastmod>2026-09-18T07:55:17.811Z</lastmod>
+    <lastmod>2026-09-20T03:35:00.554Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>{BUSINESS_URL}/about</loc>
-    <lastmod>2026-09-18T07:55:17.811Z</lastmod>
+    <lastmod>2026-09-20T03:35:00.554Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>{BUSINESS_URL}/services</loc>
-    <lastmod>2026-09-18T07:55:17.811Z</lastmod>
+    <lastmod>2026-09-20T03:35:00.554Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>{BUSINESS_URL}/faq</loc>
-    <lastmod>2026-09-18T07:55:17.811Z</lastmod>
+    <lastmod>2026-09-20T03:35:00.554Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>{BUSINESS_URL}/blog</loc>
-    <lastmod>2026-09-18T07:55:17.811Z</lastmod>
+    <lastmod>2026-09-20T03:35:00.554Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>{BUSINESS_URL}/team</loc>
-    <lastmod>2026-09-18T07:55:17.811Z</lastmod>
+    <lastmod>2026-09-20T03:35:00.554Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>{BUSINESS_URL}/case-studies</loc>
-    <lastmod>2026-09-18T07:55:17.811Z</lastmod>
+    <lastmod>2026-09-20T03:35:00.554Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>{BUSINESS_URL}/contact</loc>
-    <lastmod>2026-09-18T07:55:17.811Z</lastmod>
+    <lastmod>2026-09-20T03:35:00.554Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>{BUSINESS_URL}/privacy</loc>
-    <lastmod>2026-09-18T07:55:17.811Z</lastmod>
+    <lastmod>2026-09-20T03:35:00.554Z</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>{BUSINESS_URL}/terms</loc>
-    <lastmod>2026-09-18T07:55:17.811Z</lastmod>
+    <lastmod>2026-09-20T03:35:00.554Z</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>{BUSINESS_URL}/accessibility</loc>
-    <lastmod>2026-09-18T07:55:17.811Z</lastmod>
+    <lastmod>2026-09-20T03:35:00.554Z</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
@@ -116,19 +116,19 @@
   </url>
   <url>
     <loc>{BUSINESS_URL}/blog/latch-saas-landing</loc>
-    <lastmod>2026-09-18T00:00:00.000Z</lastmod>
+    <lastmod>2026-09-20T00:00:00.000Z</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>{BUSINESS_URL}/blog/northern-lights-bakery</loc>
-    <lastmod>2026-09-18T00:00:00.000Z</lastmod>
+    <lastmod>2026-09-20T00:00:00.000Z</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>{BUSINESS_URL}/blog/doe-law-wcag</loc>
-    <lastmod>2026-09-18T00:00:00.000Z</lastmod>
+    <lastmod>2026-09-20T00:00:00.000Z</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>

@@ -24,31 +24,31 @@ const renderFS = () =>
 
 afterEach(() => vi.unstubAllEnvs());
 
-describe('clipRevealEnabled — VITE_CLIP_REVEAL gate (dark by default)', () => {
-  it('is OFF unless VITE_CLIP_REVEAL=1 (experimental, promote-to-enable)', () => {
-    expect(clipRevealEnabled()).toBe(false);
+describe('clipRevealEnabled — VITE_CLIP_REVEAL gate (ON by default, opt-OUT — AL-833)', () => {
+  it('is ON by default (no env) and only OFF when explicitly VITE_CLIP_REVEAL=0', () => {
+    expect(clipRevealEnabled()).toBe(true); // promoted default-on (safe by construction)
+    vi.stubEnv('VITE_CLIP_REVEAL', '0');
+    expect(clipRevealEnabled()).toBe(false); // the opt-out escape hatch
     vi.stubEnv('VITE_CLIP_REVEAL', '1');
     expect(clipRevealEnabled()).toBe(true);
-    vi.stubEnv('VITE_CLIP_REVEAL', '0');
-    expect(clipRevealEnabled()).toBe(false);
   });
 });
 
 describe('FeatureSplit — clip-path reveal is flag-gated', () => {
-  it('does NOT apply ps-clip-reveal when the flag is off (default), image still renders', () => {
-    const { container } = renderFS();
-    expect(container.querySelector('[data-clip-reveal="1"]')).toBeNull();
-    expect(container.querySelector('.ps-clip-reveal')).toBeNull();
-    expect(container.querySelector('img')).not.toBeNull(); // feature dark ≠ image gone
-  });
-
-  it('applies ps-clip-reveal to the framed image container when the flag is ON (reveal wraps, never replaces)', () => {
-    vi.stubEnv('VITE_CLIP_REVEAL', '1');
+  it('applies ps-clip-reveal to the framed image container by DEFAULT (ON) — reveal wraps, never replaces', () => {
     const { container } = renderFS();
     const el = container.querySelector('[data-clip-reveal="1"]') as HTMLElement | null;
     expect(el).not.toBeNull();
     expect(el!.classList.contains('ps-clip-reveal')).toBe(true);
     expect(el!.querySelector('img')).not.toBeNull(); // the framed <img> is still inside
+  });
+
+  it('does NOT apply ps-clip-reveal when opted OUT (VITE_CLIP_REVEAL=0), image still renders', () => {
+    vi.stubEnv('VITE_CLIP_REVEAL', '0');
+    const { container } = renderFS();
+    expect(container.querySelector('[data-clip-reveal="1"]')).toBeNull();
+    expect(container.querySelector('.ps-clip-reveal')).toBeNull();
+    expect(container.querySelector('img')).not.toBeNull(); // opted-out ≠ image gone
   });
 });
 

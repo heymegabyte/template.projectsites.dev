@@ -17,14 +17,21 @@ export function personalizedRibbonEnabled(): boolean {
 }
 
 /**
- * Clip-path scroll reveal (`clip_reveal`) — the Awwwards/Zentry-signature "clip-path shaped
- * transition": a below-fold section visual wipes open (a cinematic letterbox reveal) as it scrolls
- * into view, driven by native `animation-timeline: view()` (compositor → INP-safe; below-fold →
- * LCP-safe; clip-path only → CLS-safe). Dark by default (experimental); opt a build in with
- * `VITE_CLIP_REVEAL=1`. Firefox / reduced-motion get the static, fully-visible image (never clipped).
+ * Clip-path scroll reveal (`clip_reveal` / VITE_CLIP_REVEAL) — the Awwwards/Zentry-signature
+ * "clip-path shaped transition": a below-fold `FeatureSplit` visual wipes open (a cinematic
+ * letterbox reveal) as it scrolls into view. **PROMOTED to default-ON (AL-833, CINEMATIC-3D)** — the
+ * entire reveal (clip-path keyframe included) is layered strictly under `@supports (animation-timeline:
+ * view())` + `@media (prefers-reduced-motion: no-preference)` with NO base clip-path, so Firefox /
+ * reduced-motion get the fully-visible STATIC image (never clipped) — an identical safety profile to
+ * the already-default scroll-cinema / cinematic-process, so keeping it dark was the built-but-unwired
+ * anti-pattern; `VITE_CLIP_REVEAL=0` is the killswitch.
+ *
+ * Safe BY CONSTRUCTION — native `animation-timeline: view()` (compositor → INP-safe), below-fold +
+ * settled-frame identity (LCP-safe: never wraps the hero LCP element), clip-path only / no reflow
+ * (CLS-safe), ZERO JS / no scroll listener. Source: Awwwards / Zentry clip-path transitions.
  */
 export function clipRevealEnabled(): boolean {
-  return import.meta.env.VITE_CLIP_REVEAL === "1";
+  return import.meta.env.VITE_CLIP_REVEAL !== "0";
 }
 
 /**
@@ -134,7 +141,9 @@ export function cinematicProcessEnabled(): boolean {
  * 0fr↔1fr` clip-workaround for the natural, content-honest reveal an owner's visitor feels as
  * premium. The reveal is driven ENTIRELY by CSS off the existing `[data-faq-open]` state + a single
  * `data-faq-native` opt-in attribute on the panel — ZERO new JS, no listener, no measurement.
- * Dark by default (experimental); opt a build in with `VITE_FAQ_NATIVE_DISCLOSURE=1`.
+ * **PROMOTED to default-ON (AL-833, CINEMATIC-3D)** — layered strictly under `@supports` (the base
+ * grid-rows reveal stays the universal fallback), so keeping it dark was the built-but-unwired
+ * anti-pattern; `VITE_FAQ_NATIVE_DISCLOSURE=0` is the killswitch.
  *
  * Safe BY CONSTRUCTION — layered strictly UNDER `@supports (interpolate-size: allow-keywords)`, so
  * the always-present `grid-rows` reveal remains the universal base/fallback: flag-off OR an
@@ -148,7 +157,7 @@ export function cinematicProcessEnabled(): boolean {
  * (Framer / v0 / Lovable) still emulate with JS.
  */
 export function faqNativeDisclosureEnabled(): boolean {
-  return import.meta.env.VITE_FAQ_NATIVE_DISCLOSURE === "1";
+  return import.meta.env.VITE_FAQ_NATIVE_DISCLOSURE !== "0";
 }
 
 /**
