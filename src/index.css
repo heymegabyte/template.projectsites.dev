@@ -1229,6 +1229,38 @@ main#main {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   FOCUS-PULL "RACK FOCUS" (CINEMATIC-3D, AL-853) — a below-fold gallery image
+   resolves from soft to sharp (`filter: blur → 0`) as it scrolls into view, like a
+   camera pulling focus (the motion.so / Awwwards film-grade signature). BLUR-ONLY
+   (no transform) so it never collides with the tile's hover-zoom transform. Base
+   state is fully SHARP (`filter: none`) → Firefox / reduced-motion / no-@supports get
+   the crisp image, never a stranded-blurred tile. `filter` never reflows → CLS-safe;
+   gallery is below the hero → the blurred image is never the LCP element. Dark behind
+   `VITE_FOCUS_PULL` (the `.ps-focus-pull` class is only applied when the flag is on).
+   ───────────────────────────────────────────────────────────────────────── */
+.ps-focus-pull {
+  filter: none; /* sharp — the safe static fallback */
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .ps-focus-pull {
+      animation: ps-focus-pull linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 35%;
+      will-change: filter;
+    }
+    @keyframes ps-focus-pull {
+      from {
+        filter: blur(7px);
+      }
+      to {
+        filter: blur(0);
+      }
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
    KEN-BURNS "LIVING IMAGERY" (CINEMATIC-3D) — a below-fold section image slowly
    SCALES as it scrolls through the viewport (the Obys / Immersive-Garden signature
    of imagery that quietly breathes). Native `animation-timeline: view()` scrubs the

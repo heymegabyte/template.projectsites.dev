@@ -1,4 +1,5 @@
 import { cdnImageProps } from '@/lib/cdn-image';
+import { focusPullEnabled } from '@/lib/featureFlags';
 
 interface GalleryImage {
   src: string;
@@ -31,6 +32,9 @@ export default function GalleryGrid({
   heading = 'Gallery',
   galleryId = 'gallery-grid',
 }: GalleryGridProps) {
+  // AL-853: cinematic rack-focus on scroll-in (blur→sharp), dark behind VITE_FOCUS_PULL.
+  // Blur-only (no transform) so it never collides with the tile's hover-zoom transform.
+  const focusPull = focusPullEnabled() ? ' ps-focus-pull' : '';
   return (
     <section className="py-20">
       <div className="max-w-7xl mx-auto px-6">
@@ -60,7 +64,7 @@ export default function GalleryGrid({
                 tabIndex={0}
                 role="button"
                 aria-label={`Open image: ${img.alt}`}
-                className="gallery-tile__img w-full h-auto cursor-zoom-in select-none"
+                className={`gallery-tile__img w-full h-auto cursor-zoom-in select-none${focusPull}`}
                 loading="lazy"
                 decoding="async"
               />

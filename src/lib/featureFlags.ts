@@ -312,3 +312,19 @@ export function wordRevealEnabled(): boolean {
 export function lineDrawEnabled(): boolean {
   return import.meta.env.VITE_LINE_DRAW === "1";
 }
+
+/**
+ * `focus_pull` (AL-853, dark) — the cinematic "rack focus" signature (motion.so / Awwwards film-grade
+ * reveals): a below-fold gallery image resolves from soft to sharp (`filter: blur(7px) → 0`) as it
+ * scrolls into view, like a camera pulling focus. A genuinely-new visual CLASS (ken-burns is a slow
+ * zoom, clip-reveal a clip-path wipe, reveal-on-view an opacity/translate — none is a focus pull).
+ * BLUR-ONLY by design (no transform) so it never collides with the gallery tile's existing hover-zoom
+ * transform. Zero-lib (native `animation-timeline: view()`), LCP-safe (gallery is below the hero — the
+ * blurred image is never the LCP element), CLS-safe (`filter` never reflows; tile dims are fixed).
+ * `@supports` + `prefers-reduced-motion: no-preference` gated with a BASE state of fully SHARP
+ * (`filter: none`) → Firefox / reduced-motion / no-JS get the crisp image, never a stranded-blurred
+ * tile. Dark by default; opt-in via `VITE_FOCUS_PULL=1`.
+ */
+export function focusPullEnabled(): boolean {
+  return import.meta.env.VITE_FOCUS_PULL === "1";
+}
