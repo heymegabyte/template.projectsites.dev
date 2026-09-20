@@ -12,9 +12,11 @@ import { kineticMarqueeEnabled } from '@/lib/featureFlags';
  */
 afterEach(() => vi.unstubAllEnvs());
 
-describe('kineticMarqueeEnabled — VITE_KINETIC_MARQUEE gate (dark by default)', () => {
-  it('is OFF by default (experimental) and ON only when VITE_KINETIC_MARQUEE=1', () => {
-    expect(kineticMarqueeEnabled()).toBe(false);
+describe('kineticMarqueeEnabled — VITE_KINETIC_MARQUEE gate (ON by default, opt-OUT — AL-832)', () => {
+  it('is ON by default (no env) and only OFF when explicitly VITE_KINETIC_MARQUEE=0', () => {
+    expect(kineticMarqueeEnabled()).toBe(true); // promoted default-on (safe by construction)
+    vi.stubEnv('VITE_KINETIC_MARQUEE', '0');
+    expect(kineticMarqueeEnabled()).toBe(false); // the opt-out escape hatch
     vi.stubEnv('VITE_KINETIC_MARQUEE', '1');
     expect(kineticMarqueeEnabled()).toBe(true);
   });
