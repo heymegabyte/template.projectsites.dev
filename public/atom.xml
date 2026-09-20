@@ -5,7 +5,7 @@
   <link href="{BUSINESS_URL}/atom.xml" rel="self" type="application/atom+xml" />
   <link href="{BUSINESS_URL}" />
   <id>{BUSINESS_URL}/</id>
-  <updated>2026-09-20T03:35:00.554Z</updated>
+  <updated>2026-09-20T05:38:55.042Z</updated>
   <author><name>{BUSINESS_NAME}</name><email>hey@megabyte.space</email></author>
   <entry>
     <title>The small things, done well</title>

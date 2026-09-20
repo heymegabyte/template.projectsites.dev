@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { scrubText, scrubList, scrubImage } from '@/lib/placeholders';
 import { cdnImageProps } from '@/lib/cdn-image';
 import { clipRevealEnabled } from '@/lib/featureFlags';
+import { SplitHeadline } from '@/components/SplitHeadline';
 
 interface Props {
   eyebrow?: string;
@@ -60,9 +61,11 @@ export function FeatureSplit({
             <span className="text-accent text-sm font-mono tracking-widest uppercase">{safeEyebrow}</span>
           )}
           {safeHeadline && (
-            <h2 className="text-3xl md:text-5xl font-bold font-heading mt-4 mb-6 text-text">
-              {safeHeadline}
-            </h2>
+            <SplitHeadline
+              as="h2"
+              className="text-3xl md:text-5xl font-bold font-heading mt-4 mb-6 text-text"
+              text={safeHeadline}
+            />
           )}
           {safeDescription && (
             <p className="text-text-muted text-lg leading-relaxed mb-6">{safeDescription}</p>

@@ -277,3 +277,24 @@ export function livingBorderEnabled(): boolean {
 export function sectionRailEnabled(): boolean {
   return import.meta.env.VITE_SECTION_RAIL === "1";
 }
+
+/**
+ * Kinetic split-text headline reveal (`word_reveal` / VITE_WORD_REVEAL) — the Awwwards-2026 /
+ * Codrops kinetic-typography signature ("headlines animate IN, word by word") that the all-in-one
+ * AI builders (Framer / Lovable / v0 / Webflow) don't auto-generate: a below-fold section headline
+ * rises + un-blurs one WORD at a time as it scrolls into view (distinct from the whole-block
+ * `.reveal-on-view` and the weight-compress `.kinetic-headline`). Embarrassingly-easy + AI-does-the-
+ * work: `SplitHeadline` splits the AI-written headline into per-word spans automatically — the owner
+ * configures NOTHING. Dark by default (experimental); opt a build in with `VITE_WORD_REVEAL=1`.
+ *
+ * Safe BY CONSTRUCTION — pure native CSS `animation-timeline: view()` (compositor → INP-safe), ZERO
+ * JS / no scroll listener. Applied ONLY to BELOW-fold section `<h2>`s (never the hero LCP `<h1>`), so
+ * LCP-safe; transform/opacity/filter only inside the settled frame (CLS-safe). The whole effect is
+ * layered under `@supports (animation-timeline: view())` + `@media (prefers-reduced-motion:
+ * no-preference)` with the BASE state = every word fully visible → Firefox / reduced-motion / no-JS
+ * get the static, legible headline (never a stranded opacity:0 word). Source: Awwwards SOTD +
+ * Codrops 2026 kinetic-typography trend + tympanus.net scroll-driven type (WebSearch 2026-09-20).
+ */
+export function wordRevealEnabled(): boolean {
+  return import.meta.env.VITE_WORD_REVEAL === "1";
+}
