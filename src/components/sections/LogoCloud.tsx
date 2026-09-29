@@ -72,22 +72,32 @@ export function LogoCloud({
       </span>
     );
 
-  const items = safeLogos.map((l) =>
-    isRealHref(l.href) ? (
-      <a
-        key={l.name}
-        href={l.href}
-        className="logo-chip inline-flex items-center px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-md"
-        aria-label={l.name}
-      >
-        {logoInner(l)}
-      </a>
-    ) : (
-      <span key={l.name} className="logo-chip inline-flex items-center px-2">
-        {logoInner(l)}
-      </span>
-    ),
-  );
+  // A11y-correct marquee pattern: ONE real strip (focusable links, exposed to
+  // AT) + one aria-hidden inert clone for the seam. The clone's links inherit
+  // `aria-hidden` from the duplicate track and carry `tabIndex={-1}` so a
+  // keyboard user never hits the same logo twice and no focusable element ever
+  // sits inside an aria-hidden subtree (axe `aria-hidden-focus`).
+  const renderItems = (inert: boolean) =>
+    safeLogos.map((l) =>
+      isRealHref(l.href) ? (
+        <a
+          key={l.name}
+          href={l.href}
+          className="logo-chip inline-flex items-center px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-md"
+          aria-label={l.name}
+          {...(inert ? { tabIndex: -1 } : {})}
+        >
+          {logoInner(l)}
+        </a>
+      ) : (
+        <span key={l.name} className="logo-chip inline-flex items-center px-2">
+          {logoInner(l)}
+        </span>
+      ),
+    );
+
+  const items = renderItems(false);
+  const itemsInert = renderItems(true);
 
   return (
     <section
@@ -116,7 +126,7 @@ export function LogoCloud({
         <span aria-hidden="true" className="logo-rule logo-rule--top" />
         {variant === "marquee" ? (
           <div className="py-6">
-            <Marquee items={items} speed="slow" pauseOnHover />
+            <Marquee items={items} itemsInert={itemsInert} speed="slow" pauseOnHover />
           </div>
         ) : (
           <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-8 gap-y-10 items-center justify-items-center py-8">

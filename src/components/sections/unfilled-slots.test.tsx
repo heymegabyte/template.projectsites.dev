@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { CaseStudyGrid, type CaseStudy } from './CaseStudyCard';
 import { TeamGrid, type TeamMember } from './TeamGrid';
@@ -46,7 +46,20 @@ describe('CaseStudyGrid — drops unfilled {CS_N} slot cards on a partial fill',
     );
     expect(cards(container)).toBe(3);
   });
+
+  it('an all-placeholder grid self-hides in PROD (never ships raw placeholder cards)', () => {
+    vi.stubEnv('DEV', false);
+    const { container } = render(
+      <MemoryRouter>
+        <CaseStudyGrid studies={[token(1), token(2)]} />
+      </MemoryRouter>,
+    );
+    expect(container.firstChild).toBeNull();
+    vi.unstubAllEnvs();
+  });
 });
+
+afterEach(() => vi.unstubAllEnvs());
 
 describe('TeamGrid — drops unfilled {TEAM_N} slot members on a partial fill', () => {
   it('renders only the filled member; drops the placeholder card + its Person JSON-LD', () => {

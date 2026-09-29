@@ -59,7 +59,7 @@
       "scenario": "Work-samples / portfolio grid (exports CaseStudyGrid) — 2-col case-study cards with client, summary and up to 3 result metrics. Visitor job: judge past work.",
       "requiredFacts": ["caseStudies[] (real client engagements; metric values verifiable)"],
       "editingControls": ["studies[]: slug, title, client, summary, industry, metrics[{value,label}], cover", "eyebrow", "headline", "basePath (default /case-studies)"],
-      "semanticFallback": "Unfilled {CS_N_*} slot cards dropped via isPlaceholder; if NONE are filled the raw studies render (dev-skeleton convenience) — production selection must therefore gate on verified caseStudies, not on the component.",
+      "semanticFallback": "Unfilled {CS_N_*} slot cards dropped via isPlaceholder; if NONE are filled, DEV keeps the fixtures so Storybook/dev renders while PROD renders NOTHING (mirrors TeamGrid — raw placeholder cards never ship to real visitors).",
       "motion": { "type": "css", "reducedMotion": "reveal-on-view + hover cover scale, both reduced-motion-neutralised" },
       "browserApis": [],
       "a11yNotes": "Metrics in a <dl>; covers decorative alt=''; whole card is one link (single tab stop per study).",
@@ -231,20 +231,20 @@
       "semanticFallback": "Token names dropped; missing logo files render as styled name wordmarks (no gaps); linkless logos render non-interactive (a '#'/token href is never a dead control); section null when nothing real remains.",
       "motion": { "type": "css", "reducedMotion": "marquee keyframe loop killed under prefers-reduced-motion (calm static row); desaturate→color hover lift + grid stagger motion-gated" },
       "browserApis": [],
-      "a11yNotes": "KNOWN SMELL: marquee variant nests focusable <a> logos inside the Marquee wrapper which is aria-hidden='true' (focusable-content-in-aria-hidden + duplicated track links). Grid variant is clean. Prefer grid when logos are linked.",
+      "a11yNotes": "Marquee follows the a11y-correct pattern: ONE real strip exposed to AT (focusable links, aria-labels), one aria-hidden inert seam clone whose links are tabIndex=-1 — no duplicated tab stops, no focusable-in-aria-hidden; track pauses on hover AND focus-within (WCAG 2.2.2). Grid variant static.",
       "budget": { "maxKbJs": 3, "maxKbImg": 100 },
-      "tests": ["src/components/sections/LogoCloud.test.tsx", "src/components/sections/section-img-decoding.test.ts"]
+      "tests": ["src/components/sections/LogoCloud.test.tsx", "src/components/sections/section-img-decoding.test.ts", "src/components/sections/scrub-firewall.test.tsx"]
     },
     {
       "id": "marquee",
       "component": "src/components/sections/Marquee.tsx",
       "scenario": "Low-level infinite-loop marquee primitive (duplicated track, seamless) used by LogoCloud and kinetic strips — not a standalone page section.",
       "requiredFacts": [],
-      "editingControls": ["items[] (ReactNode)", "speed: slow|normal|fast", "reverse", "pauseOnHover"],
+      "editingControls": ["items[] (ReactNode)", "itemsInert[] (tabIndex=-1 render for the clone strip)", "speed: slow|normal|fast", "reverse", "pauseOnHover"],
       "semanticFallback": "Duplicates the track once for the seam; renders whatever items are passed (callers own scrubbing).",
-      "motion": { "type": "css", "reducedMotion": "container is aria-hidden and the keyframe animation is killed by the global reduced-motion reset; hover-pause optional" },
+      "motion": { "type": "css", "reducedMotion": "keyframe animation killed by the global reduced-motion reset; pauseOnHover also pauses on focus-within (WCAG 2.2.2)" },
       "browserApis": [],
-      "a11yNotes": "aria-hidden by design (decorative duplication) — callers must NOT place the only focusable/informative instance of content inside it (see LogoCloud smell).",
+      "a11yNotes": "A11y-correct marquee: FIRST track is real content (exposed once, focusable); only the DUPLICATE seam track is aria-hidden — callers with interactive items pass an itemsInert render (tabIndex=-1) so no focusable element sits in the hidden clone.",
       "budget": { "maxKbJs": 1, "maxKbImg": 0 },
       "tests": []
     },
@@ -267,12 +267,12 @@
       "scenario": "Four metric cards with directional delta chips (up/down/flat, goodIs polarity) — before/after or QoQ movement. Numbers are factual claims.",
       "requiredFacts": ["metrics[] (verified numbers — values + deltas must trace to real data)"],
       "editingControls": ["metrics[]: value, suffix, label, caption, delta{value, direction, goodIs}", "eyebrow", "headline"],
-      "semanticFallback": "NO internal placeholder scrub and no self-hide (unlike siblings) — renders props verbatim, so selection MUST gate on verified metrics (this catalog is the gate).",
+      "semanticFallback": "Full scrubText firewall (mirrors siblings): token eyebrow/headline/caption/suffix/delta scrub to hidden, metric cards whose label scrubs empty are dropped, and the section self-hides when no real metrics remain. Selection still gates on verified metrics — the firewall is the backstop.",
       "motion": { "type": "css", "reducedMotion": "AnimatedNumber count-up is intersection-triggered and reduced-motion-safe; cards reveal-on-view" },
       "browserApis": ["IntersectionObserver (via AnimatedNumber)"],
       "a11yNotes": "Semantic <dl>; the animated figure carries aria-label with the final value+suffix; delta color pairs with an icon (not color-only).",
       "budget": { "maxKbJs": 3, "maxKbImg": 0 },
-      "tests": []
+      "tests": ["src/components/sections/scrub-firewall.test.tsx"]
     },
     {
       "id": "newsletter",
@@ -332,12 +332,12 @@
       "scenario": "Single editorial pull-quote — the one high-impact quote that converts, larger than testimonials, with author/role/photo/source. Emits Quotation JSON-LD (GEO/AI-citation surface).",
       "requiredFacts": ["quote.text + quote.author (a real, attributable quotation — JSON-LD claims it as spoken)"],
       "editingControls": ["text", "author", "role", "photo", "source{name, href}", "eyebrow", "jsonLd (default true)"],
-      "semanticFallback": "NO internal scrub — renders props verbatim and emits them as Quotation JSON-LD, so selection must verify the quote first (this catalog is the gate). Photo optional.",
+      "semanticFallback": "Full scrubText firewall INCLUDING the Quotation JSON-LD feed: token role/eyebrow/source hide, a token photo never renders (hasRealImage), and a token quote text self-hides the whole section — no DOM, no JSON-LD node. Structured data only ever carries verified copy. Photo optional.",
       "motion": { "type": "css", "reducedMotion": "reveal-on-view only" },
       "browserApis": [],
       "a11yNotes": "<figure>/<blockquote>/<figcaption> semantics; quote glyph aria-hidden; portrait decorative alt='' (author named in caption); external source links noopener.",
       "budget": { "maxKbJs": 2, "maxKbImg": 30 },
-      "tests": ["src/components/sections/section-img-decoding.test.ts"]
+      "tests": ["src/components/sections/section-img-decoding.test.ts", "src/components/sections/scrub-firewall.test.tsx"]
     },
     {
       "id": "service-menu",
@@ -371,12 +371,12 @@
       "scenario": "Single dominant product/feature focal point (80% of section weight) — split (image beside copy) or overlay (copy floated over full-bleed visual). Replaces a BentoGrid when one thing must command the section.",
       "requiredFacts": [],
       "editingControls": ["eyebrow", "headline", "description", "visual (image{src,alt} or ReactNode)", "variant: split|overlay", "imagePosition: left|right", "primary/secondary{label,href}", "features[]", "badge"],
-      "semanticFallback": "Accepts an arbitrary ReactNode visual. NO placeholder scrub (renders props verbatim) — generator must pass resolved copy.",
+      "semanticFallback": "Full scrubText firewall: token copy/badge hide, token features are dropped (scrubList), a token image visual renders NO <img> (scrubImage — never a 404 box), and a CTA with a token label/href is dropped entirely (never a dead button). Arbitrary ReactNode visuals pass through untouched.",
       "motion": { "type": "css", "reducedMotion": "reveal-on-view only" },
       "browserApis": [],
       "a11yNotes": "Overlay variant layers a background→transparent gradient scrim for copy contrast; feature markers aria-hidden; image has real alt.",
       "budget": { "maxKbJs": 3, "maxKbImg": 500 },
-      "tests": ["src/components/sections/section-img-decoding.test.ts"]
+      "tests": ["src/components/sections/section-img-decoding.test.ts", "src/components/sections/scrub-firewall.test.tsx"]
     },
     {
       "id": "stats",
@@ -436,12 +436,12 @@
       "scenario": "Historical timeline (vertical rail or horizontal cards) — dated milestones with optional links and PRIMARY-SOURCE photos only (Wikimedia/LoC/archive; never AI/stock beside a dated event; blank entry > faked entry).",
       "requiredFacts": ["timeline.events[] (real dated history — cited per rules/citations; images primary-source only)"],
       "editingControls": ["events[]: year, title, description, link{href,label}, image, imageAlt", "eyebrow", "headline", "description", "orientation: vertical|horizontal"],
-      "semanticFallback": "Titles/descriptions scrubbed + placeholder images stripped at source (both orientations token-safe); null when events is empty. NOTE: `year` is not scrubbed — never pass a token year.",
+      "semanticFallback": "Years/titles/descriptions scrubbed + placeholder images stripped at source (both orientations token-safe — a {TIMELINE_N_YEAR} token never reaches the <time> element); null when events is empty.",
       "motion": { "type": "scroll-driven", "reducedMotion": "scaleY scroll-drawn accent rail, per-event stagger, node pulse and hover lift all double-gated (reduced-motion + reduced-data); rail renders fully drawn otherwise" },
       "browserApis": ["IntersectionObserver", "matchMedia", "CSS scroll-driven animations (rail)"],
       "a11yNotes": "Ordered <ol>; <time dateTime={year}>; nodes aria-hidden; entry links get focus-visible rings + noopener when external.",
       "budget": { "maxKbJs": 4, "maxKbImg": 250 },
-      "tests": ["src/components/sections/Timeline.test.tsx", "src/components/sections/section-img-decoding.test.ts"]
+      "tests": ["src/components/sections/Timeline.test.tsx", "src/components/sections/section-img-decoding.test.ts", "src/components/sections/scrub-firewall.test.tsx"]
     },
     {
       "id": "video-embed",

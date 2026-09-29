@@ -24,10 +24,12 @@ interface Props {
 export function CaseStudyGrid({ studies, eyebrow, headline, className, basePath = '/case-studies' }: Props) {
   // Drop unfilled `{CS_N_*}` slot cards — a business with fewer case studies than the template's
   // slots would otherwise render a broken/empty card (build_validators only guards {BUSINESS_*}, not
-  // section slots). If NONE are filled (the raw template skeleton / unit fixtures), keep all so the
-  // dev build still renders. Uses the isPlaceholder firewall (placeholders.ts).
+  // section slots). If NONE are filled: in DEV keep the fixtures so Storybook/dev renders; in PROD
+  // render NOTHING — raw placeholder cards must never ship to real visitors (catalog provenance
+  // rule; mirrors TeamGrid). Uses the isPlaceholder firewall (placeholders.ts).
   const filled = studies.filter((s) => !isPlaceholder(s.title));
-  const shown = filled.length > 0 ? filled : studies;
+  const shown = filled.length > 0 ? filled : import.meta.env.DEV ? studies : [];
+  if (shown.length === 0) return null;
   return (
     <section className={cn('py-24 md:py-32 max-w-container-wide mx-auto px-6', className)}>
       {(eyebrow || headline) && (

@@ -1,6 +1,7 @@
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { AnimatedNumber } from '@/components/AnimatedNumber';
 import { cn } from '@/lib/utils';
+import { scrubText } from '@/lib/placeholders';
 
 export interface Metric {
   /** The big number. */
@@ -31,20 +32,38 @@ interface Props {
  * If `goodIs: 'down'` (e.g. error rate, latency), positive direction = danger.
  */
 export function MetricRow({ metrics, eyebrow, headline, className }: Props) {
+  // Placeholder firewall (mirrors LogoCloud/Timeline): a leaked `{METRIC_N_*}`
+  // token never renders. Scrub every text prop; drop metric cards whose label
+  // scrubs empty (an unfilled slot); hide the whole row when nothing real remains.
+  const safeEyebrow = scrubText(eyebrow);
+  const safeHeadline = scrubText(headline);
+  const safeMetrics = metrics
+    .map((m) => {
+      const deltaValue = m.delta ? scrubText(m.delta.value) : '';
+      return {
+        ...m,
+        label: scrubText(m.label),
+        suffix: scrubText(m.suffix) || undefined,
+        caption: scrubText(m.caption) || undefined,
+        delta: m.delta && deltaValue ? { ...m.delta, value: deltaValue } : undefined,
+      };
+    })
+    .filter((m) => m.label.length > 0);
+  if (safeMetrics.length === 0) return null;
   return (
     <section className={cn('py-16 md:py-24 max-w-container-wide mx-auto px-6', className)}>
-      {(eyebrow || headline) && (
+      {(safeEyebrow || safeHeadline) && (
         <div className="text-center mb-12 reveal-on-view">
-          {eyebrow && (
-            <p className="text-accent text-sm font-mono tracking-widest uppercase">{eyebrow}</p>
+          {safeEyebrow && (
+            <p className="text-accent text-sm font-mono tracking-widest uppercase">{safeEyebrow}</p>
           )}
-          {headline && (
-            <h2 className="mt-4 text-3xl md:text-4xl font-bold font-heading text-text">{headline}</h2>
+          {safeHeadline && (
+            <h2 className="mt-4 text-3xl md:text-4xl font-bold font-heading text-text">{safeHeadline}</h2>
           )}
         </div>
       )}
       <dl className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {metrics.map((m, i) => {
+        {safeMetrics.map((m, i) => {
           const direction = m.delta?.direction ?? 'flat';
           const goodIs = m.delta?.goodIs ?? 'up';
           const isGood =

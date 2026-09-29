@@ -98,10 +98,12 @@ export function Timeline({
 
   if (events.length === 0) return null;
 
-  // Scrub at source so BOTH orientation branches are token-safe: a leaked `{TIMELINE_N_TITLE}` /
-  // `{..._DESCRIPTION}` never renders, and a `{..._IMAGE}` token never becomes a 404 <img>.
+  // Scrub at source so BOTH orientation branches are token-safe: a leaked `{TIMELINE_N_YEAR}` /
+  // `{..._TITLE}` / `{..._DESCRIPTION}` never renders (year included — a token year used to reach
+  // the <time> element), and a `{..._IMAGE}` token never becomes a 404 <img>.
   const safeEvents = events.map((e) => ({
     ...e,
+    year: scrubText(e.year),
     title: scrubText(e.title),
     description: scrubText(e.description),
     image: hasRealImage(e.image) ? e.image : undefined,
@@ -151,12 +153,14 @@ export function Timeline({
                 style={{ "--tl-i": i } as CSSProperties}
               >
                 <span aria-hidden="true" className="tl-node" />
-                <time
-                  className="tl-year font-mono text-accent"
-                  dateTime={e.year}
-                >
-                  {e.year}
-                </time>
+                {e.year && (
+                  <time
+                    className="tl-year font-mono text-accent"
+                    dateTime={e.year}
+                  >
+                    {e.year}
+                  </time>
+                )}
                 {e.title && (
                   <h3 className="tl-title text-text font-heading">{e.title}</h3>
                 )}
@@ -198,9 +202,11 @@ export function Timeline({
               className="tl-card tl-item"
               style={{ "--tl-i": i } as CSSProperties}
             >
-              <time className="tl-year font-mono text-accent" dateTime={e.year}>
-                {e.year}
-              </time>
+              {e.year && (
+                <time className="tl-year font-mono text-accent" dateTime={e.year}>
+                  {e.year}
+                </time>
+              )}
               {e.title && (
                 <h3
                   className="tl-title text-text font-heading"
