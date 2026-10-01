@@ -11,6 +11,7 @@
  */
 
 import { resolvePreset, presetForClass, PRESET_NAMES, DEFAULT_PRESET, type PresetName } from './themePresets.ts';
+import type { WebGLHeroConfig } from './components/webgl/WebGLHero.tsx';
 
 // The shipped template carries _brand.json at the repo root. A FRESH build
 // copy (e.g. the container's cp -r during site generation) can transiently
@@ -119,6 +120,13 @@ export interface Brand {
   layout: Record<string, string>;
   social: Record<string, string>;
   features: Record<string, boolean>;
+  /**
+   * OPT-IN industry WebGL hero engine config. Present only when `_brand.json`
+   * carries an explicit `webgl` block — the heroes then render `WebGLHero`
+   * (industry shader presets) instead of the auto themeStyle-derived
+   * `WebGLHeroBackdrop`. Absent (`undefined`) = existing behavior unchanged.
+   */
+  webgl?: WebGLHeroConfig;
 }
 
 // DTCG leaves that shipped UNRESOLVED (e.g. `{BUSINESS_NAME}` never
@@ -316,6 +324,15 @@ export const brand: Brand = {
   layout: mergeGroup(DEFAULT_BRAND.layout, r.layout),
   social: mergeGroup(DEFAULT_BRAND.social, r.social),
   features: mergeGroup(DEFAULT_BRAND.features, r.features),
+  // OPT-IN industry WebGL hero engine: only an explicit object-shaped `webgl`
+  // block survives resolution (resolveTree unwraps DTCG `$value` leaves and
+  // passes plain primitives/arrays through, so both authored forms land here).
+  // Anything else — absent, null, array, primitive — resolves to `undefined`
+  // and the heroes keep the auto themeStyle-derived backdrop unchanged.
+  webgl:
+    r.webgl && typeof r.webgl === 'object' && !Array.isArray(r.webgl)
+      ? (r.webgl as Brand['webgl'])
+      : undefined,
 } as unknown as Brand;
 
 const COLOR_KEYS = [

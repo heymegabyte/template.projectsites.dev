@@ -12,6 +12,7 @@ import {
   backdropForPreset,
   type HeroBackdropVariant,
 } from "@/components/sections/WebGLHeroBackdrop";
+import { WebGLHero } from "@/components/webgl/WebGLHero";
 import { TiltCard } from "@/components/TiltCard";
 import { ScrollParallax } from "@/components/ScrollParallax";
 import { ScrambleText } from "@/components/ScrambleText";
@@ -144,11 +145,20 @@ export function HeroCenter({
         className,
       )}
     >
-      {/* Per-industry animated WebGL backdrop (deepest layer), auto-derived from the
-          site personality. Decorative + LCP-safe: the <h1> below is the LCP element;
-          this canvas mounts post-hydration and degrades to a static brand gradient
+      {/* Per-industry animated WebGL backdrop (deepest layer). An EXPLICIT
+          _brand.json `webgl` block = the industry-preset shader engine (WebGLHero,
+          keyed by businessClass); absent = the auto themeStyle-derived backdrop,
+          unchanged. Decorative + LCP-safe either way: the <h1> below is the LCP
+          element; both mount post-hydration and degrade to a static brand gradient
           under reduced-motion / no-WebGL. */}
-      {resolvedBackdrop && <WebGLHeroBackdrop variant={resolvedBackdrop} />}
+      {brand.webgl ? (
+        <WebGLHero
+          vertical={brand.business.businessClass}
+          webgl={brand.webgl}
+        />
+      ) : (
+        resolvedBackdrop && <WebGLHeroBackdrop variant={resolvedBackdrop} />
+      )}
       {/* Centered accent bloom — a single OKLCH aura + slow conic halo behind the
           headline. Both decorative, always behind the z-10 content, no <img> in
           this variant so neither can become the LCP. */}
@@ -293,12 +303,21 @@ export function HeroSplit({
         className,
       )}
     >
-      {/* Per-industry animated WebGL backdrop (deepest layer, auto-derived via
-          backdropForPreset from the site personality). Decorative + LCP-safe: it
-          mounts post-hydration behind the z-10 grid, always smaller-impact than the
-          eager hero <img> (which stays the LCP), and degrades to a static brand
-          gradient under reduced-motion / no-WebGL. */}
-      {resolvedBackdrop && <WebGLHeroBackdrop variant={resolvedBackdrop} />}
+      {/* Per-industry animated WebGL backdrop (deepest layer). An EXPLICIT
+          _brand.json `webgl` block = the industry-preset shader engine (WebGLHero,
+          keyed by businessClass); absent = the auto themeStyle-derived backdrop,
+          unchanged. Decorative + LCP-safe either way: both mount post-hydration
+          behind the z-10 grid, always smaller-impact than the eager hero <img>
+          (which stays the LCP), and degrade to a static brand gradient under
+          reduced-motion / no-WebGL. */}
+      {brand.webgl ? (
+        <WebGLHero
+          vertical={brand.business.businessClass}
+          webgl={brand.webgl}
+        />
+      ) : (
+        resolvedBackdrop && <WebGLHeroBackdrop variant={resolvedBackdrop} />
+      )}
       {/* Cinematic depth behind the COPY — a drifting OKLCH accent aurora + a
           fine grain layer. Both are decorative (aria-hidden, pointer-events
           none), always smaller and behind the eager hero <img>, so neither can

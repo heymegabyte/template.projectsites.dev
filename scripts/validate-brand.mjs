@@ -63,6 +63,25 @@ const businessClassEnum = z.enum([
 ]);
 const colorSchemeEnum = z.enum(['dark','light','auto']);
 
+// OPT-IN industry WebGL hero engine block (see src/components/webgl/ +
+// docs/webgl-industry-hero.md). Mirrors `webgl` in src/brandSchema.ts: both
+// plain values and DTCG `$value` tokens are accepted; all fields optional.
+const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be #rrggbb');
+const plainOrToken = (value) => z.union([
+  value,
+  z.object({ $value: value, $type: z.string().optional(), $description: z.string().optional() }),
+]);
+const webglGroup = z.object({
+  $description: z.string().optional(),
+  variant:    plainOrToken(z.enum(['ember','rays','glint','grid'])).optional(),
+  background: plainOrToken(hexColor).optional(),
+  palette:    plainOrToken(z.array(hexColor)).optional(),
+  speed:      plainOrToken(z.number()).optional(),
+  intensity:  plainOrToken(z.number()).optional(),
+  density:    plainOrToken(z.number()).optional(),
+  grain:      plainOrToken(z.number()).optional(),
+});
+
 const brandSchema = z.object({
   $schema: z.string().optional(),
   $description: z.string().optional(),
@@ -103,6 +122,8 @@ const brandSchema = z.object({
   layout:  z.object({ containerWide: tokenString, containerNormal: tokenString, containerProse: tokenString }),
   social:  z.object({ $description: z.string().optional() }).catchall(tokenString),
   features:z.object({ $description: z.string().optional() }).catchall(tokenBool),
+  // Optional opt-in; absence keeps the auto themeStyle-derived hero backdrop.
+  webgl:   webglGroup.optional(),
 }).strict();
 
 const result = brandSchema.safeParse(raw);

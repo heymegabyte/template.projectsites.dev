@@ -72,6 +72,27 @@ const colorSchemeToken = z.object({
   $description: z.string().optional(),
 });
 
+/** `#rrggbb` hex string — the WebGL hero engine's color format. */
+const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be #rrggbb');
+
+const webglVariantEnum = z.enum(['ember', 'rays', 'glint', 'grid']);
+
+/**
+ * A `webgl` field accepts BOTH the plain JSON value and the DTCG token form
+ * (`{"$value": …}`): the runtime resolver (`resolveTree` in `src/brand.ts`)
+ * unwraps `$value` leaves and passes plain primitives/arrays through, so both
+ * authored shapes reach components identically. Deliberately permissive.
+ */
+const plainOrToken = <T extends z.ZodTypeAny>(value: T) =>
+  z.union([
+    value,
+    z.object({
+      $value: value,
+      $type: z.string().optional(),
+      $description: z.string().optional(),
+    }),
+  ]);
+
 export const brandSchema = z
   .object({
     $schema: z.string().optional(),
@@ -199,6 +220,24 @@ export const brandSchema = z
         $description: z.string().optional(),
       })
       .catchall(tokenBool),
+
+    // OPT-IN industry WebGL hero engine (src/components/webgl/WebGLHero.tsx).
+    // Presence of this block switches the hero backdrop from the auto
+    // themeStyle-derived WebGLHeroBackdrop to the industry-preset shader
+    // engine; absence = unchanged auto behavior. All fields optional — a bare
+    // `{}` is a valid opt-in that resolves the vertical's default preset.
+    webgl: z
+      .object({
+        $description: z.string().optional(),
+        variant:    plainOrToken(webglVariantEnum).optional(),
+        background: plainOrToken(hexColor).optional(),
+        palette:    plainOrToken(z.array(hexColor)).optional(),
+        speed:      plainOrToken(z.number()).optional(),
+        intensity:  plainOrToken(z.number()).optional(),
+        density:    plainOrToken(z.number()).optional(),
+        grain:      plainOrToken(z.number()).optional(),
+      })
+      .optional(),
   })
   .strict();
 

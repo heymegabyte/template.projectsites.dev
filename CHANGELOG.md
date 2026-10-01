@@ -4,6 +4,23 @@ All notable changes to `projectsites-template` are documented here. Format: [Kee
 
 ## [Unreleased]
 
+### Added
+
+- **Industry WebGL hero presets — opt-in via a `_brand.json` `webgl` block (FIRE-60).**
+  New `src/components/webgl/` module (`WebGLHero` wrapper + `webgl-hero-core.mjs`
+  shader engine + `presets.mjs` data, synced verbatim from projectsites.dev
+  `apps/project-sites/templates/webgl/`): 4 shader variants (ember / rays / glint /
+  grid) × 11 industry presets (+ 8 vertical aliases), selected by
+  `brand.business.businessClass` with per-field `webgl` overrides (variant /
+  background / palette / speed / intensity / density / grain). An EXPLICIT `webgl`
+  block in `_brand.json` swaps both heroes (`HeroCenter` + `HeroSplit`) onto the
+  engine; when ABSENT the auto `themeStyle`-derived `WebGLHeroBackdrop` renders
+  unchanged — zero behavior change for existing brand files. LCP-safe (GL init
+  deferred to window load + idle; canvas is never an LCP candidate) and
+  reduced-motion / no-WebGL degrade to a static themed CSS gradient.
+  `brandSchema.ts` + `validate:brand` accept the optional block (plain or DTCG
+  `$value` form). Docs: `docs/webgl-industry-hero.md`.
+
 ### Changed
 
 - **Sub-page titles use the real per-vertical tagline (FIRE-53).** About / Services
