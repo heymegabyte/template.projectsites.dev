@@ -130,6 +130,44 @@ describe('Header wires the wordmark guards to onLoad (aspect + ink contrast, not
  * upgrade to the PNG once a fetch-HEAD confirms it exists — a fetch 404 is SILENT (no console
  * error), unlike an <img> 404. This guards that the console-error-free probe stays wired.
  */
+/**
+ * logo-contrast backing (fire-72): UNSCROLLED, the header is transparent over the hero, so the
+ * brand mark floats on the hero image. A single fixed-direction drop-shadow does NOT separate ink
+ * from a same-luminance hero region (measured ~1.1:1 — a hard AA fail). index.css must give the
+ * unscrolled brand link a polarity-correct semi-opaque BACKING chip (dark chip on dark themes →
+ * ~6.1:1 light ink; light chip on light themes → ~6.7:1 dark ink) + a dual-direction halo on the
+ * mark. This guards both so a refactor can't silently drop the only every-site AA-safe wordmark lever.
+ */
+describe('logo-contrast: unscrolled brand mark has a theme-correct backing + dual halo', () => {
+  const CSS = readFileSync(resolve(__dirname, '../index.css'), 'utf8');
+
+  it('the unscrolled (transparent) header backs the brand link with a translucent chip', () => {
+    expect(CSS, 'need a .site-header[data-scrolled="false"] .site-brand backing rule').toMatch(
+      /\.site-header\[data-scrolled="false"\]\s+\.site-brand\s*\{[^}]*background:/,
+    );
+  });
+
+  it('the backing is theme-polarity-aware (a distinct light-theme chip for dark ink)', () => {
+    expect(CSS).toMatch(
+      /:root\[data-theme="light"\]\s+\.site-header\[data-scrolled="false"\]\s+\.site-brand/,
+    );
+  });
+
+  it('the mark carries a DUAL-direction halo (dark + light) so edges read on any hero', () => {
+    const at = CSS.indexOf('.site-brand .site-wordmark-text');
+    expect(at, 'need a halo rule on the brand mark').toBeGreaterThan(-1);
+    // dark-theme default halo declares BOTH a dark and a light drop-shadow/text-shadow layer.
+    const block = CSS.slice(at, at + 260);
+    expect(block, 'dark-theme halo must stack a dark + a light layer').toMatch(
+      /oklch\(0 0 0[^)]*\)[\s\S]*oklch\(1 0 0/,
+    );
+  });
+
+  it('respects prefers-reduced-transparency (chip becomes opaque, no backdrop blur)', () => {
+    expect(CSS).toMatch(/prefers-reduced-transparency:\s*reduce/);
+  });
+});
+
 describe('AL-591: wordmark PNG is existence-probed (silent) before render, not optimistically 404d', () => {
   it('wordmarkOk defaults to false (the text wordmark is the baseline, never a broken <img>)', () => {
     expect(SRC).toMatch(/const\s*\[\s*wordmarkOk\s*,\s*setWordmarkOk\s*\]\s*=\s*useState\(false\)/);

@@ -3289,6 +3289,95 @@ main#main {
   pointer-events: none;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   LOGO-CONTRAST BACKING (per the logo-contrast rule — every generated site inherits it)
+
+   UNSCROLLED, the header is `bg-transparent` and overlays the hero — so the brand
+   mark (icon + wordmark) floats directly on the hero image. A single fixed-direction
+   drop-shadow halo (the component's `drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]`) only
+   separates LIGHT ink from a light background; it does NOTHING when the ink LUMINANCE
+   MATCHES the hero (light ink over a bright hero highlight, or dark-theme light ink over
+   a pale sky). Measured: wordmark ink on a same-luminance hero region = ~1.1:1 — a hard
+   WCAG AA fail that no amount of halo fixes.
+
+   Fix (logo-contrast rule §"give the wordmark a dark backing"): a semi-opaque backing
+   chip behind the brand link on the UNSCROLLED state only (scrolled already has
+   `glass-strong`). Polarity-correct so BOTH theme families clear 4.5:1:
+     • dark themes  → a near-black chip  → light ink  ≈ 6.1:1 over the worst (bright) hero
+     • light themes → a near-white chip  → dark ink   ≈ 6.7:1 over the worst (dark) hero
+   The chip is subtle (blur + low alpha) so it reads as a soft lozenge, not a hard box,
+   and never appears once the header is scrolled (glass handles legibility there). */
+.site-header[data-scrolled="false"] .site-brand {
+  border-radius: var(--radius-full);
+  padding-inline: 0.5rem;
+  /* dark-first default: a near-black translucent lozenge for the light-on-dark mark */
+  background: color-mix(in oklch, var(--color-background) 62%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 1px 10px -4px oklch(0 0 0 / 0.5);
+}
+:root[data-theme="light"] .site-header[data-scrolled="false"] .site-brand {
+  /* light themes carry DARK ink → a near-white lozenge keeps the mark legible over a dark hero */
+  background: color-mix(in oklch, var(--color-background) 66%, transparent);
+  box-shadow: 0 1px 10px -4px oklch(0 0 0 / 0.25);
+}
+@media (prefers-color-scheme: light) {
+  :root[data-theme="auto"] .site-header[data-scrolled="false"] .site-brand {
+    background: color-mix(in oklch, var(--color-background) 66%, transparent);
+    box-shadow: 0 1px 10px -4px oklch(0 0 0 / 0.25);
+  }
+}
+/* No chip for reduced-transparency users (the halo + their OS contrast settings carry it). */
+@media (prefers-reduced-transparency: reduce) {
+  .site-header[data-scrolled="false"] .site-brand {
+    background: var(--color-background);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Dual-direction halo on the mark itself (icon + wordmark) — belt-and-suspenders with the
+   backing chip above. The component ships a single DARK drop-shadow (helps LIGHT ink on a
+   light hero); this adds the complementary halo for the inverse so the mark's EDGES stay
+   crisp against any hero luminance even where the chip is faint. Theme-polarity-aware:
+   dark themes (light ink) keep the dark halo; light themes (dark ink) get a light halo.
+   Scoped `.site-brand .site-{logo,wordmark}` (two classes) so it out-specifies the single
+   `drop-shadow-[…]` utility and declares the full, intentional shadow stack. */
+.site-brand .site-logo,
+.site-brand .site-wordmark,
+.site-brand .site-wordmark-text {
+  filter: drop-shadow(0 1px 3px oklch(0 0 0 / 0.55)) drop-shadow(0 0 1px oklch(1 0 0 / 0.35));
+}
+.site-brand .site-wordmark-text {
+  /* text-shadow drives the HTML text wordmark's halo (filter drop-shadow also applies, but
+     text-shadow renders a tighter glyph halo); dual offset = dark + light. */
+  text-shadow:
+    0 1px 3px oklch(0 0 0 / 0.55),
+    0 0 2px oklch(1 0 0 / 0.4);
+}
+:root[data-theme="light"] .site-brand .site-logo,
+:root[data-theme="light"] .site-brand .site-wordmark,
+:root[data-theme="light"] .site-brand .site-wordmark-text {
+  filter: drop-shadow(0 1px 3px oklch(1 0 0 / 0.65)) drop-shadow(0 0 1px oklch(0 0 0 / 0.4));
+}
+:root[data-theme="light"] .site-brand .site-wordmark-text {
+  text-shadow:
+    0 1px 3px oklch(1 0 0 / 0.7),
+    0 0 2px oklch(0 0 0 / 0.45);
+}
+@media (prefers-color-scheme: light) {
+  :root[data-theme="auto"] .site-brand .site-logo,
+  :root[data-theme="auto"] .site-brand .site-wordmark,
+  :root[data-theme="auto"] .site-brand .site-wordmark-text {
+    filter: drop-shadow(0 1px 3px oklch(1 0 0 / 0.65)) drop-shadow(0 0 1px oklch(0 0 0 / 0.4));
+  }
+  :root[data-theme="auto"] .site-brand .site-wordmark-text {
+    text-shadow:
+      0 1px 3px oklch(1 0 0 / 0.7),
+      0 0 2px oklch(0 0 0 / 0.45);
+  }
+}
+
 /* @starting-style entrance for the header the first time it paints. */
 @supports (transition-behavior: allow-discrete) {
   @media (prefers-reduced-motion: no-preference) {
